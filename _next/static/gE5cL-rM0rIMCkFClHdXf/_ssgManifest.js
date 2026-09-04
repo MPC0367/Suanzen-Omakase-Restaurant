@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002F[locale]","\u002F[locale]\u002Fbook","\u002F[locale]\u002Finstagram"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
