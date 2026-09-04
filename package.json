@@ -11,7 +11,8 @@
     "qa:booking": "node qa/booking.mjs",
     "qa:a11y": "node qa/a11y.mjs",
     "export": "node scripts/export.mjs",
-    "check:sheet": "node scripts/check-sheet.mjs"
+    "check:sheet": "node scripts/check-sheet.mjs",
+    "artifact": "node scripts/optimise-for-artifact.mjs && node scripts/build-artifact.mjs"
   },
   "dependencies": {
     "next": "15.5.4",
