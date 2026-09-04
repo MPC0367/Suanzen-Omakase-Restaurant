@@ -1,0 +1,18 @@
+import { chromium } from "playwright";
+const b = await chromium.launch();
+const p = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+await p.goto("http://localhost:4321/th#courses", { waitUntil: "domcontentloaded" });
+await p.waitForTimeout(2800);
+await p.evaluate(() => { document.documentElement.style.scrollBehavior='auto'; window.scrollTo(0, document.getElementById('courses').offsetTop + 150); });
+await p.waitForTimeout(900);
+const names = await p.locator('.course__name').allTextContents();
+const prices = await p.locator('.course__price').allTextContents();
+const counts = await p.locator('.course__count').allTextContents();
+console.log('Thai course rows:');
+names.forEach((n,i)=>console.log('  ', n.padEnd(14), counts[i].padEnd(12), prices[i]));
+const desc = await p.locator('.course.is-open .course__desc').innerText();
+console.log('\nopen course description (TH):', desc.slice(0,120));
+const label = await p.locator('.course.is-open .course__listhead .u-label').innerText();
+console.log('list label (TH):', label);
+await p.screenshot({ path: 'qa/shots/menu_th.png' });
+await b.close();

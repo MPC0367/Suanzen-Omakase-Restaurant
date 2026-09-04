@@ -1,0 +1,15 @@
+node_modules
+.next
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+
+# Booking requests filed by the API route — real guest data, never committed.
+.data/
+
+# The static export is a build artefact; the Pages Action rebuilds it.
+# Delete this line if you upload out/ by hand (option B in DEPLOY.md).
+out/
+
+# QA screenshots.
+qa/shots/
