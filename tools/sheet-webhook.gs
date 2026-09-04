@@ -66,7 +66,8 @@ function doPost(e) {
       b.receivedAt || new Date().toISOString(),
       b.status || 'requested',
       b.date || '',
-      b.seatingTime || '',
+      // Leading apostrophe: Sheets reads "19.00" as the number 19 otherwise.
+      b.seatingTime ? "'" + b.seatingTime : '',
       b.course || '',
       b.party || '',
       b.name || '',
