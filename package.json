@@ -10,7 +10,8 @@
     "qa": "node qa/shots.mjs",
     "qa:booking": "node qa/booking.mjs",
     "qa:a11y": "node qa/a11y.mjs",
-    "export": "node scripts/export.mjs"
+    "export": "node scripts/export.mjs",
+    "check:sheet": "node scripts/check-sheet.mjs"
   },
   "dependencies": {
     "next": "15.5.4",
