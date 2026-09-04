@@ -3,6 +3,8 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { booking } from "@/content/booking";
 import { validate, reference, type BookingRequest } from "@/lib/booking";
+import { sendToSheet, toSheetRow } from "@/lib/sheet";
+import { courses } from "@/content/courses";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,10 +13,16 @@ export const dynamic = "force-dynamic";
  * Takes a booking request and files it. It does not confirm a table — the
  * restaurant does that on LINE, and the response says so.
  *
- * Requests are appended to .data/reservations.jsonl so the restaurant has them
- * even with nothing else wired up. TO CONNECT PROPERLY: pass `record` on to
- * whatever the restaurant actually reads — the LINE Messaging API, a Google
- * Sheet, email, or a booking platform — in the marked block below.
+ * Requests are appended to .data/reservations.jsonl first — that file is the
+ * system of record and is written before anything else is attempted — and then
+ * forwarded to the restaurant's Google Sheet.
+ *
+ * The sheet is best-effort on purpose. If it is slow, down, or not configured,
+ * the guest still gets their reference and the booking is still on disk. Losing
+ * a table because a spreadsheet was unreachable would be the worse failure.
+ *
+ * Set SHEETS_WEBHOOK_URL and SHEETS_WEBHOOK_SECRET to switch it on; see
+ * tools/sheet-webhook.gs for the script that receives it.
  */
 
 const STORE = path.join(process.cwd(), ".data", "reservations.jsonl");
@@ -70,12 +78,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "invalid", fields: bad }, { status: 422 });
   }
 
-  const seating = booking.seatings.find((s) => s.id === candidate.seatingId)!;
+  // validate() has just proved every required field is present, so the partial
+  // can be treated as complete from here on.
+  const booked = candidate as BookingRequest;
+
+  const seating = booking.seatings.find((s) => s.id === booked.seatingId)!;
   const record = {
     ref: reference(),
     receivedAt: new Date().toISOString(),
     status: "requested" as const, // never "confirmed" — a person does that
-    ...candidate,
+    ...booked,
     seatingTime: seating.time,
   };
 
@@ -87,11 +99,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "store_failed" }, { status: 500 });
   }
 
-  // ── WIRE THE RESTAURANT UP HERE ────────────────────────────────────────────
-  // await notifyLine(record);
-  // await appendToSheet(record);
-  // await sendMail(record);
-  // ───────────────────────────────────────────────────────────────────────────
+  // ── Forward to the restaurant's sheet ──────────────────────────────────────
+  // Already safely on disk above, so a failure here is logged, not raised.
+  const course = courses.find((c) => c.id === record.courseId);
+  const sheet = await sendToSheet(
+    toSheetRow(record, course ? course.nameEn : "Undecided"),
+  );
+  if (!sheet.sent && sheet.reason !== "not_configured") {
+    console.error(`[reservations] ${record.ref} not written to the sheet:`, sheet);
+  }
 
-  return NextResponse.json({ ok: true, ref: record.ref, status: record.status });
+  // Other channels can hang off the same record — LINE push, email, a booking
+  // platform. Each should stay best-effort for the same reason.
+
+  return NextResponse.json({
+    ok: true,
+    ref: record.ref,
+    status: record.status,
+    // Useful when setting the sheet up; harmless once it works.
+    sheet: sheet.sent ? "written" : sheet.reason,
+  });
 }

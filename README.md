@@ -123,6 +123,18 @@ Sections declare `data-section-world="day" | "night"` and the page moves between
 a rice-paper world and an ink one as you scroll — the garden outside, the
 counter in daylight. All colour goes through tokens in `globals.css`.
 
+### Bookings go to a Google Sheet
+
+`/{locale}/book` — six steps: date → seating → course → guests → contact →
+review. The request is written to `.data/reservations.jsonl` first, then
+forwarded to the restaurant's spreadsheet through a small Apps Script web app
+(`tools/sheet-webhook.gs`). No Google Cloud project, no service-account key —
+just two environment variables. Setup is in [DEPLOY.md](DEPLOY.md).
+
+The sheet is best-effort on purpose: the booking is on disk before the sheet is
+contacted, so a spreadsheet that is slow, down or unconfigured never costs a
+table. The API response reports which happened.
+
 ### The booking engine
 
 `/{locale}/book` — six steps: date → seating → course → guests → contact →

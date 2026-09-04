@@ -72,8 +72,59 @@ the Instagram page, both languages, the schema and the sitemap.
 
 **If you want the booking endpoint to actually work,** deploy to Vercel or
 Netlify instead of Pages. Import the repo, no configuration needed; `npm run
-build` is the default and the API route comes with it. Then wire the marked
-block in `src/app/api/reservations/route.ts` to LINE, a Google Sheet or email.
+build` is the default and the API route comes with it. Then set the two
+environment variables below and bookings land in the spreadsheet.
+
+---
+
+## Bookings → the Google Sheet
+
+The sheet is here:
+
+**[Suan Zen Omakase — Booking Requests](https://docs.google.com/spreadsheets/d/1iySk66XjOYv8p9fXPbLYEdIm-2G6wKds3p6jFicbJbo/edit)**
+
+Connecting it takes about three minutes, and needs no Google Cloud project and
+no private key anywhere in this repo.
+
+1. Open the sheet → **Extensions → Apps Script**.
+2. Replace everything in `Code.gs` with `tools/sheet-webhook.gs` from this repo.
+3. Change `SECRET` at the top to a long random string of your own.
+4. **Deploy → New deployment → Web app.** Execute as *Me*, access *Anyone*.
+   Authorise it when Google asks. Copy the Web app URL.
+5. Set two environment variables — locally in `.env.local`, or in the Vercel /
+   Netlify dashboard:
+
+   ```
+   SHEETS_WEBHOOK_URL=<the Web app URL from step 4>
+   SHEETS_WEBHOOK_SECRET=<the SECRET from step 3>
+   ```
+
+Take a booking and the row appears, newest at the top.
+
+**"Anyone" access** means anyone who has the URL can POST to it — the `SECRET`
+is what actually guards the sheet, which is why it needs to be long and why it
+does not belong in a commit. The script only ever appends a row; it cannot read
+or change anything else in your Drive.
+
+### If the sheet is unreachable
+
+Nothing is lost. Every booking is written to `.data/reservations.jsonl` **before**
+the sheet is contacted, and that file is the system of record. If the sheet is
+slow, down, or not configured, the guest still gets their reference and the
+booking is still on the server. The API response says which happened:
+
+| `sheet` in the response | what it means |
+|---|---|
+| `written` | the row is in the spreadsheet |
+| `not_configured` | the two variables are unset — the booking was still filed |
+| `rejected` | the script answered, but refused — usually a mismatched `SECRET` |
+| `timeout` / `error` | the script could not be reached; the booking was still filed |
+
+Anything other than `written` or `not_configured` is also written to the server
+log with the booking's reference, so a missing row can be traced and re-entered.
+
+`.data/` is gitignored — it holds real guest names and phone numbers and must
+never be committed.
 
 ---
 

@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Types
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Static export
+        run: node scripts/export.mjs
+
+      # The QA suite drives a real browser against the built site: four
+      # viewports for overflow and console errors, contrast ratios computed off
+      # the rendered colours, and the booking form's validation.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Serve and check
+        run: |
+          npm run start &
+          # Wait for the server rather than pulling in another dependency.
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:4321/en > /dev/null && break
+            sleep 1
+          done
+          npm run qa:a11y
+          npm run qa:booking
+          node qa/shots.mjs /en
