@@ -12,6 +12,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
+
+/**
+ * Next lives in node_modules/.bin, which npm puts on PATH for `npm run` but
+ * nothing puts there for a bare `node scripts/export.mjs` — which is how CI
+ * invokes this. Resolve the binary rather than trusting the environment.
+ */
+const NEXT = (() => {
+  const local = path.join(root, 'node_modules', '.bin', process.platform === 'win32' ? 'next.cmd' : 'next');
+  if (fs.existsSync(local)) return JSON.stringify(local);
+  return 'next';   // fall back to PATH and let it fail loudly if absent
+})();
+
 const API = path.join(root, 'src/app/api');
 const STASH = path.join(root, '.api-stash');
 const OUT = path.join(root, 'out');
@@ -33,7 +45,7 @@ try {
   fs.rmSync(OUT, { recursive: true, force: true });
   fs.rmSync(path.join(root, '.next'), { recursive: true, force: true });
 
-  execSync('next build', {
+  execSync(`${NEXT} build`, {
     stdio: 'inherit',
     env: {
       ...process.env,

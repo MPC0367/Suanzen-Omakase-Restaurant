@@ -11,7 +11,8 @@ npm run build && npm run start
 npm run check:sheet  # prove the Google Sheet connection works
 ```
 
-**Getting it online: [HOSTING.md](HOSTING.md).**
+**Getting it online: [HOSTING.md](HOSTING.md)** — GitHub Pages now, Cloudflare and
+a domain later; the build works out which prefix it needs on its own.
 **Bookings into the spreadsheet: [SHEETS.md](SHEETS.md).** Every host reaches the
 sheet, GitHub Pages included — the page posts to Apps Script itself, so no server
 is needed for bookings to land.

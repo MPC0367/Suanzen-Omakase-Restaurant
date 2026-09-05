@@ -1,186 +1,119 @@
 # Getting this online
 
-You have finished the Google Sheet side. This is the other half.
+Your route is **GitHub now, Cloudflare with a domain when the client wants one.**
+This is set up for exactly that, and the switch between them is one file.
 
 ---
 
-## Read this first: GitHub Pages cannot use your sheet
+## How the two shapes differ
 
-GitHub Pages only hands out files. There is no server on it, so there is
-nowhere to keep your `SHEETS_WEBHOOK_SECRET` and nothing to make the request to
-Apps Script. **A site on GitHub Pages will not write to the spreadsheet.** Its
-booking form falls back to composing a message the guest copies into LINE.
+A site living at `github.io/Suanzen-Omakase-Restaurant/` and a site living at
+`suanzenomakase.com/` need **different builds**. Every image and link has to
+carry the `/Suanzen-Omakase-Restaurant` prefix in the first case and must not
+carry it in the second.
 
-That is a real fallback, not a broken one — but it is not what you just built.
+Getting that wrong is not subtle — it is the entire site with no styling, no
+photographs and a menu that 404s. That is precisely what was live before, because
+the build was made for a custom domain and then the CNAME was removed.
 
-So there are two shapes, and the choice is about the booking form only. The
-menu, the photographs, the gallery, both languages and the Instagram page are
-identical either way.
+You do not have to think about it. `.github/workflows/pages.yml` works it out:
 
-| | GitHub Pages | **Vercel** |
-|---|---|---|
-| Bookings reach the sheet | **no** | **yes** |
-| Booking form does | copy-to-LINE | files it, then writes the row |
-| Cost | free | free |
-| Custom domain | yes | yes |
-| Where the code lives | GitHub | GitHub |
-
-**Take Vercel.** It reads from the same GitHub repo, so you still push to
-GitHub exactly as you would have; Vercel just builds it with a server attached.
-Everything below covers both, with the Vercel path marked.
-
----
-
-## Step 1 · Put the code on GitHub
-
-The repository is already initialised and committed locally. It needs a home.
-
-**Create an empty repository.** On [github.com/new](https://github.com/new):
-
-- **Repository name:** `suan-zen` (or anything)
-- **Private** is fine — Vercel can read private repos
-- **Do not** tick "Add a README", ".gitignore" or "license". The repo already
-  has all three and an initial commit; adding them makes the first push
-  conflict.
-
-**Push.** In Terminal, from the `suan-zen` folder:
-
-```bash
-cd "/Users/natdanaisuanpong/Desktop/O2 Design Studio/suan-zen"
-git remote add origin https://github.com/YOUR-USERNAME/suan-zen.git
-git push -u origin main
+```
+if public/CNAME exists  -> build for a domain root
+else                    -> build for /<repo-name>/
 ```
 
-If GitHub asks for a password, it wants a **personal access token**, not your
-account password — GitHub Settings → Developer settings → Personal access
-tokens → Fine-grained → give it access to that one repo with *Contents: Read
-and write*. Paste the token as the password.
-
-**Check what landed.** Your secret must not be in there:
-
-```bash
-git ls-files | grep -i env
-```
-
-You should see `.env.example` and nothing else. `.env.local`, `.data/` and
-`out/` are all ignored.
+So the day the client buys a domain, you add one file and the build follows.
 
 ---
 
-## Step 2 · Deploy on Vercel — this is what makes the sheet work
+## Now · GitHub Pages
 
-1. Go to [vercel.com](https://vercel.com) and sign in **with GitHub**.
-2. **Add New… → Project**, find `suan-zen`, press **Import**.
-3. Leave every build setting alone. Vercel detects Next.js and gets it right.
-4. Before pressing Deploy, open **Environment Variables** and add two:
+Everything is committed. Two things happen on your side.
 
-   | Name | Value |
-   |---|---|
-   | `SHEETS_WEBHOOK_URL` | `https://script.google.com/macros/s/AKfycbxGeM_cfinzTauq7smWdOY-ruVhn_Ao3GVAfFOLOcws4D1fQHoyfjrH56JDLsmwG2Wthg/exec` |
-   | `SHEETS_WEBHOOK_SECRET` | the `SECRET` from the top of your `Code.gs` |
+### 1 · Push the source
 
-   Leave all three environment checkboxes ticked (Production, Preview,
-   Development).
+The repo currently holds a **built copy** of the site rather than the code, and
+its history is unrelated to this project's. Replacing it puts the source there,
+so the site rebuilds itself on every push instead of you building by hand.
 
-5. **Deploy.** Two or three minutes.
+```bash
+git push --force origin main
+```
 
-You get a URL like `suan-zen.vercel.app`. Open `/en/book`, take a booking, and
-the row appears in the sheet under the header.
+### 2 · Point Pages at the Action
 
-**A custom domain:** Vercel → Settings → Domains → add it, then point the
-domain's DNS at the records Vercel shows you. Also change `SITE` in
-`src/app/[locale]/layout.tsx` and `src/app/sitemap.ts` from the placeholder
-`https://suanzen.com` to the real domain, so canonical URLs and the sitemap are
-right.
+On GitHub: **Settings → Pages → Build and deployment → Source**, change
+**Deploy from a branch** to **GitHub Actions**. Save.
 
-**If you add or change an environment variable later**, redeploy — Vercel bakes
-them in at build time. Deployments → ⋯ → Redeploy.
+That is the whole setup. From then on, every `git push` rebuilds and redeploys.
+
+Watch it run under the repo's **Actions** tab. A green tick means the new site is
+live at https://mpc0367.github.io/Suanzen-Omakase-Restaurant/ within a minute.
+
+The build refuses to publish a site whose booking form cannot reach the
+spreadsheet, so a green tick also means bookings are wired.
 
 ---
 
-## Step 2 (alternative) · GitHub Pages, without the sheet
+## Later · Cloudflare and the client's domain
 
-Only if you have decided the copy-to-LINE fallback is enough.
+Two ways, depending on whether you want to keep GitHub Pages alive.
 
-1. Push as in Step 1.
-2. Repo → **Settings → Pages → Source → GitHub Actions**.
+### Option 1 — Cloudflare Pages builds from the repo (recommended)
 
-That is all. `.github/workflows/pages.yml` is already in the repo: it builds the
-static export on every push and works out whether the site sits at
-`you.github.io/suan-zen/` or at a domain root, so asset paths come out right
-without you touching anything.
+In the Cloudflare dashboard: **Workers & Pages → Create → Pages → Connect to Git**,
+pick this repository, then set:
 
-Watch it run under the **Actions** tab. First run takes about three minutes.
-
-**Custom domain:** put the bare domain in `public/CNAME` (one line, no
-`https://`), commit, and set it under Settings → Pages. The workflow notices the
-file and builds for a root path.
-
----
-
-## Step 3 · Test the connection from your own machine
-
-Before or after deploying, you can prove the sheet link works:
-
-```bash
-cd "/Users/natdanaisuanpong/Desktop/O2 Design Studio/suan-zen"
-```
-
-Open `.env.local` and paste your secret after `SHEETS_WEBHOOK_SECRET=` — the URL
-is already filled in. Then:
-
-```bash
-npm run check:sheet
-```
-
-It pings the deployment, checks the secret, and writes one row labelled
-`SZ-CHECK` that you can delete. If something is wrong it tells you which of the
-three things it was.
-
-To try the whole flow locally:
-
-```bash
-npm run build && npm run start
-```
-
-then open <http://localhost:4321/en/book>.
-
----
-
-## What is already in the repo
-
-You do not need to create any of these.
-
-| | |
+| Field | Value |
 |---|---|
-| `.github/workflows/pages.yml` | builds and publishes to GitHub Pages on every push |
-| `.github/workflows/ci.yml` | typechecks, builds, exports and runs the browser QA suite on every push and pull request |
-| `.env.example` | the template; the real values go in `.env.local`, which is ignored |
-| `.gitignore` | keeps out `node_modules`, `out/`, screenshots, **`.env*.local`** and **`.data/`** (real guest names and phone numbers) |
-| `.nvmrc` | Node 22, so CI and your machine agree |
-| `.editorconfig`, `.gitattributes` | consistent formatting and line endings |
-| `tools/sheet-webhook.gs` | the Apps Script you already deployed, kept under version control |
-| `scripts/check-sheet.mjs` | `npm run check:sheet` |
-| `scripts/export.mjs` | `npm run export` — the static build |
+| Framework preset | **None** |
+| Build command | `npm run export` |
+| Build output directory | `out` |
+| Node version | `22` |
+
+Add two environment variables — the same public pair the Action uses:
+
+```
+NEXT_PUBLIC_SHEET_URL   https://script.google.com/macros/s/AKfycbxGeM_.../exec
+NEXT_PUBLIC_SHEET_KEY   szpk_jCMrkhtmzqLb-ROl
+```
+
+Note there is **no `--base`** in that build command. Cloudflare serves from the
+domain root, which is exactly what a plain `npm run export` produces. Then attach
+the client's domain under **Custom domains**.
+
+### Option 2 — keep GitHub Pages, put the domain on it
+
+Create `public/CNAME` containing just the domain:
+
+```bash
+echo "suanzenomakase.com" > public/CNAME && git add public/CNAME && git commit -m "Add the domain" && git push
+```
+
+The workflow sees that file and switches to a root build on its own. Then point
+the domain's DNS at GitHub Pages.
 
 ---
 
-## If a booking does not reach the sheet
+## Editing the site from here on
 
-The booking is never lost. It is written to `.data/reservations.jsonl` on the
-server **before** the sheet is contacted, so it can always be re-entered by
-hand. The API response says what happened:
+```bash
+npm run dev          # http://localhost:4321 — see changes as you type
+git add -A && git commit -m "what changed" && git push
+```
 
-| `sheet` in the response | meaning | fix |
-|---|---|---|
-| `written` | the row is in the spreadsheet | — |
-| `not_configured` | the two variables are not set | add them, then redeploy |
-| `rejected` | script answered but refused | `SECRET` mismatch — or you edited `Code.gs` without deploying a **new version** |
-| `timeout` / `error` | the script could not be reached | wrong URL, or access is not set to *Anyone* |
+The push rebuilds and redeploys. You never build by hand again.
 
-On Vercel you can see it under Deployments → the deployment → **Functions →
-Logs**; failures are logged with the booking's reference.
+---
 
-The single most common cause is the last one in the `rejected` row: in Apps
-Script, saving is not deploying. **Deploy → Manage deployments → edit (pencil) →
-Version: New version → Deploy.**
+## What is NOT needed any more
+
+**Vercel.** Earlier notes recommended it, because the booking form used to need a
+server to hold a secret. It does not: the browser posts to Apps Script directly,
+so a plain static host reaches the spreadsheet. Vercel still works if you ever
+want the server-side API route, but nothing requires it.
+
+**Building and committing the `out/` folder.** The Action does it. `out/` is
+gitignored on purpose — a built copy in the repo is how the live site drifted out
+of sync with the code in the first place.

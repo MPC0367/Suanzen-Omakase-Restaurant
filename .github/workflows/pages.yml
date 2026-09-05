@@ -38,8 +38,24 @@ jobs:
             echo "path=/${{ github.event.repository.name }}" >> "$GITHUB_OUTPUT"
           fi
 
+      # These two are deliberately public: with no server, the browser posts to
+      # Apps Script itself, so both values ship inside the page and anyone who
+      # views source can read them. They are NOT secrets and must not be put in
+      # Actions secrets, which would only hide them from you. What guards the
+      # spreadsheet is MAX_PER_HOUR in tools/sheet-webhook.gs.
       - name: Build the static site
+        env:
+          NEXT_PUBLIC_SHEET_URL: https://script.google.com/macros/s/AKfycbxGeM_cfinzTauq7smWdOY-ruVhn_Ao3GVAfFOLOcws4D1fQHoyfjrH56JDLsmwG2Wthg/exec
+          NEXT_PUBLIC_SHEET_KEY: szpk_jCMrkhtmzqLb-ROl
         run: node scripts/export.mjs --base "${{ steps.base.outputs.path }}"
+
+      - name: Refuse to ship a build that cannot reach the sheet
+        run: |
+          if ! grep -rq '/macros/s/' out/_next/static/chunks; then
+            echo "::error::The booking form would fall back to LINE. The sheet keys did not reach the build."
+            exit 1
+          fi
+          echo "Bookings will post to the spreadsheet."
 
       - uses: actions/upload-pages-artifact@v3
         with:
