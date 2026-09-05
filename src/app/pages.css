@@ -283,12 +283,14 @@
   overflow-x: auto; overflow-y: hidden;
   scrollbar-width: none; -ms-overflow-style: none;
   padding-inline: var(--gutter); padding-bottom: 0.6rem;
-  scroll-snap-type: x proximity;
+  /* The rail drifts, so snapping is off here too — see .warm__item. */
 }
 .warm::-webkit-scrollbar { display: none; }
 .warm.is-dragging { cursor: grabbing; user-select: none; }
 .warm__track { display: flex; gap: clamp(0.8rem, 1.8vw, 1.5rem); list-style: none; padding: 0; margin: 0; }
-.warm__item { flex: 0 0 auto; scroll-snap-align: center; }
+/* No scroll-snap: it fights the drift, dragging the rail back to the nearest
+   photograph every time the animation nudges it a fraction of a pixel. */
+.warm__item { flex: 0 0 auto; }
 .warm__item--portrait  { width: clamp(13rem, 52vw, 21rem); }
 .warm__item--square    { width: clamp(15rem, 60vw, 25rem); }
 .warm__item--landscape { width: clamp(17rem, 72vw, 31rem); }

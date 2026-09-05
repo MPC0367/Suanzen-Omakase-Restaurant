@@ -26,7 +26,6 @@ export default function Chrome({ locale }: { locale: Locale }) {
   const [hidden, setHidden] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [resOpen, setResOpen] = useState(false);
-  const [wiping, setWiping] = useState(false);
 
   useReveal();
   useWorld();
@@ -77,18 +76,12 @@ export default function Chrome({ locale }: { locale: Locale }) {
   const other: Locale = locale === "en" ? "th" : "en";
   const switchLang = useCallback(() => {
     const rest = pathname.replace(/^\/(en|th)/, "") || "";
-    const next = `/${other}${rest}`;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) { router.push(next); return; }
+    // The curtain covers the change — it is raised by the route change itself,
+    // so there is nothing to time here beyond keeping the guest's place.
     const y = window.scrollY;
-    setWiping(true);
-    window.setTimeout(() => {
-      router.push(next);
-      // Hold the guest's place in the page across the change.
-      window.setTimeout(() => window.scrollTo(0, y), 40);
-      window.setTimeout(() => setWiping(false), 260);
-    }, 330);
-  }, [other, pathname, router]);
+    router.push(`/${other}${rest}`);
+    window.setTimeout(() => window.scrollTo(0, y), 40);
+  }, [pathname, other, router]);
 
   const nav = [
     { href: asset(`/${locale}#courses`), label: t.nav.courses },
@@ -169,7 +162,6 @@ export default function Chrome({ locale }: { locale: Locale }) {
       <ReservationDrawer open={resOpen} onClose={() => setResOpen(false)} locale={locale} />
 
       {/* The aperture that carries the language change. */}
-      <div className={`wipe ${wiping ? "is-on" : ""}`} aria-hidden="true"><span /></div>
     </>
   );
 }

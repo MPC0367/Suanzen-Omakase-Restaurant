@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRailDrift } from "@/lib/useRailDrift";
 import Media from "./Media";
 import { gallerySequence } from "@/lib/slots";
 import { getDict, type Locale } from "@/content/dictionary";
@@ -26,135 +27,10 @@ export default function Gallery({ locale }: { locale: Locale }) {
   }));
   const [open, setOpen] = useState<number | null>(null);
   const rail = useRef<HTMLDivElement>(null);
-  /* Anything that should stop the drift: a pointer on the rail, a drag, an
-     open lightbox, keyboard focus inside it, or the tab being hidden.
-     This used to be a counter incremented and decremented by five separate
-     pairs of listeners, and any unpaired event leaked a permanent pause — a
-     press on a photograph focused its button, focusout never came, and the
-     rail never drifted again for the rest of the visit. Asking the DOM each
-     frame instead cannot get stuck, because nothing is remembered. */
-  const dragging = useRef(false);
-  const lightboxOpen = useRef(false);
   const opener = useRef<HTMLButtonElement | null>(null);
   const closeBtn = useRef<HTMLButtonElement>(null);
 
-  /* ── The rail drifts on its own ───────────────────────────────────────────
-     The track is rendered twice, so when the scroll passes the halfway mark it
-     jumps back by exactly half and the seam is invisible. It moves slowly —
-     this is a restaurant, not a carousel — and stops the moment anyone touches
-     it, focuses inside it, opens a photograph, or leaves the tab. Reduced
-     motion turns it off entirely and leaves the rail hand-scrollable. */
-  useEffect(() => {
-    const el = rail.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    let raf = 0;
-    let last = 0;
-    const SPEED = 22; // px per second — a drift, not a carousel
-
-    /* The position is accumulated here rather than read back from the element.
-       scrollLeft reports whole pixels, so a 0.36px-per-frame increment read
-       back as 0 every frame and the rail never moved at all. */
-    let pos = el.scrollLeft;
-
-    const tick = (now: number) => {
-      const dt = last ? Math.min((now - last) / 1000, 0.05) : 0;
-      last = now;
-      /* :focus-visible rather than plain focus — a mouse click leaves focus on
-         the button it pressed, and that should not stop the rail for ever. */
-      const paused =
-        document.hidden ||
-        lightboxOpen.current ||
-        dragging.current ||
-        el.matches(":hover") ||
-        !!el.querySelector(":focus-visible");
-      if (!paused) {
-        // If anything else moved the rail (a wheel, a drag), take its position.
-        if (Math.abs(el.scrollLeft - pos) > 2) pos = el.scrollLeft;
-        const half = el.scrollWidth / 2;
-        pos += SPEED * dt;
-        if (half > 0 && pos >= half) pos -= half;
-        el.scrollLeft = pos;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  /* The lightbox holds the drift while it is open. */
-  useEffect(() => {
-    lightboxOpen.current = open !== null;
-  }, [open]);
-
-  // ── Drag to pan the rail, without breaking normal page scrolling. ─────────
-  useEffect(() => {
-    const el = rail.current;
-    if (!el) return;
-    let down = false, startX = 0, startLeft = 0, moved = 0;
-    const onDown = (e: PointerEvent) => {
-      if (e.pointerType === "touch") return; // let touch scroll natively
-      down = true; moved = 0;
-      startX = e.clientX; startLeft = el.scrollLeft;
-      // Capture is taken in onMove, once this is actually a drag. Capturing
-      // here would retarget the click to the rail and the photograph inside it
-      // could never be opened with a mouse.
-      el.classList.add("is-dragging");
-      dragging.current = true;
-    };
-    const onMove = (e: PointerEvent) => {
-      if (!down) return;
-      const dx = e.clientX - startX;
-      moved = Math.max(moved, Math.abs(dx));
-      if (moved > 4 && !el.hasPointerCapture(e.pointerId)) el.setPointerCapture(e.pointerId);
-      if (moved > 4) el.scrollLeft = startLeft - dx;
-    };
-    const onUp = (e: PointerEvent) => {
-      if (!down) return;
-      down = false;
-      dragging.current = false;
-      if (el.hasPointerCapture?.(e.pointerId)) el.releasePointerCapture(e.pointerId);
-      el.classList.remove("is-dragging");
-      // A drag should not also open the lightbox. Only a real pointerup is
-      // followed by a click, though — a cancelled gesture produces none, so
-      // arming the blocker there would leave it waiting to eat the visitor's
-      // next genuine click on a photograph.
-      if (moved > 6 && e.type === "pointerup") {
-        const stop = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
-        el.addEventListener("click", stop, { capture: true, once: true });
-        // And if that click never comes, do not leave it armed.
-        window.setTimeout(() => el.removeEventListener("click", stop, true), 400);
-      }
-    };
-    // The browser's own image drag would otherwise cancel the pan.
-    const onDragStart = (e: Event) => e.preventDefault();
-    const onTouchStart = () => { dragging.current = true; };
-    const onTouchEnd = () => { dragging.current = false; };
-    el.addEventListener("touchstart", onTouchStart, { passive: true });
-    el.addEventListener("touchend", onTouchEnd, { passive: true });
-    el.addEventListener("touchcancel", onTouchEnd, { passive: true });
-    el.addEventListener("dragstart", onDragStart);
-    el.addEventListener("pointerdown", onDown);
-    el.addEventListener("pointermove", onMove);
-    // Bound to the window, not the rail: releasing the mouse away from the
-    // rail — grabbing a photo and moving vertically off it — never sent
-    // pointerup here, so the autoscroll's pause counter was never decremented
-    // and the drift stopped for the rest of the visit.
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
-    return () => {
-      el.removeEventListener("touchstart", onTouchStart);
-      el.removeEventListener("touchend", onTouchEnd);
-      el.removeEventListener("touchcancel", onTouchEnd);
-      el.removeEventListener("dragstart", onDragStart);
-      el.removeEventListener("pointerdown", onDown);
-      el.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-    };
-  }, []);
+  useRailDrift(rail, { paused: open !== null });
 
   const close = useCallback(() => {
     setOpen(null);

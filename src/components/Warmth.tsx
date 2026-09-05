@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRailDrift } from "@/lib/useRailDrift";
 import Image from "next/image";
 import { asset } from "@/lib/asset";
 import { peopleShots } from "@/content/media";
@@ -23,53 +24,7 @@ export default function Warmth({ locale }: { locale: Locale }) {
   const closeBtn = useRef<HTMLButtonElement>(null);
 
   // Drag to pan with a mouse; touch scrolls natively.
-  useEffect(() => {
-    const el = rail.current;
-    if (!el) return;
-    let down = false, startX = 0, startLeft = 0, moved = 0;
-    const onDown = (e: PointerEvent) => {
-      if (e.pointerType === "touch") return;
-      down = true; moved = 0; startX = e.clientX; startLeft = el.scrollLeft;
-      // Capture is taken in onMove, once this is actually a drag. Capturing
-      // here retargets the click to the rail, and the photograph inside it
-      // could never be opened with a mouse.
-      el.classList.add("is-dragging");
-    };
-    const onMove = (e: PointerEvent) => {
-      if (!down) return;
-      const dx = e.clientX - startX;
-      moved = Math.max(moved, Math.abs(dx));
-      if (moved > 4 && !el.hasPointerCapture(e.pointerId)) el.setPointerCapture(e.pointerId);
-      if (moved > 4) el.scrollLeft = startLeft - dx;
-    };
-    const onUp = (e: PointerEvent) => {
-      if (!down) return;
-      down = false;
-      if (el.hasPointerCapture?.(e.pointerId)) el.releasePointerCapture(e.pointerId);
-      el.classList.remove("is-dragging");
-      // Only a real pointerup is followed by a click. Arming this after a
-      // cancelled gesture left it waiting to swallow the next genuine click.
-      if (moved > 6 && e.type === "pointerup") {
-        const stop = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
-        el.addEventListener("click", stop, { capture: true, once: true });
-        window.setTimeout(() => el.removeEventListener("click", stop, true), 400);
-      }
-    };
-    // The browser's own image drag would otherwise cancel the pan.
-    const onDragStart = (e: Event) => e.preventDefault();
-    el.addEventListener("dragstart", onDragStart);
-    el.addEventListener("pointerdown", onDown);
-    el.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
-    return () => {
-      el.removeEventListener("dragstart", onDragStart);
-      el.removeEventListener("pointerdown", onDown);
-      el.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-    };
-  }, []);
+  useRailDrift(rail, { paused: open !== null });
 
   const close = useCallback(() => { setOpen(null); opener.current?.focus(); }, []);
   const step = useCallback((d: number) => {
@@ -111,15 +66,22 @@ export default function Warmth({ locale }: { locale: Locale }) {
     <>
       <div className="warm" ref={rail}>
         <ul className="warm__track">
-          {shots.map((s, i) => (
+          {/* Rendered twice: the second pass is the seamless half of the loop
+              and is hidden from assistive tech so nothing is announced twice. */}
+          {[...shots, ...shots].map((s, idx) => {
+            const i = idx % shots.length;
+            const isClone = idx >= shots.length;
+            return (
             <li
-              key={s.file}
+              key={`${s.file}-${idx}`}
               className={`warm__item warm__item--${s.orientation}`}
+              aria-hidden={isClone || undefined}
             >
               <button
                 className="warm__btn"
                 onClick={(e) => { opener.current = e.currentTarget; setOpen(i); }}
                 aria-label={locale === "th" ? s.altTh : s.altEn}
+                tabIndex={isClone ? -1 : undefined}
               >
                 <Image
                   src={asset(s.file)}
@@ -131,7 +93,8 @@ export default function Warmth({ locale }: { locale: Locale }) {
                 />
               </button>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </div>
 

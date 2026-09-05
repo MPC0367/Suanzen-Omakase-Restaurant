@@ -8,52 +8,14 @@ import { heroShot } from "@/lib/slots";
 import { restaurant } from "@/content/restaurant";
 import { getDict, type Locale } from "@/content/dictionary";
 
-/**
- * The threshold. Darkness, an amber point, the circle resolving, and then the
- * aperture opens onto the page. It is gated on the page actually being ready
- * and capped at ~1.1s — it never holds a guest back to look cinematic, it is
- * skipped entirely on a repeat visit in the same session, and reduced-motion
- * users go straight in.
- */
-function useThreshold() {
-  const [phase, setPhase] = useState<"hold" | "open" | "done">("hold");
-
-  useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let seen = false;
-    try { seen = sessionStorage.getItem("sz:seen") === "1"; } catch { /* private mode */ }
-
-    if (reduce || seen) { setPhase("done"); return; }
-
-    try { sessionStorage.setItem("sz:seen", "1"); } catch { /* ignore */ }
-
-    const open = window.setTimeout(() => setPhase("open"), 820);
-    const done = window.setTimeout(() => setPhase("done"), 1720);
-    return () => { clearTimeout(open); clearTimeout(done); };
-  }, []);
-
-  return phase;
-}
-
 export default function Hero({ locale }: { locale: Locale }) {
   const t = getDict(locale);
-  const phase = useThreshold();
-  const open = phase !== "hold";
+  // The curtain is global now — it covers the first load, every move between
+  // pages and the change of language. The hero simply arrives.
+  const open = true;
 
   return (
     <>
-      {phase !== "done" && (
-        <div className={`thr ${open ? "is-open" : ""}`} aria-hidden="true">
-          <div className="thr__circle">
-            <svg viewBox="0 0 120 120" width="120" height="120">
-              <circle className="thr__ring" cx="60" cy="60" r="52" fill="none"
-                      stroke="var(--amber)" strokeWidth="1" />
-              <circle className="thr__dot" cx="60" cy="60" r="4" fill="var(--amber)" />
-            </svg>
-          </div>
-        </div>
-      )}
-
       <section className={`hero ${open ? "is-in" : ""}`} data-section-world="night">
         <div className="hero__media">
           <Media

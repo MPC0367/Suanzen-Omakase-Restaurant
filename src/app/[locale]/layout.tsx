@@ -9,6 +9,7 @@ import { dict, locales, type Locale } from "@/content/dictionary";
 import { restaurant } from "@/content/restaurant";
 import { courses } from "@/content/courses";
 import { SITE, OG_IMAGE } from "@/lib/site";
+import Curtain from "@/components/Curtain";
 
 /* Display — Mincho for Latin and the Japanese numerals in the course names.
    Thai has no glyphs in Shippori, so the stack falls through to Noto Serif
@@ -164,6 +165,7 @@ export default async function LocaleLayout({
     >
       <body>
         <a className="skip" href="#main">{t.a11y.skip}</a>
+        <Curtain />
         {children}
         <script
           type="application/ld+json"

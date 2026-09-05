@@ -1,29 +1,39 @@
-/* ═══ THRESHOLD ═════════════════════════════════════════════════════════════ */
-.thr {
+/* ═══ THE CURTAIN ═══════════════════════════════════════════════════════════
+   The restaurant's seal on a dark ground: on the first load, between pages,
+   and across the change of language. It is decorative and aria-hidden, so it
+   never takes a pointer event — left able to, it sat over the navigation
+   swallowing clicks until React hydrated. The stylesheet also lifts it on its
+   own, so a visitor whose JavaScript never arrives is not left in the dark. */
+.curtain {
   position: fixed; inset: 0; z-index: 100;
   background: var(--ink-deep);
   display: grid; place-items: center;
-  transition: opacity 620ms var(--ease), visibility 620ms;
-
-  /* It is decorative and aria-hidden, so it must never eat a click. Without
-     this it sat over the navigation until React hydrated — measured at 2.8s
-     to 5.7s on the live site against an intended 1.72s, because the timers
-     that dismiss it only start after hydration. */
   pointer-events: none;
-
-  /* And it clears itself even if the JavaScript never arrives. The React
-     unmount is still the normal path; this only stops a failed hydration
-     leaving a guest looking at a black screen for ever. */
-  animation: thrFail 1ms linear 2600ms forwards;
+  opacity: 1;
+  transition: opacity 620ms var(--ease), visibility 620ms;
+  animation: curtainFail 1ms linear 2600ms forwards;
 }
-.thr.is-open { opacity: 0; visibility: hidden; }
-@keyframes thrFail { to { opacity: 0; visibility: hidden; } }
-@media (prefers-reduced-motion: reduce) { .thr { animation-delay: 0ms; } }
-.thr__dot  { animation: thrDot 820ms var(--ease-out) both; transform-origin: center; }
-.thr__ring { animation: thrRing 900ms var(--ease-out) 160ms both; transform-origin: center;
-             stroke-dasharray: 327; }
-@keyframes thrDot  { 0% { opacity: 0; transform: scale(0.2); } 55% { opacity: 1; } 100% { opacity: 1; transform: scale(1); } }
-@keyframes thrRing { 0% { stroke-dashoffset: 327; opacity: 0; } 30% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
+.curtain.is-lifting { opacity: 0; visibility: hidden; }
+@keyframes curtainFail { to { opacity: 0; visibility: hidden; } }
+
+.curtain__mark {
+  display: block;
+  animation: curtainMark 900ms var(--ease-out) both;
+}
+.curtain__mark .mark {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber) 34%, transparent),
+              0 0 60px color-mix(in srgb, var(--amber) 12%, transparent);
+}
+@keyframes curtainMark {
+  0%   { opacity: 0; transform: scale(0.86); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .curtain { animation-delay: 0ms; }
+  .curtain__mark { animation: none; }
+}
 
 /* ═══ HERO ══════════════════════════════════════════════════════════════════ */
 .hero {
