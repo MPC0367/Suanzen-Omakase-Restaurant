@@ -174,7 +174,17 @@ export default function BookingForm({ locale }: { locale: Locale }) {
           body: JSON.stringify({
             key: SHEET_KEY,
             company: "",                        // honeypot, always empty here
-            booking: { ...draft, locale, receivedAt: new Date().toISOString() },
+            // The sheet is read by a person taking the booking, so send what
+            // they need to read — "19.00" and "Zen Ni", not the ids the form
+            // uses internally. The API route does the same mapping for the
+            // server path; the two must agree or the columns come out blank.
+            booking: {
+              ...draft,
+              seatingTime: booking.seatings.find((s) => s.id === draft.seatingId)?.time ?? "",
+              course: activeCourses.find((c) => c.id === draft.courseId)?.nameEn ?? "Undecided",
+              locale,
+              receivedAt: new Date().toISOString(),
+            },
           }),
           redirect: "follow",
         });
