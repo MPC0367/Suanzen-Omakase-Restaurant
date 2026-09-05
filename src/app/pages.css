@@ -221,6 +221,16 @@
   pointer-events: none;
 }
 .live--fallback .live__frame { height: auto; overflow: visible; border: 0; }
+/* On the home page the strip sits in the section's own column, so it lays out
+   across whatever width it is given rather than the page's three. */
+.livestrip--teaser { margin-bottom: 0; }
+.livestrip--teaser .live__frame { height: clamp(21rem, 38vh, 28rem); }
+/* auto-fit with a real minimum: three across when there is room, then two,
+   then one — never three squeezed to 180px each. */
+.livestrip--teaser { grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
+@media (min-width: 46rem) { .livestrip--teaser { grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); } }
+@media (min-width: 70rem) { .livestrip--teaser { grid-template-columns: repeat(3, 1fr); } }
+
 .live__link { color: var(--fg-quiet); }
 .live__link:hover { color: var(--accent); }
 
@@ -246,8 +256,14 @@
 /* The archive — our layout, our type, linking out to each post. */
 .iggrid {
   display: grid; gap: clamp(1rem, 2.4vw, 1.8rem);
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  /* 20rem, not 17: Instagram's embed clips its own handle and profile button
+     below about 320px, and these are its embeds now rather than our tiles. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
 }
+/* The archive holds real embeds now, at a shorter height than the three
+   pinned posts above it — a grid of full-length captions would be a wall. */
+.iggrid .live__frame { height: clamp(20rem, 34vh, 26rem); }
+.iggrid .live--fallback .live__frame { height: auto; }
 .tile {
   display: grid; gap: 0.9rem; align-content: start;
   padding: 0.75rem 0.75rem 1.1rem;

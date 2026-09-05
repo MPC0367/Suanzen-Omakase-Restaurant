@@ -374,11 +374,14 @@
 .social__text { grid-column: 1 / -1; display: grid; gap: 1.1rem; align-content: center; }
 .social__link { margin-top: 0.4rem; }
 .social__handle { font-size: 0.84rem; color: var(--fg-faint); letter-spacing: 0.08em; }
-.social__rail { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }
-.social__rail > *:nth-child(2) { margin-top: clamp(1.2rem, 4vh, 3rem); }
+/* The strip holds Instagram's own embeds, and they do not compress: below
+   roughly 320px the handle is clipped and the profile button falls off the
+   edge. So it runs the full width under the text rather than sharing the row,
+   and drops a column at a time instead of squeezing. */
+.social__rail { grid-column: 1 / -1; margin-top: clamp(1.6rem, 4vh, 2.8rem); }
 @media (min-width: 64rem) {
-  .social__text { grid-column: 1 / span 5; }
-  .social__rail { grid-column: 7 / -1; gap: clamp(0.7rem, 1.4vw, 1.2rem); }
+  .social__text { grid-column: 1 / span 6; }
+  .social__rail { grid-column: 1 / -1; }
 }
 
 /* ═══ 09 VISIT ══════════════════════════════════════════════════════════════ */

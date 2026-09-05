@@ -24,10 +24,12 @@ const Arrow = () => (
    is the supported way to show them, so the pictures stay current on their own
    and nothing is copied off the platform.
 
-   Only the three posts the restaurant has pinned are embedded. Asking Instagram
-   for a dozen at once gets you a dozen blank white frames — it serves them
-   slowly and unevenly — and a wall of white boxes is worse than no pictures at
-   all. Three load reliably. The rest of the archive is ours to lay out. */
+   Asking Instagram for a dozen at once gets you a dozen blank white frames: it
+   serves them slowly and unevenly. So each post is embedded only once it comes
+   near the viewport, which staggers the requests naturally as someone scrolls
+   and keeps the number in flight small. Anything that still fails to arrive
+   falls back to a tile of our own artwork with the date, the category and a
+   link — a card that says something true rather than an empty white box. */
 declare global {
   interface Window {
     instgrm?: { Embeds: { process: () => void } };
@@ -107,13 +109,35 @@ function ArchiveTile({ post, locale, index }: { post: Post; locale: Locale; inde
 }
 
 /* ── A live post, straight from Instagram ─────────────────────────────────── */
-function LivePost({ post, locale }: { post: Post; locale: Locale }) {
+function LivePost({
+  post, locale, lazy = false, index = 0,
+}: { post: Post; locale: Locale; lazy?: boolean; index?: number }) {
   const t = getDict(locale);
   const host = useRef<HTMLDivElement>(null);
+  const shell = useRef<HTMLElement>(null);
   const [state, setState] = useState<"loading" | "embedded" | "fallback">("loading");
+  /* A lazy post holds its blockquote back until it is worth asking for.
+     Instagram's process() sweeps every blockquote on the page at once, so
+     what staggers the requests is when each one enters the DOM, not when
+     process() is called. */
+  const [armed, setArmed] = useState(!lazy);
   const url = permalink(post);
 
   useEffect(() => {
+    if (armed) return;
+    const el = shell.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") { setArmed(true); return; }
+    const io = new IntersectionObserver(
+      (entries) => { if (entries.some((e) => e.isIntersecting)) { setArmed(true); io.disconnect(); } },
+      { rootMargin: "600px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [armed]);
+
+  useEffect(() => {
+    if (!armed) return;
     let stop = false;
     loadEmbedScript().then((ok) => {
       if (stop) return;
@@ -135,12 +159,12 @@ function LivePost({ post, locale }: { post: Post; locale: Locale }) {
       }, 500);
     });
     return () => { stop = true; };
-  }, []);
+  }, [armed]);
 
   return (
-    <article className={`live live--${state}`}>
+    <article className={`live live--${state}`} ref={shell}>
       <div className="live__frame" ref={host}>
-        {state !== "fallback" ? (
+        {armed && state !== "fallback" ? (
           <blockquote
             className="instagram-media"
             data-instgrm-permalink={url}
@@ -149,7 +173,7 @@ function LivePost({ post, locale }: { post: Post; locale: Locale }) {
             style={{ margin: 0, minWidth: 0, width: "100%" }}
           />
         ) : (
-          <ArchiveTile post={post} locale={locale} index={0} />
+          <ArchiveTile post={post} locale={locale} index={index} />
         )}
       </div>
       {state === "embedded" && (
@@ -158,6 +182,23 @@ function LivePost({ post, locale }: { post: Post; locale: Locale }) {
         </a>
       )}
     </article>
+  );
+}
+
+/**
+ * The three pinned posts on their own — what the home page shows. They are the
+ * real embeds rather than photographs of ours dressed up to look like them:
+ * most of the archive was shot for the restaurant or came off Facebook, so an
+ * Instagram handle over one would be saying something untrue.
+ */
+export function LiveStrip({ locale }: { locale: Locale }) {
+  const featured = useMemo(() => allPosts.filter((p) => p.pinned).slice(0, 3), []);
+  return (
+    <div className="livestrip livestrip--teaser">
+      {featured.map((p, i) => (
+        <LivePost key={p.code} post={p} locale={locale} index={i} lazy />
+      ))}
+    </div>
   );
 }
 
@@ -228,7 +269,7 @@ export default function InstagramFeed({ locale }: { locale: Locale }) {
       ) : (
         <div className="iggrid">
           {shown.map((p, i) => (
-            <ArchiveTile key={p.code} post={p} locale={locale} index={i} />
+            <LivePost key={p.code} post={p} locale={locale} index={i} lazy />
           ))}
         </div>
       )}

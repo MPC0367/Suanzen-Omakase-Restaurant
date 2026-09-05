@@ -93,16 +93,5 @@ export const gallerySequence: Photo[] = [
   takeAny({ category: ["food"] }),
 ].filter(Boolean) as Photo[];
 
-/* The Instagram teaser on the home page. It used to render three pieces of
-   procedural artwork with no photograph behind them, so the section that
-   promises "what is on the counter now" showed three blurred plates. A dish,
-   a table of guests, the room — the three things the feed is actually full
-   of. */
-export const socialShots: Photo[] = [
-  takeAny({ category: ["food"], orientation: "portrait" }, { category: ["food"] }),
-  takeAny({ category: ["people"], preferWarm: true }, { category: ["chef"] }),
-  takeAny({ category: ["interior"] }, { category: ["detail"] }, { category: ["exterior"] }),
-].filter(Boolean) as Photo[];
-
 /** Everything not spoken for, for the "more" grid. */
 export const remaining = photos.filter((p) => !taken.has(p.file));
