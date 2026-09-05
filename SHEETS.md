@@ -26,14 +26,20 @@ path entirely — GitHub Pages and the artifact both write to the sheet on their
 |---|---|
 | Google Sheet + Apps Script project | you did this |
 | Web app deployed, URL live | `…AKfycbxGeM_…/exec` — answers, verified |
-| `Code.gs` that accepts browser posts | written, in `tools/sheet-webhook.gs` — **not yet pasted in** |
-| Booking form in the artifact | done, tested against your live URL |
+| `Code.gs` that accepts browser posts | pasted and deployed as **Version 2**, 5 Sep 2026 |
+| Booking form in the artifact | done, verified end to end — a real submit filed `SZ-PA6WCE` |
 | Booking form in the GitHub Pages build | done (`src/components/BookingForm.tsx`) |
 | Booking form on a Node host | done (`src/app/api/reservations/route.ts`) |
 
-The artifact's form already reaches Google. I submitted a test booking and the live
-script replied `{"ok":false,"error":"bad_secret"}` — that is your *old* `Code.gs`
-turning the request away, which proves the whole path works except the last door.
+**Verified working on 5 Sep 2026.** A booking submitted from the artifact's own form
+in a real browser landed in the sheet as `SZ-PA6WCE`, newest row at the top. Also
+confirmed: the leading zero survives on `081 234 5678`, `19.00` stays text rather
+than becoming the number 19, Thai renders, and the script correctly refuses a wrong
+key, a filled honeypot, a missing phone and a malformed phone — none of which wrote
+a row.
+
+Steps 1–3 below are therefore **done**. Step 4 (GitHub Pages) is the only one left,
+and only if you want the public site writing to the sheet as well as the artifact.
 
 ---
 
@@ -150,3 +156,4 @@ JSON; only the label changed. **Do not "fix" that content type.**
 | `rate_limited` | More than 60 in an hour. Raise `MAX_PER_HOUR` |
 | Form shows the LINE message instead | The sheet was unreachable; the booking is not lost, the guest is handed a message to send. Check the `/exec` URL still answers |
 | Nothing at all, no error | Look at the browser console, and confirm **Who has access: Anyone** |
+| A reply that reads `{"ok":true,"service":"suan zen booking sink"}` instead of a reference | That is `doGet`'s answer coming back to a `POST`. Seen only on the first few calls immediately after a redeploy, and it cleared on its own. Retry before investigating |
