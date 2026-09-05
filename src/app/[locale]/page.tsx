@@ -7,7 +7,7 @@ import Hero from "@/components/Hero";
 import Reserve from "@/components/Reserve";
 import Warmth from "@/components/Warmth";
 import ALaCarte from "@/components/ALaCarte";
-import { gardenShots, counterShot, afterDarkShot } from "@/lib/slots";
+import { gardenShots, counterShot, afterDarkShot, socialShots } from "@/lib/slots";
 import Footer from "@/components/Footer";
 import { Mark } from "@/components/Mark";
 import { restaurant } from "@/content/restaurant";
@@ -184,10 +184,21 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <p className="social__handle u-numeral">{t.social.handle}</p>
             </div>
             <div className="social__rail reveal" style={{ ["--d" as string]: "120ms" }}>
-              {(["dusk", "ember", "night"] as const).map((tone, i) => (
-                <Media key={tone} seed={`social-${i}`} tone={tone} motif="plate" ratio={0.8}
-                       alt="" sizes="30vw" />
-              ))}
+              {(["dusk", "ember", "night"] as const).map((tone, i) => {
+                const shot = socialShots[i];
+                return (
+                  <Media
+                    key={tone}
+                    src={shot?.file}
+                    seed={`social-${i}`}
+                    tone={tone}
+                    motif="plate"
+                    ratio={0.8}
+                    alt={shot ? (locale === "th" ? shot.altTh : shot.altEn) : ""}
+                    sizes="30vw"
+                  />
+                );
+              })}
             </div>
           </div>
         </section>
