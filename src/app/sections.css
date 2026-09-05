@@ -275,6 +275,11 @@
     linear-gradient(to top, rgba(6,6,4,0.5), rgba(6,6,4,0.2));
 }
 .dark__in { max-width: 46rem; display: grid; gap: 1.1rem; }
+/* The label, heading and lede sit inside a plain .reveal wrapper here rather
+   than the .secthead every other section uses, so the grid gap never reached
+   them and the heading's descenders overlapped the paragraph below by ~5px.
+   Same 0.9rem the other section heads use. */
+.dark__in .reveal { display: grid; gap: 0.9rem; }
 .dark { color: #f0ebe0; }
 .dark .u-lede { color: #bfb7a7; }
 .dark__hours { display: grid; gap: 0.35rem; margin-top: 0.8rem; }
@@ -292,6 +297,10 @@
 }
 .rail::-webkit-scrollbar { display: none; }
 .rail.is-dragging { cursor: grabbing; user-select: none; }
+/* Without this the browser starts its own image drag-and-drop as soon as a
+   press lands on a photograph, which fires pointercancel and kills the rail's
+   pan mid-gesture — measured failing 6 times in 8. */
+.rail img, .warm img { -webkit-user-drag: none; user-drag: none; }
 .rail__track { display: flex; gap: clamp(0.85rem, 1.8vw, 1.6rem); list-style: none; padding: 0; margin: 0; }
 .rail__item { flex: 0 0 auto; width: clamp(15rem, 62vw, 30rem); }
 @media (min-width: 64rem) { .rail__item { width: calc(var(--r) * clamp(19rem, 30vh, 27rem)); max-width: 44rem; } }
@@ -313,10 +322,28 @@
 .lb__stage {
   position: relative; display: grid; place-items: center;
   padding: clamp(1rem, 4vh, 3rem) var(--gutter) 0; min-height: 0;
+  /* The stage is stacked above the scrim and covers it, so a click on the
+     dark surround never reached the scrim's close handler. Letting clicks
+     fall through — except on the photograph itself — restores
+     click-outside-to-dismiss, which most people reach for before Escape. */
+  pointer-events: none;
 }
-.lb__media { max-height: 78svh; max-width: min(100%, 62rem); width: auto; height: auto; }
+.lb__stage img, .lb__stage .lb__photo { pointer-events: auto; }
+
+/* The gallery lightbox shows its photo through <Media>, whose artwork plate is
+   an <svg> carrying only a viewBox. Making the plate part of the flow gave the
+   svg its 300px intrinsic default, and since the photograph is an absolutely
+   positioned fill image it inherited that box — so the "enlarged" view came
+   out 300px wide, smaller than the thumbnail that opened it. The plate goes
+   back to being absolute, and the stage box is sized here instead. */
+.lb__media {
+  width: min(92vw, 62rem);
+  height: min(78svh, 62vw);
+  max-height: 78svh;
+}
 .lb__media.media { aspect-ratio: auto !important; }
-.lb__media .media__plate { position: relative; }
+.lb__media .media__plate { position: absolute; inset: 0; }
+.lb__media .media__img { object-fit: contain; }
 .lb__bar {
   position: relative; display: flex; align-items: center; justify-content: space-between;
   gap: 1rem; padding: 1rem var(--gutter) max(1.1rem, env(safe-area-inset-bottom));

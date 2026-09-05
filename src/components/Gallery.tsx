@@ -27,9 +27,14 @@ export default function Gallery({ locale }: { locale: Locale }) {
   const [open, setOpen] = useState<number | null>(null);
   const rail = useRef<HTMLDivElement>(null);
   /* Anything that should stop the drift: a pointer on the rail, a drag, an
-     open lightbox, keyboard focus inside it, or the tab being hidden. */
-  const held = useRef(0);
-  const hold = (on: boolean) => { held.current = Math.max(0, held.current + (on ? 1 : -1)); };
+     open lightbox, keyboard focus inside it, or the tab being hidden.
+     This used to be a counter incremented and decremented by five separate
+     pairs of listeners, and any unpaired event leaked a permanent pause — a
+     press on a photograph focused its button, focusout never came, and the
+     rail never drifted again for the rest of the visit. Asking the DOM each
+     frame instead cannot get stuck, because nothing is remembered. */
+  const dragging = useRef(false);
+  const lightboxOpen = useRef(false);
   const opener = useRef<HTMLButtonElement | null>(null);
   const closeBtn = useRef<HTMLButtonElement>(null);
 
@@ -56,7 +61,15 @@ export default function Gallery({ locale }: { locale: Locale }) {
     const tick = (now: number) => {
       const dt = last ? Math.min((now - last) / 1000, 0.05) : 0;
       last = now;
-      if (!held.current && !document.hidden) {
+      /* :focus-visible rather than plain focus — a mouse click leaves focus on
+         the button it pressed, and that should not stop the rail for ever. */
+      const paused =
+        document.hidden ||
+        lightboxOpen.current ||
+        dragging.current ||
+        el.matches(":hover") ||
+        !!el.querySelector(":focus-visible");
+      if (!paused) {
         // If anything else moved the rail (a wheel, a drag), take its position.
         if (Math.abs(el.scrollLeft - pos) > 2) pos = el.scrollLeft;
         const half = el.scrollWidth / 2;
@@ -68,29 +81,12 @@ export default function Gallery({ locale }: { locale: Locale }) {
     };
     raf = requestAnimationFrame(tick);
 
-    const onEnter = () => hold(true);
-    const onLeave = () => hold(false);
-    const onFocusIn = () => hold(true);
-    const onFocusOut = () => hold(false);
-    el.addEventListener("pointerenter", onEnter);
-    el.addEventListener("pointerleave", onLeave);
-    el.addEventListener("focusin", onFocusIn);
-    el.addEventListener("focusout", onFocusOut);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      el.removeEventListener("pointerenter", onEnter);
-      el.removeEventListener("pointerleave", onLeave);
-      el.removeEventListener("focusin", onFocusIn);
-      el.removeEventListener("focusout", onFocusOut);
-    };
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   /* The lightbox holds the drift while it is open. */
   useEffect(() => {
-    if (open === null) return;
-    hold(true);
-    return () => hold(false);
+    lightboxOpen.current = open !== null;
   }, [open]);
 
   // ── Drag to pan the rail, without breaking normal page scrolling. ─────────
@@ -106,7 +102,7 @@ export default function Gallery({ locale }: { locale: Locale }) {
       // here would retarget the click to the rail and the photograph inside it
       // could never be opened with a mouse.
       el.classList.add("is-dragging");
-      hold(true);
+      dragging.current = true;
     };
     const onMove = (e: PointerEvent) => {
       if (!down) return;
@@ -118,32 +114,45 @@ export default function Gallery({ locale }: { locale: Locale }) {
     const onUp = (e: PointerEvent) => {
       if (!down) return;
       down = false;
-      hold(false);
+      dragging.current = false;
       if (el.hasPointerCapture?.(e.pointerId)) el.releasePointerCapture(e.pointerId);
       el.classList.remove("is-dragging");
-      // A drag should not also open the lightbox.
-      if (moved > 6) {
+      // A drag should not also open the lightbox. Only a real pointerup is
+      // followed by a click, though — a cancelled gesture produces none, so
+      // arming the blocker there would leave it waiting to eat the visitor's
+      // next genuine click on a photograph.
+      if (moved > 6 && e.type === "pointerup") {
         const stop = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
         el.addEventListener("click", stop, { capture: true, once: true });
+        // And if that click never comes, do not leave it armed.
+        window.setTimeout(() => el.removeEventListener("click", stop, true), 400);
       }
     };
-    const onTouchStart = () => hold(true);
-    const onTouchEnd = () => hold(false);
+    // The browser's own image drag would otherwise cancel the pan.
+    const onDragStart = (e: Event) => e.preventDefault();
+    const onTouchStart = () => { dragging.current = true; };
+    const onTouchEnd = () => { dragging.current = false; };
     el.addEventListener("touchstart", onTouchStart, { passive: true });
     el.addEventListener("touchend", onTouchEnd, { passive: true });
     el.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    el.addEventListener("dragstart", onDragStart);
     el.addEventListener("pointerdown", onDown);
     el.addEventListener("pointermove", onMove);
-    el.addEventListener("pointerup", onUp);
-    el.addEventListener("pointercancel", onUp);
+    // Bound to the window, not the rail: releasing the mouse away from the
+    // rail — grabbing a photo and moving vertically off it — never sent
+    // pointerup here, so the autoscroll's pause counter was never decremented
+    // and the drift stopped for the rest of the visit.
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
     return () => {
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchend", onTouchEnd);
       el.removeEventListener("touchcancel", onTouchEnd);
+      el.removeEventListener("dragstart", onDragStart);
       el.removeEventListener("pointerdown", onDown);
       el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("pointerup", onUp);
-      el.removeEventListener("pointercancel", onUp);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
     };
   }, []);
 

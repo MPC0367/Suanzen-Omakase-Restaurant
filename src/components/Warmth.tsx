@@ -20,6 +20,7 @@ export default function Warmth({ locale }: { locale: Locale }) {
   const rail = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<number | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
+  const closeBtn = useRef<HTMLButtonElement>(null);
 
   // Drag to pan with a mouse; touch scrolls natively.
   useEffect(() => {
@@ -46,20 +47,27 @@ export default function Warmth({ locale }: { locale: Locale }) {
       down = false;
       if (el.hasPointerCapture?.(e.pointerId)) el.releasePointerCapture(e.pointerId);
       el.classList.remove("is-dragging");
-      if (moved > 6) {
-        el.addEventListener("click", (ev) => { ev.stopPropagation(); ev.preventDefault(); },
-          { capture: true, once: true });
+      // Only a real pointerup is followed by a click. Arming this after a
+      // cancelled gesture left it waiting to swallow the next genuine click.
+      if (moved > 6 && e.type === "pointerup") {
+        const stop = (ev: Event) => { ev.stopPropagation(); ev.preventDefault(); };
+        el.addEventListener("click", stop, { capture: true, once: true });
+        window.setTimeout(() => el.removeEventListener("click", stop, true), 400);
       }
     };
+    // The browser's own image drag would otherwise cancel the pan.
+    const onDragStart = (e: Event) => e.preventDefault();
+    el.addEventListener("dragstart", onDragStart);
     el.addEventListener("pointerdown", onDown);
     el.addEventListener("pointermove", onMove);
-    el.addEventListener("pointerup", onUp);
-    el.addEventListener("pointercancel", onUp);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
     return () => {
+      el.removeEventListener("dragstart", onDragStart);
       el.removeEventListener("pointerdown", onDown);
       el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("pointerup", onUp);
-      el.removeEventListener("pointercancel", onUp);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
     };
   }, []);
 
@@ -71,10 +79,23 @@ export default function Warmth({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (open === null) return;
     document.body.style.overflow = "hidden";
+    // Without this the dialog opened with focus still on the button behind the
+    // scrim, and Tab walked the hidden page — the gallery lightbox has always
+    // done both; this one did not.
+    closeBtn.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
       else if (e.key === "ArrowRight") step(1);
       else if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "Tab") {
+        const items = Array.from(
+          document.querySelectorAll<HTMLElement>(".lb__ctl"),
+        ).filter((n) => n.offsetParent !== null);
+        if (!items.length) return;
+        const a = items[0], z = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); }
+        else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -128,7 +149,7 @@ export default function Warmth({ locale }: { locale: Locale }) {
             />
           </div>
           <div className="lb__bar">
-            <button className="lb__ctl lb__x" onClick={close} aria-label={t.gallery.close}>
+            <button ref={closeBtn} className="lb__ctl lb__x" onClick={close} aria-label={t.gallery.close}>
               <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
                 <path d="M2 2l14 14M16 2L2 16" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
