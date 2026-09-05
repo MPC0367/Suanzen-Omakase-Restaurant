@@ -317,3 +317,41 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
   .rv{opacity:1!important;transform:none!important}
 }
+
+/* ── the booking form ────────────────────────────────────────────────────── */
+.bk{display:grid;gap:1.4rem;max-width:52rem}
+.bk__grid{display:grid;gap:1.1rem}
+@media(min-width:44rem){.bk__grid{grid-template-columns:1fr 1fr}.fld--wide{grid-column:1/-1}}
+.fld{display:grid;gap:.4rem;border:0;padding:0;margin:0;min-width:0}
+.fld__l{font-size:.86rem;letter-spacing:.05em;color:var(--fg-quiet)}
+.req,.opt{font-style:normal;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;margin-inline-start:.5em}
+.req{color:var(--accent)}
+.opt{color:var(--fg-faint)}
+[lang="th"] .req,[lang="th"] .opt{text-transform:none;letter-spacing:.02em}
+.fld input,.fld select,.fld textarea{
+  width:100%;padding:.85rem .95rem;min-height:48px;
+  background:transparent;color:var(--fg);border:1px solid var(--rule);border-radius:2px;
+  font-size:1rem;font-family:inherit;transition:border-color var(--t-ui) var(--ease)}
+.fld select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23a29b8c' stroke-width='1.4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+[data-world="day"] .fld select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%235d564a' stroke-width='1.4'/%3E%3C/svg%3E")}
+.fld input:hover,.fld select:hover,.fld textarea:hover{border-color:var(--rule-strong)}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--amber)}
+.fld input[aria-invalid="true"]{border-color:#e8794b}
+.fld textarea{resize:vertical;line-height:1.6}
+.fld__hint{font-size:.8rem;color:var(--fg-faint)}
+.seats{display:grid;grid-template-columns:repeat(auto-fit,minmax(5.5rem,1fr));gap:.5rem}
+.seat{display:grid;place-items:center;padding:.85rem .5rem;min-height:52px;border:1px solid var(--rule);border-radius:2px;cursor:pointer;font-family:var(--serif);font-size:1.15rem;transition:border-color var(--t-ui) var(--ease),background-color var(--t-ui) var(--ease),color var(--t-ui) var(--ease)}
+.seat:hover{border-color:var(--rule-strong)}
+.seat input{position:absolute;opacity:0;width:1px;height:1px}
+.seat:has(input:checked){background:var(--amber);border-color:var(--amber);color:#14110a}
+.seat:has(input:focus-visible){outline:2px solid var(--amber);outline-offset:2px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.bk__pending{font-size:.86rem;color:var(--accent);border-inline-start:2px solid var(--accent);padding-inline-start:.9rem}
+.bk__err{font-size:.9rem;color:#e8794b}
+[data-world="day"] .bk__err{color:#b8431a}
+.bk__acts{display:flex;align-items:center;gap:1.4rem;flex-wrap:wrap}
+.bk__done{display:grid;gap:1.1rem;max-width:40rem}
+.bk__done .display{outline:none}
+.bk__ref{display:grid;gap:.3rem}
+.bk__refcode{font-family:var(--serif);font-size:clamp(1.8rem,5vw,2.6rem);color:var(--accent);letter-spacing:.06em}
+.resv{text-align:start}

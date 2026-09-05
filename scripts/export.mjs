@@ -46,6 +46,18 @@ try {
   restore();
 }
 
+// Say plainly whether this build can reach the sheet, so nobody ships a site
+// that quietly falls back to LINE and only finds out from an empty spreadsheet.
+{
+  const wired = process.env.NEXT_PUBLIC_SHEET_URL && process.env.NEXT_PUBLIC_SHEET_KEY;
+  console.log(
+    wired
+      ? '\n  bookings → Google Sheet (posted from the browser)'
+      : '\n  bookings → LINE only. Set NEXT_PUBLIC_SHEET_URL and NEXT_PUBLIC_SHEET_KEY\n' +
+        '                 in .env.local to write to the sheet instead.',
+  );
+}
+
 // GitHub Pages runs Jekyll by default, which drops folders beginning with _.
 fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
 

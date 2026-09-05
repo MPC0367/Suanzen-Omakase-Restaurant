@@ -28,6 +28,15 @@ type Draft = {
    booking to LINE instead. Baked in at build time by `npm run export`. */
 const STATIC = process.env.NEXT_PUBLIC_STATIC_EXPORT === "1";
 
+/**
+ * With no server there is nobody to keep a secret, so the static build posts
+ * to Apps Script itself. Both values below ship inside the page and anyone
+ * may read them; the script's own rate limit is what guards the sheet.
+ * Unset, the form falls back to handing the booking to LINE.
+ */
+const SHEET_URL = process.env.NEXT_PUBLIC_SHEET_URL ?? "";
+const SHEET_KEY = process.env.NEXT_PUBLIC_SHEET_KEY ?? "";
+
 const EMPTY: Draft = {
   date: "", seatingId: "", courseId: "undecided", party: 0,
   name: "", phone: "", lineId: "", notes: "",
@@ -145,10 +154,39 @@ export default function BookingForm({ locale }: { locale: Locale }) {
   const submit = async () => {
     if (!validateStep(4)) { setStep(4); return; }
 
-    // No server in the static build — hand the booking to LINE instead of
-    // pretending to file it.
+    // No server in the static build. Post straight to the sheet when it is
+    // configured; otherwise hand the booking to LINE rather than pretend to
+    // file it.
     if (STATIC) {
-      setDone({ ref: "", message: composeMessage() });
+      if (!SHEET_URL || !SHEET_KEY) {
+        setDone({ ref: "", message: composeMessage() });
+        return;
+      }
+      setSending(true);
+      setSendError("");
+      try {
+        // text/plain keeps this a "simple" request, so the browser sends it
+        // without a preflight — Apps Script answers preflights with a redirect
+        // and the booking would never arrive.
+        const res = await fetch(SHEET_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            key: SHEET_KEY,
+            company: "",                        // honeypot, always empty here
+            booking: { ...draft, locale, receivedAt: new Date().toISOString() },
+          }),
+          redirect: "follow",
+        });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || "failed");
+        setDone({ ref: json.ref || "" });
+      } catch {
+        // The sheet is unreachable; the booking is not lost, it goes to LINE.
+        setDone({ ref: "", message: composeMessage() });
+      } finally {
+        setSending(false);
+      }
       return;
     }
 

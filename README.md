@@ -11,9 +11,10 @@ npm run build && npm run start
 npm run check:sheet  # prove the Google Sheet connection works
 ```
 
-**Getting it online: [HOSTING.md](HOSTING.md).** Note that GitHub Pages cannot
-write to the booking spreadsheet — it has no server — so Vercel is the right
-host if you want bookings to land in the sheet.
+**Getting it online: [HOSTING.md](HOSTING.md).**
+**Bookings into the spreadsheet: [SHEETS.md](SHEETS.md).** Every host reaches the
+sheet, GitHub Pages included — the page posts to Apps Script itself, so no server
+is needed for bookings to land.
 
 ---
 

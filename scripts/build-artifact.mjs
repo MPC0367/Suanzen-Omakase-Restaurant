@@ -176,6 +176,19 @@ const courseBlock = (c, i) => {
 };
 
 /* ── the page ──────────────────────────────────────────────────────────────── */
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxGeM_cfinzTauq7smWdOY-ruVhn_Ao3GVAfFOLOcws4D1fQHoyfjrH56JDLsmwG2Wthg/exec';
+const PUBLIC_KEY = fs.readFileSync(path.join('scripts', '.public-key'), 'utf8').trim();
+
+/* The next 30 days, minus anything the restaurant is closed. */
+const today = new Date();
+const days = [];
+for (let i = 1; i <= 30; i++) {
+  const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+  days.push(d.toISOString().slice(0, 10));
+}
+
+const seatings = restaurant.seatings;
+
 const html = `<title>Suan Zen Omakase</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -401,16 +414,88 @@ ${fs.readFileSync(path.join('scripts', 'artifact.css'), 'utf8')}
   </div>
 </section>
 
-<section class="section resv" data-world="night">
-  <div class="shell resv__in">
-    <span class="u-label" ${t(en.reserve.label, th.reserve.label)}>${esc(en.reserve.label)}</span>
-    <h2 class="display display--hero" ${t(en.reserve.heading, th.reserve.heading)}>${esc(en.reserve.heading)}</h2>
-    <p class="u-lede" ${t(en.reserve.body, th.reserve.body)}>${esc(en.reserve.body)}</p>
-    <div class="resv__acts">
-      <a class="btn" href="${restaurant.contact.lineUrl}" target="_blank" rel="noopener" ${t(en.cta.reserveLine, th.cta.reserveLine)}>${esc(en.cta.reserveLine)}</a>
-      <a class="link" href="tel:${restaurant.contact.phoneIntl}">${esc(restaurant.contact.phone)}</a>
+<section class="section resv" id="book" data-world="night">
+  <div class="shell">
+    <header class="secthead secthead--wide">
+      <span class="u-label" ${t(en.reserve.label, th.reserve.label)}>${esc(en.reserve.label)}</span>
+      <h2 class="display display--section" ${t(en.booking.heading, th.booking.heading)}>${esc(en.booking.heading)}</h2>
+      <p class="u-lede" ${t(en.booking.intro, th.booking.intro)}>${esc(en.booking.intro)}</p>
+    </header>
+
+    <form class="bk" id="bkForm" novalidate>
+      <div class="bk__grid">
+        <label class="fld">
+          <span class="fld__l" ${t(en.booking.steps[0], th.booking.steps[0])}>${esc(en.booking.steps[0])}</span>
+          <input type="date" name="date" required min="${days[0]}" max="${days[days.length - 1]}" value="${days[2]}">
+        </label>
+
+        <fieldset class="fld fld--wide">
+          <legend class="fld__l" ${t(en.booking.seatingHeading, th.booking.seatingHeading)}>${esc(en.booking.seatingHeading)}</legend>
+          <div class="seats">
+            ${seatings.map((time, i) => `<label class="seat"><input type="radio" name="seating" value="${time}"${i === 3 ? ' checked' : ''}><span>${time}</span></label>`).join('')}
+          </div>
+        </fieldset>
+
+        <label class="fld">
+          <span class="fld__l" ${t(en.booking.steps[2], th.booking.steps[2])}>${esc(en.booking.steps[2])}</span>
+          <select name="course">
+            ${courses.map((c) => `<option value="${esc(c.nameEn)}" data-en="${esc(`${c.nameEn} — ${c.count} ${c.unitEn} — ${baht(c.price)}++`)}" data-th="${esc(`${c.nameTh} — ${c.count} ${c.unitTh} — ${baht(c.price)}++`)}">${esc(c.nameEn)} — ${c.count} ${esc(c.unitEn)} — ${baht(c.price)}++</option>`).join('')}
+            <option value="undecided" ${t(en.booking.undecided, th.booking.undecided)}>${esc(en.booking.undecided)}</option>
+          </select>
+        </label>
+
+        <label class="fld">
+          <span class="fld__l" ${t(en.booking.partyHeading, th.booking.partyHeading)}>${esc(en.booking.partyHeading)}</span>
+          <select name="party">
+            ${[1, 2, 3, 4, 5].map((n) => `<option value="${n}"${n === 2 ? ' selected' : ''}>${n}</option>`).join('')}
+          </select>
+        </label>
+
+        <label class="fld">
+          <span class="fld__l">${esc(en.booking.name)} <i class="req" ${t(en.booking.required, th.booking.required)}>${esc(en.booking.required)}</i></span>
+          <input type="text" name="name" required autocomplete="name">
+        </label>
+
+        <label class="fld">
+          <span class="fld__l">${esc(en.booking.phone)} <i class="req" ${t(en.booking.required, th.booking.required)}>${esc(en.booking.required)}</i></span>
+          <input type="tel" name="phone" required inputmode="tel" autocomplete="tel" placeholder="08X XXX XXXX">
+        </label>
+
+        <label class="fld">
+          <span class="fld__l">${esc(en.booking.lineId)} <i class="opt" ${t(en.booking.optional, th.booking.optional)}>${esc(en.booking.optional)}</i></span>
+          <input type="text" name="lineId">
+        </label>
+
+        <label class="fld fld--wide">
+          <span class="fld__l" ${t(en.booking.notes, th.booking.notes)}>${esc(en.booking.notes)}</span>
+          <textarea name="notes" rows="3"></textarea>
+          <span class="fld__hint" ${t(en.booking.notesHint, th.booking.notesHint)}>${esc(en.booking.notesHint)}</span>
+        </label>
+
+        <!-- Left empty by people; filled in by bots. -->
+        <div class="hp" aria-hidden="true"><label>Company<input type="text" name="company" tabindex="-1" autocomplete="off"></label></div>
+      </div>
+
+      <p class="bk__pending" ${t(en.booking.notConfirmed, th.booking.notConfirmed)}>${esc(en.booking.notConfirmed)}</p>
+      <p class="bk__err" id="bkErr" hidden role="alert"></p>
+
+      <div class="bk__acts">
+        <button class="btn" type="submit" id="bkSend" ${t(en.booking.submit, th.booking.submit)}>${esc(en.booking.submit)}</button>
+        <a class="link" href="${restaurant.contact.lineUrl}" target="_blank" rel="noopener" ${t(en.cta.reserveLine, th.cta.reserveLine)}>${esc(en.cta.reserveLine)}</a>
+        <a class="link" href="tel:${restaurant.contact.phoneIntl}">${esc(restaurant.contact.phone)}</a>
+      </div>
+    </form>
+
+    <div class="bk__done" id="bkDone" hidden>
+      <h3 class="display display--course" ${t(en.booking.doneHeading, th.booking.doneHeading)} tabindex="-1">${esc(en.booking.doneHeading)}</h3>
+      <p class="bk__ref"><span class="u-label" ${t(en.booking.reference, th.booking.reference)}>${esc(en.booking.reference)}</span><span class="bk__refcode" id="bkRef"></span></p>
+      <p class="bk__pending" ${t(en.booking.notConfirmed, th.booking.notConfirmed)}>${esc(en.booking.notConfirmed)}</p>
+      <p class="u-lede" ${t(en.booking.doneBody, th.booking.doneBody)}>${esc(en.booking.doneBody)}</p>
+      <div class="bk__acts">
+        <a class="btn" href="${restaurant.contact.lineUrl}" target="_blank" rel="noopener" ${t(en.booking.doneLine, th.booking.doneLine)}>${esc(en.booking.doneLine)}</a>
+        <button class="link" type="button" id="bkAgain" ${t(en.booking.doneAgain, th.booking.doneAgain)}>${esc(en.booking.doneAgain)}</button>
+      </div>
     </div>
-    <p class="resv__note" ${t(restaurant.reservation.leadTimeNote.en, restaurant.reservation.leadTimeNote.th)}>${esc(restaurant.reservation.leadTimeNote.en)}</p>
   </div>
 </section>
 </main>
@@ -464,6 +549,10 @@ ${fs.readFileSync(path.join('scripts', 'artifact.css'), 'utf8')}
 <script>
 /* Every photograph, once. Elements carry data-p / data-shot / data-full ids. */
 window.SZ_P = ${JSON.stringify(Object.fromEntries(blobs))};
+window.SZ_SHEET = ${JSON.stringify(SHEET_URL)};
+/* Public by design: it travels inside this page. The rate limit in the Apps
+   Script is what actually guards the sheet. */
+window.SZ_KEY = ${JSON.stringify(PUBLIC_KEY)};
 </script>
 <script>
 ${fs.readFileSync(path.join('scripts', 'artifact.js'), 'utf8')}

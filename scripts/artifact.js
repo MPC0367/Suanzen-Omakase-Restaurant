@@ -284,6 +284,98 @@
     tx = null;
   }, { passive: true });
 
+  /* ── booking → the restaurant's spreadsheet ─────────────────────────────
+     The browser posts straight to the Apps Script bound to the sheet. The
+     content type is text/plain on purpose: it keeps this a "simple" request,
+     so there is no CORS preflight — application/json is refused outright. */
+  var form = document.getElementById('bkForm');
+  if (form) {
+    var errEl = document.getElementById('bkErr');
+    var sendBtn = document.getElementById('bkSend');
+    var doneEl = document.getElementById('bkDone');
+
+    var phoneOk = function (v) {
+      return /^(0\d{8,9}|\+66\d{8,9})$/.test(String(v || '').replace(/[\s\-()]/g, ''));
+    };
+    var say = function (msg) {
+      errEl.textContent = msg;
+      errEl.hidden = !msg;
+    };
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var f = new FormData(form);
+      var name = String(f.get('name') || '').trim();
+      var phone = String(f.get('phone') || '').trim();
+
+      form.querySelectorAll('[aria-invalid]').forEach(function (el) { el.removeAttribute('aria-invalid'); });
+      if (name.length < 2) {
+        form.name.setAttribute('aria-invalid', 'true'); form.name.focus();
+        return say(lang === 'th' ? 'กรุณากรอกชื่อ' : 'Please tell us your name.');
+      }
+      if (!phoneOk(phone)) {
+        form.phone.setAttribute('aria-invalid', 'true'); form.phone.focus();
+        return say(lang === 'th' ? 'กรุณากรอกเบอร์มือถือที่ติดต่อได้'
+                                 : 'Please give a Thai mobile number we can reach you on.');
+      }
+      say('');
+
+      var payload = {
+        key: window.SZ_KEY,
+        company: f.get('company') || '',
+        booking: {
+          receivedAt: new Date().toISOString(),
+          date: f.get('date') || '',
+          seatingTime: f.get('seating') || '',
+          course: f.get('course') || '',
+          party: Number(f.get('party') || 0),
+          name: name, phone: phone,
+          lineId: String(f.get('lineId') || '').trim(),
+          notes: String(f.get('notes') || '').trim(),
+          locale: lang
+        }
+      };
+
+      var busy = lang === 'th' ? 'กำลังส่ง…' : 'Sending…';
+      var idle = sendBtn.getAttribute('data-' + lang) || sendBtn.textContent;
+      sendBtn.disabled = true;
+      sendBtn.textContent = busy;
+
+      fetch(window.SZ_SHEET, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+      })
+        .then(function (r) { return r.text(); })
+        .then(function (txt) {
+          var j = {};
+          try { j = JSON.parse(txt); } catch (e) {}
+          if (!j.ok) throw new Error(j.error || 'refused');
+          document.getElementById('bkRef').textContent = j.ref || '';
+          form.hidden = true;
+          doneEl.hidden = false;
+          doneEl.querySelector('.display').focus();
+        })
+        .catch(function () {
+          // The booking is not lost — it just has not been filed. Say so, and
+          // leave everything the guest typed on screen so LINE is one tap away.
+          say(lang === 'th'
+            ? 'ส่งไม่สำเร็จ ลองอีกครั้ง หรือทักไลน์ร้านได้เลย'
+            : "That didn't send. Please try again, or message us on LINE.");
+        })
+        .finally(function () {
+          sendBtn.disabled = false;
+          sendBtn.textContent = idle;
+        });
+    });
+
+    document.getElementById('bkAgain').addEventListener('click', function () {
+      form.reset(); form.hidden = false; doneEl.hidden = true; say('');
+      form.querySelector('input[name="name"]').focus();
+    });
+  }
+
   /* ── start in the reader's language ─────────────────────────────────── */
   var saved = null;
   try { saved = localStorage.getItem('sz:lang'); } catch (e) {}
