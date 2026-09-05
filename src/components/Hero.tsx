@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { asset } from "@/lib/asset";
 import Media from "./Media";
 import { heroShot } from "@/lib/slots";
 import { restaurant } from "@/content/restaurant";
@@ -99,11 +100,11 @@ export default function Hero({ locale }: { locale: Locale }) {
 
           <div className="hero__acts reveal" style={{ ["--d" as string]: "580ms" }}>
             <Link className="btn" href={`/${locale}/book`}>{t.cta.reserve}</Link>
-            <a className="btn btn--ghost" href={`/${locale}#courses`}>{t.cta.viewCourses}</a>
+            <a className="btn btn--ghost" href={asset(`/${locale}#courses`)}>{t.cta.viewCourses}</a>
           </div>
 
           <div className="hero__foot reveal" style={{ ["--d" as string]: "700ms" }}>
-            <a className="hero__scroll" href={`/${locale}#garden`}>
+            <a className="hero__scroll" href={asset(`/${locale}#garden`)}>
               <span className="u-label">{t.hero.scroll}</span>
               <span className="hero__line" aria-hidden="true" />
             </a>

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { asset } from "@/lib/asset";
 import { useState } from "react";
 import BrandPlate, { type Motif, type Tone } from "./BrandPlate";
 
@@ -54,7 +55,7 @@ export default function Media({
 
       {showPhoto && (
         <Image
-          src={src as string}
+          src={asset(src as string)}
           alt={alt}
           fill
           sizes={sizes}

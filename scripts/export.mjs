@@ -49,7 +49,19 @@ try {
 // Say plainly whether this build can reach the sheet, so nobody ships a site
 // that quietly falls back to LINE and only finds out from an empty spreadsheet.
 {
-  const wired = process.env.NEXT_PUBLIC_SHEET_URL && process.env.NEXT_PUBLIC_SHEET_KEY;
+  // Ask the built files, not this process. Next reads .env.local itself, so the
+  // wrapper's own environment is not evidence of what actually got compiled in.
+  const chunks = path.join(OUT, '_next');
+  let wired = false;
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (wired) return;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.js') && fs.readFileSync(full, 'utf8').includes('/macros/s/')) wired = true;
+    }
+  };
+  if (fs.existsSync(chunks)) walk(chunks);
   console.log(
     wired
       ? '\n  bookings → Google Sheet (posted from the browser)'

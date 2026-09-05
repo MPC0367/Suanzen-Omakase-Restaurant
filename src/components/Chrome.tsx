@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { asset } from "@/lib/asset";
 import { Mark, Wordmark } from "./Mark";
 import { restaurant } from "@/content/restaurant";
 import { activeCourses } from "@/content/courses";
@@ -90,13 +91,13 @@ export default function Chrome({ locale }: { locale: Locale }) {
   }, [other, pathname, router]);
 
   const nav = [
-    { href: `/${locale}#courses`, label: t.nav.courses },
-    { href: `/${locale}#garden`, label: t.nav.garden },
-    { href: `/${locale}#counter`, label: t.nav.counter },
-    { href: `/${locale}#after-dark`, label: t.nav.afterDark },
-    { href: `/${locale}#gallery`, label: t.nav.gallery },
-    { href: `/${locale}/instagram`, label: t.nav.journal },
-    { href: `/${locale}#visit`, label: t.nav.visit },
+    { href: asset(`/${locale}#courses`), label: t.nav.courses },
+    { href: asset(`/${locale}#garden`), label: t.nav.garden },
+    { href: asset(`/${locale}#counter`), label: t.nav.counter },
+    { href: asset(`/${locale}#after-dark`), label: t.nav.afterDark },
+    { href: asset(`/${locale}#gallery`), label: t.nav.gallery },
+    { href: asset(`/${locale}/instagram`), label: t.nav.journal },
+    { href: asset(`/${locale}#visit`), label: t.nav.visit },
   ];
 
   return (

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { asset } from "@/lib/asset";
 import { activeCourses, formatBaht, allDishes, type Course, type Dish } from "@/content/courses";
 import { getDict, type Locale } from "@/content/dictionary";
 
@@ -77,7 +78,7 @@ export default function Courses({ locale }: { locale: Locale }) {
           {preview ? (
             <Image
               key={preview.src}
-              src={preview.src}
+              src={asset(preview.src)}
               alt=""
               fill
               sizes="(max-width: 75rem) 0px, 30vw"
@@ -224,7 +225,7 @@ function DishRow({
       {/* On touch the picture opens under the dish, since there is no hover. */}
       {touch && shown && src && (
         <div className="dish__shot">
-          <Image src={src} alt="" width={640} height={480} className="dish__shotimg" sizes="90vw" />
+          <Image src={asset(src)} alt="" width={640} height={480} className="dish__shotimg" sizes="90vw" />
         </div>
       )}
     </li>

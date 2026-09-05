@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { asset } from "@/lib/asset";
 
 /**
  * The restaurant's own logo — the gold seal with the pine over rocks, the sun,
@@ -14,7 +15,7 @@ export function Mark({ size = 34, priority = false }: { size?: number; priority?
   return (
     <span className="mark" style={{ width: size, height: size }}>
       <Image
-        src="/brand/logo-512.jpg"
+        src={asset("/brand/logo-512.jpg")}
         alt=""
         width={size * 2}
         height={size * 2}

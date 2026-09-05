@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { asset } from "@/lib/asset";
 import { peopleShots } from "@/content/media";
 import { getDict, type Locale } from "@/content/dictionary";
 
@@ -100,7 +101,7 @@ export default function Warmth({ locale }: { locale: Locale }) {
                 aria-label={locale === "th" ? s.altTh : s.altEn}
               >
                 <Image
-                  src={s.file}
+                  src={asset(s.file)}
                   alt={locale === "th" ? s.altTh : s.altEn}
                   width={s.orientation === "portrait" ? 900 : 1200}
                   height={s.orientation === "portrait" ? 1200 : 900}
@@ -119,7 +120,7 @@ export default function Warmth({ locale }: { locale: Locale }) {
           <div className="lb__scrim" onClick={close} />
           <div className="lb__stage">
             <Image
-              src={cur.file}
+              src={asset(cur.file)}
               alt={locale === "th" ? cur.altTh : cur.altEn}
               width={1600} height={1200}
               sizes="90vw"

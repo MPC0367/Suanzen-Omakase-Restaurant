@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { asset } from "@/lib/asset";
 import { alaCarte, alaSections, alaIsPublished } from "@/content/alacarte";
 import { restaurant } from "@/content/restaurant";
 import { getDict, type Locale } from "@/content/dictionary";
@@ -37,7 +38,7 @@ export default function ALaCarte({ locale }: { locale: Locale }) {
                     <li className="ala__item" key={i}>
                       {it.photo && (
                         <Image
-                          src={it.photo}
+                          src={asset(it.photo)}
                           alt=""
                           width={160}
                           height={120}

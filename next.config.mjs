@@ -11,6 +11,11 @@
  *
  * STATIC_EXPORT is set by the export script; BASE_PATH is for a GitHub project
  * site served from /<repo>/ rather than the domain root.
+ *
+ * Next prefixes basePath onto <Link> and onto its own build assets, but NOT
+ * onto a raw <a href="/..."> or onto next/image's src once the optimiser is
+ * off — those come out absolute and 404 on a project site. So the basePath is
+ * also published to the client, and src/lib/asset.ts applies it by hand.
  */
 const isExport = process.env.STATIC_EXPORT === "1";
 const basePath = process.env.BASE_PATH || "";
@@ -19,6 +24,7 @@ const basePath = process.env.BASE_PATH || "";
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
 
   ...(isExport
     ? {
