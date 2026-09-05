@@ -116,6 +116,12 @@ function LivePost({
   const host = useRef<HTMLDivElement>(null);
   const shell = useRef<HTMLElement>(null);
   const [state, setState] = useState<"loading" | "embedded" | "fallback">("loading");
+  /* Instagram's embed carries the real caption; the frame's fixed height is
+     what hides it. So "see more" is a clipping question, not a text one —
+     nothing here has to hold a copy of the caption, and it can never drift
+     out of date against the post. */
+  const [expanded, setExpanded] = useState(false);
+  const [clipped, setClipped] = useState(false);
   /* A lazy post holds its blockquote back until it is worth asking for.
      Instagram's process() sweeps every blockquote on the page at once, so
      what staggers the requests is when each one enters the DOM, not when
@@ -147,9 +153,18 @@ function LivePost({
       const started = Date.now();
       const tick = window.setInterval(() => {
         if (stop || !host.current) { window.clearInterval(tick); return; }
-        if (host.current.querySelector("iframe")) {
+        const frame = host.current.querySelector("iframe");
+        if (frame) {
           window.clearInterval(tick);
           setState("embedded");
+          /* Instagram resizes its iframe as the post settles, so measure a
+             moment later and ask whether anything is actually being cut off
+             before offering to uncut it. */
+          window.setTimeout(() => {
+            const box = host.current;
+            if (!box) return;
+            setClipped(frame.getBoundingClientRect().height > box.clientHeight + 24);
+          }, 1200);
         } else if (Date.now() - started > 10000) {
           window.clearInterval(tick);
           setState("fallback");
@@ -162,7 +177,7 @@ function LivePost({
   }, [armed]);
 
   return (
-    <article className={`live live--${state}`} ref={shell}>
+    <article className={`live live--${state} ${expanded ? "is-open" : ""}`} ref={shell}>
       <div className="live__frame" ref={host}>
         {armed && state !== "fallback" ? (
           <blockquote
@@ -177,9 +192,21 @@ function LivePost({
         )}
       </div>
       {state === "embedded" && (
-        <a className="link-arrow live__link" href={url} target="_blank" rel="noopener noreferrer">
-          {t.journal.openOnInstagram} <Arrow />
-        </a>
+        <div className="live__acts">
+          {(clipped || expanded) && (
+            <button
+              type="button"
+              className="live__more"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+            >
+              {expanded ? t.journal.seeLess : t.journal.seeMore}
+            </button>
+          )}
+          <a className="link-arrow live__link" href={url} target="_blank" rel="noopener noreferrer">
+            {t.journal.openOnInstagram} <Arrow />
+          </a>
+        </div>
       )}
     </article>
   );
@@ -192,12 +219,79 @@ function LivePost({
  * Instagram handle over one would be saying something untrue.
  */
 export function LiveStrip({ locale }: { locale: Locale }) {
-  const featured = useMemo(() => allPosts.filter((p) => p.pinned).slice(0, 3), []);
+  const t = getDict(locale);
+  /* Pinned first, then the rest newest-first — the profile's own order. */
+  const feed = useMemo(
+    () => [...allPosts.filter((p) => p.pinned), ...allPosts.filter((p) => !p.pinned)],
+    [],
+  );
+  const track = useRef<HTMLDivElement>(null);
+  const [edge, setEdge] = useState<{ start: boolean; end: boolean }>({ start: true, end: false });
+
+  /* Which arrows are live is read off the scroller rather than tracked, so it
+     stays right however the strip was moved — arrow, wheel, touch or keyboard. */
+  const readEdges = useCallback(() => {
+    const el = track.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    // The rail is padded so a focus ring is not clipped, which means a resting
+    // scrollLeft of a few pixels rather than zero. Sub-pixel scrolling wants
+    // slack too, so neither end is judged on an exact number.
+    const SLACK = 8;
+    setEdge({ start: el.scrollLeft <= SLACK, end: el.scrollLeft >= max - SLACK });
+  }, []);
+
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    readEdges();
+    el.addEventListener("scroll", readEdges, { passive: true });
+    window.addEventListener("resize", readEdges);
+    return () => {
+      el.removeEventListener("scroll", readEdges);
+      window.removeEventListener("resize", readEdges);
+    };
+  }, [readEdges]);
+
+  const page = useCallback((dir: 1 | -1) => {
+    const el = track.current;
+    if (!el) return;
+    // A card plus its gap, so a press lands on a card edge rather than mid-photo.
+    const card = el.querySelector<HTMLElement>(".live");
+    const step = card ? card.getBoundingClientRect().width + 16 : el.clientWidth * 0.8;
+    const pageBy = Math.max(step, Math.floor(el.clientWidth / step) * step);
+    el.scrollBy({ left: dir * pageBy, behavior: "smooth" });
+  }, []);
+
   return (
-    <div className="livestrip livestrip--teaser">
-      {featured.map((p, i) => (
-        <LivePost key={p.code} post={p} locale={locale} index={i} lazy />
-      ))}
+    <div className="igcar">
+      <div className="igcar__track livestrip livestrip--teaser" ref={track}>
+        {feed.map((p, i) => (
+          <LivePost key={p.code} post={p} locale={locale} index={i} lazy />
+        ))}
+      </div>
+
+      <div className="igcar__nav">
+        <button
+          type="button" className="igcar__btn" onClick={() => page(-1)}
+          disabled={edge.start} aria-label={t.journal.prevPosts}
+        >
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" aria-hidden="true">
+            <path d="M5 1L1 6l4 5M1 6h14" stroke="currentColor" strokeWidth="1.4"
+                  strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <span className="igcar__count u-numeral">{feed.length}</span>
+        <button
+          type="button" className="igcar__btn" onClick={() => page(1)}
+          disabled={edge.end} aria-label={t.journal.nextPosts}
+        >
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" aria-hidden="true">
+            <path d="M11 1l4 5-4 5M15 6H1" stroke="currentColor" strokeWidth="1.4"
+                  strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

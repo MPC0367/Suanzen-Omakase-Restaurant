@@ -221,15 +221,62 @@
   pointer-events: none;
 }
 .live--fallback .live__frame { height: auto; overflow: visible; border: 0; }
+/* Expanded: the frame lets the embed run to its full height, so Instagram's
+   own caption is read in full. The fade goes with it — there is nothing left
+   being cut off for it to soften. */
+.live.is-open .live__frame { height: auto; }
+.live.is-open .live__frame::after { display: none; }
+
+.live__acts { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+.live__more {
+  font: inherit; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); background: none; border: 0; padding: 0.4rem 0; cursor: pointer;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  min-height: 44px;
+}
+.live__more:hover { border-bottom-color: var(--accent); }
+:lang(th) .live__more { text-transform: none; letter-spacing: 0.02em; font-size: 0.9rem; }
 /* On the home page the strip sits in the section's own column, so it lays out
    across whatever width it is given rather than the page's three. */
-.livestrip--teaser { margin-bottom: 0; }
+/* ── The home page's carousel ─────────────────────────────────────────────
+   All twelve posts on one rail rather than three fixed cards, moved by the
+   arrows beneath it. Instagram's embed clips its own handle and drops the
+   profile button below about 320px, so a card never goes narrower than 20rem
+   — the rail scrolls instead of squeezing. */
+.igcar { display: grid; gap: 1.1rem; }
+.igcar__track {
+  margin-bottom: 0;
+  display: grid; grid-auto-flow: column;
+  /* .livestrip sets grid-template-columns for the journal page's fixed row of
+     three. Here every card is an auto column, so the template has to be
+     cleared or the first three would take their width from it and come out a
+     quarter the size of the rest. */
+  grid-template-columns: none;
+  grid-auto-columns: minmax(20rem, 1fr);
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none; -ms-overflow-style: none;
+  /* Room for the focus ring, which a clipping scroller would otherwise cut. */
+  padding: 3px;
+}
+.igcar__track::-webkit-scrollbar { display: none; }
+.igcar__track > .live { scroll-snap-align: start; }
+@media (min-width: 46rem) { .igcar__track { grid-auto-columns: minmax(20rem, calc(50% - 0.6rem)); } }
+@media (min-width: 78rem) { .igcar__track { grid-auto-columns: minmax(20rem, calc(33.333% - 0.8rem)); } }
 .livestrip--teaser .live__frame { height: clamp(21rem, 38vh, 28rem); }
-/* auto-fit with a real minimum: three across when there is room, then two,
-   then one — never three squeezed to 180px each. */
-.livestrip--teaser { grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
-@media (min-width: 46rem) { .livestrip--teaser { grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); } }
-@media (min-width: 70rem) { .livestrip--teaser { grid-template-columns: repeat(3, 1fr); } }
+
+.igcar__nav { display: flex; align-items: center; gap: 0.9rem; }
+.igcar__btn {
+  width: 44px; height: 44px; display: grid; place-content: center;
+  border: 1px solid var(--rule-strong); border-radius: 50%;
+  color: var(--fg); background: none; cursor: pointer;
+  transition: border-color var(--t-ui) var(--ease), color var(--t-ui) var(--ease),
+              opacity var(--t-ui) var(--ease);
+}
+.igcar__btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.igcar__btn:disabled { opacity: 0.28; cursor: default; }
+.igcar__count { font-size: 0.78rem; color: var(--fg-faint); letter-spacing: 0.12em; }
+.igcar__count::before { content: "01 / "; }
 
 .live__link { color: var(--fg-quiet); }
 .live__link:hover { color: var(--accent); }
