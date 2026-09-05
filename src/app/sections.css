@@ -4,8 +4,21 @@
   background: var(--ink-deep);
   display: grid; place-items: center;
   transition: opacity 620ms var(--ease), visibility 620ms;
+
+  /* It is decorative and aria-hidden, so it must never eat a click. Without
+     this it sat over the navigation until React hydrated — measured at 2.8s
+     to 5.7s on the live site against an intended 1.72s, because the timers
+     that dismiss it only start after hydration. */
+  pointer-events: none;
+
+  /* And it clears itself even if the JavaScript never arrives. The React
+     unmount is still the normal path; this only stops a failed hydration
+     leaving a guest looking at a black screen for ever. */
+  animation: thrFail 1ms linear 2600ms forwards;
 }
 .thr.is-open { opacity: 0; visibility: hidden; }
+@keyframes thrFail { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .thr { animation-delay: 0ms; } }
 .thr__dot  { animation: thrDot 820ms var(--ease-out) both; transform-origin: center; }
 .thr__ring { animation: thrRing 900ms var(--ease-out) 160ms both; transform-origin: center;
              stroke-dasharray: 327; }

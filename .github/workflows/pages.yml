@@ -47,6 +47,10 @@ jobs:
         env:
           NEXT_PUBLIC_SHEET_URL: https://script.google.com/macros/s/AKfycbxGeM_cfinzTauq7smWdOY-ruVhn_Ao3GVAfFOLOcws4D1fQHoyfjrH56JDLsmwG2Wthg/exec
           NEXT_PUBLIC_SHEET_KEY: szpk_jCMrkhtmzqLb-ROl
+          # Where canonical, hreflang, og:url, the sitemap and robots.txt point.
+          # On a custom domain, set this to that domain — public/CNAME already
+          # switches the base path, and the two together give correct URLs.
+          NEXT_PUBLIC_SITE_ORIGIN: https://mpc0367.github.io
         run: node scripts/export.mjs --base "${{ steps.base.outputs.path }}"
 
       - name: Refuse to ship a build that cannot reach the sheet

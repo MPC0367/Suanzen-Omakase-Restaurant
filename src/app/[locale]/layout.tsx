@@ -8,6 +8,7 @@ import "../pages.css";
 import { dict, locales, type Locale } from "@/content/dictionary";
 import { restaurant } from "@/content/restaurant";
 import { courses } from "@/content/courses";
+import { SITE, OG_IMAGE } from "@/lib/site";
 
 /* Display — Mincho for Latin and the Japanese numerals in the course names.
    Thai has no glyphs in Shippori, so the stack falls through to Noto Serif
@@ -27,7 +28,6 @@ const body = IBM_Plex_Sans_Thai({
   variable: "--font-body", display: "swap",
 });
 
-const SITE = "https://suanzen.com"; // ← set to the live domain before launch
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -60,8 +60,12 @@ export async function generateMetadata({
       url: `${SITE}/${locale}`,
       locale: locale === "th" ? "th_TH" : "en_US",
       alternateLocale: locale === "th" ? "en_US" : "th_TH",
+      images: [{ url: OG_IMAGE, width: 1200, height: 900, alt: t.meta.title }],
     },
-    twitter: { card: "summary_large_image", title: t.meta.title, description: t.meta.description },
+    twitter: {
+      card: "summary_large_image", title: t.meta.title,
+      description: t.meta.description, images: [OG_IMAGE],
+    },
     robots: { index: true, follow: true },
   };
 }
