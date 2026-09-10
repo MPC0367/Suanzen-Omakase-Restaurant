@@ -264,28 +264,49 @@ function Visit({ locale }: { locale: Locale }) {
             </div>
           </div>
 
-          {/* Ink map — styled, but it is a real link to real navigation. */}
-          <a
-            className="visit__map reveal"
-            href={r.maps.directions.value}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${t.visit.mapAria} — ${t.visit.mapHint}`}
-            style={{ ["--d" as string]: "140ms" }}
-          >
-            <InkMap />
-            <span className="visit__pinlabel">
+          {/* Google's own map, so it is properly interactive — pan, zoom, the
+              place card. The ink plan sits underneath it: it is what shows while
+              the embed loads, and what stays if the embed never arrives. The
+              caption sits below rather than over the frame, so it never covers
+              Google's logo or attribution. */}
+          <figure className="visit__map reveal" style={{ ["--d" as string]: "140ms" }}>
+            <div className="visit__canvas">
+              <InkMap />
+              <iframe
+                className="visit__frame"
+                src={mapEmbedUrl(locale)}
+                title={t.visit.mapAria}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
+            <figcaption className="visit__pinlabel">
               <span className="u-numeral">{g.lat.toFixed(4)}, {g.lng.toFixed(4)}</span>
-              <span className="visit__open">{t.visit.mapHint} <Arrow /></span>
-            </span>
-          </a>
+              <a className="visit__open" href={r.maps.directions.value} target="_blank" rel="noopener noreferrer">
+                {t.visit.mapHint} <Arrow />
+              </a>
+            </figcaption>
+          </figure>
         </div>
       </div>
     </section>
   );
 }
 
-/** An abstract river-and-roads plan of the area, with the restaurant lit. */
+/**
+ * Google's keyless embed — no API key, no billing account. The restaurant's
+ * name with its verified coordinates, so it lands on the actual listing rather
+ * than a bare pin, and hl gives Thai street names on the Thai page.
+ */
+function mapEmbedUrl(locale: Locale) {
+  const { lat, lng } = restaurant.geo.value;
+  const q = encodeURIComponent(restaurant.name.en);
+  return `https://maps.google.com/maps?q=${q}&ll=${lat},${lng}&z=16&hl=${locale}&output=embed`;
+}
+
+/** An abstract river-and-roads plan of the area, with the restaurant lit.
+    Now the map's loading state and fallback, beneath the live embed. */
 function InkMap() {
   return (
     <svg viewBox="0 0 800 560" className="inkmap" role="presentation" aria-hidden="true">
