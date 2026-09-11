@@ -484,3 +484,27 @@
 }
 .foot__top { border-bottom: 1px solid rgba(240,235,224,0.2); padding-bottom: 2px; }
 .foot__top:hover { color: var(--amber); border-color: var(--amber); }
+
+
+/* ═══ THE MENU OPENS THE PAGE ═══════════════════════════════════════════════
+   The menu sits straight under the fixed header: top padding is the header's
+   own height plus a breath, and the heading is sized to leave the first
+   course on the first screen of a phone. Placed last so it wins over the
+   general .secthead and .course rules above. */
+.courses-sec--top { padding-top: calc(var(--hdr-h, 72px) + clamp(1.4rem, 4vh, 2.8rem)); }
+.menu-intro { margin-bottom: clamp(1.2rem, 3vh, 2rem); gap: 0.6rem; }
+.menu-intro__h { font-size: clamp(2rem, 5.6vw, 3.4rem); }
+
+/* On a phone the course bar pins itself under the header, so every course is
+   one tap away from anywhere in a long menu. */
+@media (max-width: 63.99rem) {
+  .menu__jump {
+    position: sticky; top: var(--hdr-h, 64px); z-index: 30;
+    background: var(--bg); padding-block: 0.6rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .course { scroll-margin-top: calc(var(--hdr-h, 64px) + 4.4rem); }
+  /* The pinned bar already draws the line above the courses; the list's own
+     top border would stack a second one just under it. */
+  .menu__list { border-top: 0; }
+}

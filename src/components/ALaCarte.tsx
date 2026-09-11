@@ -20,7 +20,7 @@ export default function ALaCarte({ locale }: { locale: Locale }) {
   const th = locale === "th";
 
   return (
-    <section className="section ala" id="alacarte" data-section-world="night">
+    <section className="section ala" id="alacarte" data-section-world="day">
       <div className="shell">
         <header className="secthead secthead--wide reveal">
           <span className="u-label">{t.ala.label}</span>

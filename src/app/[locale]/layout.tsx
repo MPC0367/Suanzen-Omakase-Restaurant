@@ -163,7 +163,7 @@ export default async function LocaleLayout({
   return (
     <html
       lang={t.htmlLang}
-      data-world="night"
+      data-world="day"
       className={`${display.variable} ${displayThai.variable} ${body.variable}`}
     >
       <body>

@@ -290,9 +290,9 @@ export const dict = {
     },
 
     meta: {
-      title: "Suan Zen Omakase — Omakase in Nonthaburi",
+      title: "Suan Zen Omakase — Menu",
       description:
-        "A counter omakase in Nonthaburi. Fixed seatings, courses served one at a time, and an izakaya bar Thursday to Saturday. Reserve on LINE.",
+        "The omakase menu: seven courses and every dish, with prices. Reserve on LINE.",
       ogAlt: "Suan Zen Omakase, Nonthaburi",
     },
   },
@@ -563,9 +563,9 @@ export const dict = {
     },
 
     meta: {
-      title: "สวน เซน โอมากาเสะ — โอมากาเสะ นนทบุรี",
+      title: "สวน เซน โอมากาเสะ — เมนู",
       description:
-        "โอมากาเสะเคาน์เตอร์ในนนทบุรี เสิร์ฟเป็นรอบ ทีละคำ และมีอิซากายะเปิดพฤหัสฯ ถึงเสาร์ จองผ่าน LINE",
+        "เมนูโอมากาเสะ 7 คอร์ส พร้อมรายการอาหารทุกจานและราคา จองผ่าน LINE",
       ogAlt: "สวน เซน โอมากาเสะ นนทบุรี",
     },
   },

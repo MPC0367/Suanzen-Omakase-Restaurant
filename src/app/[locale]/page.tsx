@@ -1,13 +1,6 @@
 import Chrome from "@/components/Chrome";
 import Courses from "@/components/Courses";
-import Gallery from "@/components/Gallery";
-import Media from "@/components/Media";
-import { LiveStrip } from "@/components/InstagramFeed";
-import Hero from "@/components/Hero";
-import Reserve from "@/components/Reserve";
-import Warmth from "@/components/Warmth";
 import ALaCarte from "@/components/ALaCarte";
-import { gardenShots, counterShot, afterDarkShot } from "@/lib/slots";
 import Footer from "@/components/Footer";
 import { restaurant } from "@/content/restaurant";
 import { getDict, locales, type Locale } from "@/content/dictionary";
@@ -19,165 +12,42 @@ const Arrow = () => (
   </svg>
 );
 
+/**
+ * The menu, first and almost only. This page is the link Suan Zen sends in its
+ * LINE OA in place of photographs of the menu, to guests who already mean to
+ * come. So it opens on the courses, and after the menu there is only what a
+ * guest needs next: when, how to reserve, and where.
+ */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
   if (!locales.includes(raw as Locale)) notFound();
   const locale = raw as Locale;
   const t = getDict(locale);
-  const r = restaurant;
 
   return (
     <>
       <Chrome locale={locale} />
 
       <main id="main">
-        <Hero locale={locale} />
-
-        {/* ── 02 · THE COURSES ────────────────────────────────────────────── */}
-        <section className="section courses-sec" id="courses" data-section-world="day">
+        {/* ── 01 · THE MENU ─────────────────────────────────────────────────── */}
+        <section className="section courses-sec courses-sec--top" id="courses" data-section-world="day">
           <div className="shell">
-            <header className="secthead secthead--wide reveal">
+            {/* Not a .reveal: the menu is the page, so nothing in it waits for
+                the scripts before it can be seen. */}
+            <header className="secthead secthead--wide menu-intro">
               <span className="u-label">{t.coursesSection.label}</span>
-              <h2 className="display display--section">{t.coursesSection.heading}</h2>
+              <h1 className="display menu-intro__h">{t.coursesSection.heading}</h1>
               <p className="u-lede">{t.coursesSection.body}</p>
             </header>
             <Courses locale={locale} />
           </div>
         </section>
 
-        {/* ── 02b · À LA CARTE ────────────────────────────────────────────── */}
+        {/* ── 02 · À LA CARTE ───────────────────────────────────────────────── */}
         <ALaCarte locale={locale} />
 
-        {/* ── 03 · GALLERY ────────────────────────────────────────────────── */}
-        <section className="section gal" id="gallery" data-section-world="night">
-          <div className="shell">
-            <header className="secthead reveal">
-              <span className="u-label">{t.gallery.label}</span>
-              <h2 className="display display--section">{t.gallery.heading}</h2>
-            </header>
-          </div>
-          <Gallery locale={locale} />
-        </section>
-
-        {/* ── 04 · THE ROOM, AND THE PEOPLE IN IT ────────────────────────── */}
-        <section className="section warmsec" id="room" data-section-world="night">
-          <div className="shell">
-            <header className="secthead secthead--wide reveal">
-              <span className="u-label">{t.warmth.label}</span>
-              <h2 className="display display--section">{t.warmth.heading}</h2>
-              <p className="u-lede">{t.warmth.body}</p>
-            </header>
-          </div>
-          <Warmth locale={locale} />
-        </section>
-
-        {/* ── 05 · AFTER DARK — verified: Thu–Sat, 20.30–24.00 ─────────────── */}
-        <section className="section dark" id="after-dark" data-section-world="night">
-          <div className="dark__bg" aria-hidden="true">
-            <Media src={afterDarkShot?.file} seed="izakaya-bar" tone="ember" motif="counter" ratio={2.4}
-                   alt="" sizes="100vw" still />
-          </div>
-          <div className="shell dark__in">
-            <div className="reveal">
-              <span className="u-label">{t.afterDark.label}</span>
-              <h2 className="display display--section">{t.afterDark.heading}</h2>
-              <p className="u-lede">{t.afterDark.body}</p>
-              <p className="dark__hours">
-                <span className="u-label">{t.afterDark.hoursLabel}</span>
-                <span className="u-numeral dark__time">
-                  {locale === "th" ? r.izakaya.daysTh.value : r.izakaya.days.value}
-                  {"  ·  "}
-                  {r.izakaya.hours.value}
-                </span>
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ── 06 · THE GARDEN ─────────────────────────────────────────────── */}
-        <section className="section garden" id="garden" data-section-world="night">
-          <div className="shell">
-            <header className="secthead reveal">
-              <span className="u-label">{t.garden.label}</span>
-              <h2 className="display display--section">{t.garden.heading}</h2>
-            </header>
-
-            <div className="garden__grid">
-              <figure className="garden__a reveal">
-                <Media src={gardenShots[0]?.file} seed="garden-sign" tone="night" motif="garden" ratio={0.78}
-                       alt={gardenShots[0] ? (locale === "th" ? gardenShots[0].altTh : gardenShots[0].altEn) : t.garden.captions[0]}
-                       sizes="(max-width:48rem) 88vw, 38vw" />
-                <figcaption className="cap">{t.garden.captions[0]}</figcaption>
-              </figure>
-
-              <div className="garden__copy reveal" style={{ ["--d" as string]: "120ms" }}>
-                <p className="u-lede">{t.garden.body}</p>
-              </div>
-
-              <figure className="garden__b reveal" style={{ ["--d" as string]: "180ms" }}>
-                <Media src={gardenShots[1]?.file} seed="garden-walk" tone="dusk" motif="garden" ratio={1.42}
-                       alt={gardenShots[1] ? (locale === "th" ? gardenShots[1].altTh : gardenShots[1].altEn) : t.garden.captions[2]}
-                       sizes="(max-width:48rem) 88vw, 46vw" />
-                <figcaption className="cap">{t.garden.captions[2]}</figcaption>
-              </figure>
-
-              <figure className="garden__c reveal" style={{ ["--d" as string]: "240ms" }}>
-                <Media src={gardenShots[2]?.file} seed="garden-door" tone="ember" motif="garden" ratio={0.82}
-                       alt={gardenShots[2] ? (locale === "th" ? gardenShots[2].altTh : gardenShots[2].altEn) : t.garden.captions[3]}
-                       sizes="(max-width:48rem) 88vw, 28vw" />
-                <figcaption className="cap">{t.garden.captions[3]}</figcaption>
-              </figure>
-            </div>
-          </div>
-        </section>
-
-        {/* ── 07 · THE COUNTER — back into daylight ─────────── */}
-        <section className="section counter" id="counter" data-section-world="day">
-          <div className="shell grid">
-            <div className="counter__media reveal">
-              <Media src={counterShot?.file} seed="counter-long" tone="day" motif="counter" ratio={1.34}
-                     alt={counterShot ? (locale === "th" ? counterShot.altTh : counterShot.altEn) : t.counter.heading}
-                     sizes="(max-width:48rem) 92vw, 54vw" />
-            </div>
-            <div className="counter__text reveal" style={{ ["--d" as string]: "140ms" }}>
-              <span className="u-label">{t.counter.label}</span>
-              <h2 className="display display--section">{t.counter.heading}</h2>
-              <p className="u-lede">{t.counter.body}</p>
-              <dl className="facts">
-                {t.counter.points.map((p) => (
-                  <div key={p.k}>
-                    <dt className="u-label">{p.k}</dt>
-                    <dd>{p.v}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          </div>
-        </section>
-
-        {/* ── 08 · FROM SUAN ZEN ──────────────────────────────────────────── */}
-        <section className="section social" data-section-world="night">
-          <div className="shell grid">
-            <div className="social__text reveal">
-              <span className="u-label">{t.social.label}</span>
-              <h2 className="display display--section">{t.social.heading}</h2>
-              <p className="u-lede">{t.social.body}</p>
-              <a className="link-arrow social__link" href={r.social.instagram.value} target="_blank" rel="noopener noreferrer">
-                {t.cta.viewInstagram} <Arrow />
-              </a>
-              <p className="social__handle u-numeral">{t.social.handle}</p>
-            </div>
-            <div className="social__rail reveal" style={{ ["--d" as string]: "120ms" }}>
-              <LiveStrip locale={locale} />
-            </div>
-          </div>
-        </section>
-
-        {/* ── 09 · VISIT ──────────────────────────────────────────────────── */}
+        {/* ── 03 · VISIT — when, how to reserve, and where ─────────────────── */}
         <Visit locale={locale} />
-
-        {/* ── 10 · RESERVE ────────────────────────────────────────────────── */}
-        <Reserve locale={locale} />
       </main>
 
       <Footer locale={locale} />
@@ -238,11 +108,14 @@ function Visit({ locale }: { locale: Locale }) {
             </dl>
 
             <div className="visit__acts">
-              <a className="btn" href={r.maps.directions.value} target="_blank" rel="noopener noreferrer">
-                {t.cta.directions} <Arrow />
+              <a className="btn" href={r.contact.lineUrl.value} target="_blank" rel="noopener noreferrer">
+                {t.cta.reserveLine} <Arrow />
               </a>
               <a className="link-arrow" href={`tel:${r.contact.phoneIntl.value}`}>
                 {t.cta.call} <Arrow />
+              </a>
+              <a className="link-arrow" href={r.maps.directions.value} target="_blank" rel="noopener noreferrer">
+                {t.cta.directions} <Arrow />
               </a>
             </div>
           </div>

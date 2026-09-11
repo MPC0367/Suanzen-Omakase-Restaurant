@@ -23,31 +23,37 @@ export default function Chrome({ locale }: { locale: Locale }) {
   const pathname = usePathname();
 
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [resOpen, setResOpen] = useState(false);
 
   useReveal();
   useWorld();
 
-  // ── Header behaviour: quiet at the hero, compact after, out of the way on
-  //    the way down, back immediately on the way up. ─────────────────────────
+  // ── Header behaviour: compact once the page moves, and always there. It used
+  //    to slide away on the way down; the menu's course bar now pins itself
+  //    under the header, so the header has to stay put for it to sit under. ──
   useEffect(() => {
-    let last = window.scrollY;
     let raf = 0;
     const onScroll = () => {
       if (raf) return;
-      raf = requestAnimationFrame(() => {
-        const y = window.scrollY;
-        setScrolled(y > 80);
-        setHidden(y > 420 && y > last && !navOpen && !resOpen);
-        last = y;
-        raf = 0;
-      });
+      raf = requestAnimationFrame(() => { setScrolled(window.scrollY > 24); raf = 0; });
     };
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
-  }, [navOpen, resOpen]);
+  }, []);
+
+  // Publish the header's height so the course bar knows where "just under the
+  // header" is. It changes as the header compacts, hence the observer.
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>(".hdr");
+    if (!el) return;
+    const set = () => document.documentElement.style.setProperty("--hdr-h", `${el.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // ── Escape closes whatever is open. ───────────────────────────────────────
   useEffect(() => {
@@ -83,19 +89,17 @@ export default function Chrome({ locale }: { locale: Locale }) {
     window.setTimeout(() => window.scrollTo(0, y), 40);
   }, [pathname, other, router]);
 
-  /* Three stops. A brochure is read top to bottom from a link on a phone, so
-     the header only needs to reach what guests come back for — the menu above
-     all — and a way to reserve. */
+  /* Two stops: the menu, and how to get there. The page is sent as a link in
+     Suan Zen's LINE OA to guests who already mean to come — nothing else to find. */
   const nav = [
     { href: asset(`/${locale}#courses`), label: t.nav.menu },
-    { href: asset(`/${locale}#gallery`), label: t.nav.gallery },
     { href: asset(`/${locale}#visit`), label: t.nav.visit },
   ];
 
   return (
     <>
       <header
-        className={`hdr ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""}`}
+        className={`hdr ${scrolled ? "is-scrolled" : ""}`}
         data-open={navOpen || undefined}
       >
         <div className="hdr__in">
