@@ -136,6 +136,84 @@ pass("a dish with no photo of its own shows no picture", (await c5.locator(".dis
 await c5.locator(".dish.has-photo .dish__btn").first().tap(); await m.waitForTimeout(1000);
 pass("a dish with its own photo opens it", (await c5.locator(".dish.has-photo.is-shown .dish__shot img").count()) === 1);
 
+// An opened photo folds away once the guest scrolls past it, either way, and
+// nothing on screen jumps when it does. iPhones have no scroll anchoring, so
+// these run with it switched off, and with the page's own smooth scrolling on.
+await m.addStyleTag({ content: "html,body{overflow-anchor:none !important}" });
+await m.evaluate(() => { document.documentElement.style.scrollBehavior = ""; });
+const shots = () => m.locator(".dish.is-shown .dish__shot").count();
+const before = await m.evaluate(() => {
+  const bar = document.querySelector(".menu__jump").getBoundingClientRect().bottom;
+  const r = document.querySelector(".dish.is-shown").getBoundingClientRect();
+  scrollTo({ top: scrollY + r.bottom - bar + 200, behavior: "instant" });        // 200px past it
+  window.__ref = [...document.querySelectorAll(".dish__name, .course__name")]
+    .find((el) => el.getBoundingClientRect().top > bar + 20);
+  return Math.round(window.__ref.getBoundingClientRect().top);
+});
+await m.waitForTimeout(800);
+const after = await m.evaluate(() => Math.round(window.__ref.getBoundingClientRect().top));
+pass("an opened photo folds away once scrolled past", (await shots()) === 0);
+pass("nothing on screen moves when it folds", Math.abs(after - before) <= 2, `reading position moved ${after - before}px`);
+await c5.locator(".dish.has-photo .dish__btn").first().tap(); await m.waitForTimeout(900);
+await m.evaluate(() => {
+  const r = document.querySelector(".dish.is-shown").getBoundingClientRect();
+  scrollTo({ top: scrollY + r.top - innerHeight - 300, behavior: "instant" });   // back up, past it
+});
+await m.waitForTimeout(600);
+pass("it folds away when scrolled back up past it too", (await shots()) === 0);
+await c5.locator(".dish.has-photo .dish__btn").first().tap(); await m.waitForTimeout(900);
+await m.evaluate(() => scrollBy({ top: 60, behavior: "instant" })); await m.waitForTimeout(600);
+pass("it stays open while any of it is on screen", (await shots()) === 1);
+
+// A photo opened before the course bar has pinned itself must not fold while
+// any of it is still on screen (it once did, on a measurement taken at open).
+await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(600);
+await m.locator(".course").nth(0).locator(".dish.has-photo .dish__btn").first().tap(); await m.waitForTimeout(900);
+let early = null, folded = false;
+for (let k = 0; k < 90 && !folded; k++) {
+  const outOfSight = await m.evaluate(() => {
+    scrollBy({ top: 30, behavior: "instant" });
+    const li = document.querySelector(".dish.is-shown");
+    const c = Math.max(document.querySelector(".hdr").getBoundingClientRect().bottom,
+                       document.querySelector(".menu__jump").getBoundingClientRect().bottom);
+    return li ? li.getBoundingClientRect().bottom <= c : null;
+  });
+  await m.waitForTimeout(260);
+  if (!(await shots())) { folded = true; if (!outOfSight) early = k; }
+}
+pass("a photo opened before the bar pins folds only once out of sight", folded && early === null,
+     !folded ? "never folded" : early === null ? "" : `folded while still visible, step ${early}`);
+
+// Closing a course with a photo open in it must not leave anything switched off.
+await m.locator(".course").nth(1).locator(".dish.has-photo .dish__btn").first().tap(); await m.waitForTimeout(900);
+await m.locator(".course").nth(1).locator(".course__btn").tap(); await m.waitForTimeout(700);
+await m.evaluate(() => scrollBy({ top: 5, behavior: "instant" })); await m.waitForTimeout(500);
+const anchorStyle = await m.evaluate(() => document.documentElement.style.overflowAnchor);
+pass("closing a course with a photo open leaves scrolling as it was", anchorStyle === "", `overflow-anchor inline: '${anchorStyle}'`);
+await m.locator(".course").nth(1).locator(".course__btn").tap(); await m.waitForTimeout(500);
+
+// On a tablet the dishes sit in two columns, and folding one photo re-balances
+// them: a fold there must still move nothing on screen.
+const tp = await (await b.newContext({ viewport: { width: 768, height: 1024 }, hasTouch: true, isMobile: true })).newPage();
+tp.on("pageerror", (e) => errs.push("tablet: " + String(e).slice(0, 140)));
+await tp.goto(B + "/en/", { waitUntil: "domcontentloaded" }); await ready(tp);
+await tp.addStyleTag({ content: "html,body{overflow-anchor:none !important}" });
+await tp.locator(".course").nth(1).locator(".dish.has-photo .dish__btn").first().tap(); await tp.waitForTimeout(900);
+const tBefore = await tp.evaluate(() => {
+  const list = document.querySelector(".dish.is-shown").closest(".dishes");
+  scrollTo({ top: scrollY + list.getBoundingClientRect().bottom + 250, behavior: "instant" });   // the whole list well past
+  const c = Math.max(document.querySelector(".hdr").getBoundingClientRect().bottom,
+                     document.querySelector(".menu__jump").getBoundingClientRect().bottom);
+  window.__tref = [...document.querySelectorAll(".dish__name, .course__name")].find((el) => el.getBoundingClientRect().top > c + 20);
+  return Math.round(window.__tref.getBoundingClientRect().top);
+});
+await tp.waitForTimeout(900);
+const tAfter = await tp.evaluate(() => Math.round(window.__tref.getBoundingClientRect().top));
+const tOpen = await tp.locator(".dish.is-shown").count();
+pass("on a tablet (two columns of dishes), a fold moves nothing on screen", tOpen === 0 && Math.abs(tAfter - tBefore) <= 2,
+     `${tOpen ? "still open; " : ""}reading position moved ${tAfter - tBefore}px`);
+await tp.context().close();
+
 await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(400);
 await m.locator(".burger").tap(); await m.waitForTimeout(900);
 const sheet = await m.$$eval(".sheet__nav a", (as) => as.map((a) => ({ t: a.textContent.replace(/[0-9]/g, "").trim(), h: Math.round(a.getBoundingClientRect().height) })));

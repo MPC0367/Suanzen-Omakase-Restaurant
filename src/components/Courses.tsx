@@ -25,6 +25,18 @@ const Chevron = () => (
 const PHONE = "(max-width: 63.99rem)";
 const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/* Move the page at once, whatever html's scroll-behavior says. The newer
+   { behavior: "instant" } option is not understood by every phone in use, and
+   an unknown value there throws; switching the style off for the one move
+   works everywhere. */
+const now = (move: () => void) => {
+  const html = document.documentElement;
+  const was = html.style.scrollBehavior;
+  html.style.scrollBehavior = "auto";
+  move();
+  html.style.scrollBehavior = was;
+};
+
 /**
  * The menu. Each course opens to its full list of dishes; pointing at a dish
  * shows the restaurant's photograph of it, where one exists. Dishes with no
@@ -87,7 +99,8 @@ export default function Courses({ locale }: { locale: Locale }) {
     const id = anchor.current;
     if (!id) return;
     anchor.current = null;
-    document.getElementById(`course-${id}`)?.scrollIntoView({ block: "start", behavior: "instant" });
+    const el = document.getElementById(`course-${id}`);
+    if (el) now(() => el.scrollIntoView({ block: "start" }));
   }, [open, phone]);
 
   /* The spotlight: the last course whose heading has reached a line just
@@ -354,6 +367,90 @@ function DishRow({
      this one's name on phones. The desktop stage still borrows the course
      picture, but captions it with the course, never the dish. */
   const src = dish.photo;
+  // Just before a photograph above the screen folds: its list's height and the page's position.
+  const folding = useRef<{ h: number; y: number } | null>(null);
+
+  /* An opened photograph folds itself away once the guest has scrolled past
+     it, either way, so the menu stays tidy.
+     - Wholly below the screen, it folds at once: nothing in sight moves.
+     - Wholly above it, under the fixed header and the pinned course bar, it
+       waits until the page has been still for a moment with no finger on the
+       glass, so it never interrupts a fling or a drag. Then it folds and puts
+       the page back by exactly the height the page lost, so what the guest is
+       reading stays where it is (iPhones have no scroll anchoring to do it).
+     - While any of it is on screen, it stays open.
+     In a two-column dish list (tablets, a phone on its side) folding one photo
+     re-balances the columns, so there it waits until the whole list is out of
+     sight. Everything is measured live on each scroll: the header compacts and
+     the course bar pins itself as the page moves. */
+  useEffect(() => {
+    const li = ref.current;
+    const list = li?.closest<HTMLElement>(".dishes");
+    if (!touch || !shown || !li || !list) return;
+    const cover = () => Math.max(
+      0,
+      document.querySelector(".hdr")?.getBoundingClientRect().bottom ?? 0,
+      document.querySelector(".menu__jump")?.getBoundingClientRect().bottom ?? 0,
+    );
+    const watched = () => {
+      const cols = getComputedStyle(list).columnCount;
+      return cols !== "auto" && Number(cols) > 1 ? list : li;
+    };
+    let idle = 0, frame = 0, touching = false, waiting = false;
+    const fold = () => {
+      waiting = false;
+      if (!li.getBoundingClientRect().height) return setShown(false);   // its course was closed: nothing to give back
+      folding.current = { h: list.getBoundingClientRect().height, y: window.scrollY };
+      document.documentElement.style.overflowAnchor = "none";            // the only correction is ours
+      setShown(false);
+    };
+    const arm = () => {
+      waiting = true;
+      window.clearTimeout(idle);
+      idle = window.setTimeout(() => {
+        if (touching) return;                                             // a resting finger is not "still"
+        if (watched().getBoundingClientRect().bottom > cover()) { waiting = false; return; }
+        fold();
+      }, 180);
+    };
+    const check = () => {
+      frame = 0;
+      if (!li.getBoundingClientRect().height) return setShown(false);
+      const w = watched().getBoundingClientRect();
+      if (w.top >= window.innerHeight) return setShown(false);            // wholly below the screen
+      if (w.bottom <= cover()) return arm();                              // wholly above, out of sight
+      waiting = false;
+      window.clearTimeout(idle);
+    };
+    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(check); };
+    const down = () => { touching = true; };
+    const up = () => { touching = false; if (waiting) arm(); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("touchstart", down, { passive: true });
+    window.addEventListener("touchend", up, { passive: true });
+    window.addEventListener("touchcancel", up, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("touchstart", down);
+      window.removeEventListener("touchend", up);
+      window.removeEventListener("touchcancel", up);
+      window.clearTimeout(idle);
+      window.cancelAnimationFrame(frame);
+    };
+  }, [touch, shown]);
+
+  // Put the page back by exactly the height it lost, so nothing on screen moves.
+  // The target is absolute, so a page shortened at its very bottom (where the
+  // browser clamps the scroll position itself) is not corrected twice.
+  useLayoutEffect(() => {
+    const f = folding.current;
+    if (shown || !f) return;
+    folding.current = null;
+    const list = ref.current?.closest<HTMLElement>(".dishes");
+    const gone = list ? f.h - list.getBoundingClientRect().height : 0;
+    if (gone > 0.5) now(() => window.scrollTo(0, f.y - gone));
+    window.requestAnimationFrame(() => { document.documentElement.style.overflowAnchor = ""; });
+  }, [shown]);
 
   return (
     <li
