@@ -15,7 +15,7 @@ const viewports = {
 
 const targets = process.argv[2]
   ? [process.argv[2]]
-  : ["/en", "/th", "/en/book", "/th/book", "/en/instagram", "/th/instagram"];
+  : ["/en", "/th"];
 
 const sizes = process.argv[3] ? [process.argv[3]] : Object.keys(viewports);
 

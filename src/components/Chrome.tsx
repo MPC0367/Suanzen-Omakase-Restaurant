@@ -83,13 +83,12 @@ export default function Chrome({ locale }: { locale: Locale }) {
     window.setTimeout(() => window.scrollTo(0, y), 40);
   }, [pathname, other, router]);
 
+  /* Three stops. A brochure is read top to bottom from a link on a phone, so
+     the header only needs to reach what guests come back for — the menu above
+     all — and a way to reserve. */
   const nav = [
-    { href: asset(`/${locale}#courses`), label: t.nav.courses },
-    { href: asset(`/${locale}#garden`), label: t.nav.garden },
-    { href: asset(`/${locale}#counter`), label: t.nav.counter },
-    { href: asset(`/${locale}#after-dark`), label: t.nav.afterDark },
+    { href: asset(`/${locale}#courses`), label: t.nav.menu },
     { href: asset(`/${locale}#gallery`), label: t.nav.gallery },
-    { href: asset(`/${locale}/instagram`), label: t.nav.journal },
     { href: asset(`/${locale}#visit`), label: t.nav.visit },
   ];
 
@@ -115,9 +114,9 @@ export default function Chrome({ locale }: { locale: Locale }) {
             <button className="lang" onClick={switchLang} aria-label={t.switchToLabel} lang={other}>
               {t.switchTo}
             </button>
-            <Link className="btn hdr__cta" href={`/${locale}/book`}>
-              {t.nav.book}
-            </Link>
+            <button type="button" className="btn hdr__cta" onClick={() => setResOpen(true)}>
+              {t.nav.reserve}
+            </button>
             <button
               className="burger"
               onClick={() => setNavOpen((v) => !v)}
@@ -147,12 +146,13 @@ export default function Chrome({ locale }: { locale: Locale }) {
           ))}
         </nav>
         <div className="sheet__foot">
-          <Link className="btn" href={`/${locale}/book`} onClick={() => setNavOpen(false)} tabIndex={navOpen ? 0 : -1}>
-            {t.nav.book}
-          </Link>
-          <button className="link-arrow" onClick={() => { setNavOpen(false); setResOpen(true); }} tabIndex={navOpen ? 0 : -1}>
+          <a className="btn" href={restaurant.contact.lineUrl.value} target="_blank" rel="noopener noreferrer"
+             onClick={() => setNavOpen(false)} tabIndex={navOpen ? 0 : -1}>
             {t.cta.reserveLine}
-          </button>
+          </a>
+          <a className="link-arrow" href={`tel:${restaurant.contact.phoneIntl.value}`} tabIndex={navOpen ? 0 : -1}>
+            {t.cta.call} · {restaurant.contact.phone.value}
+          </a>
           <a className="link-arrow" href={restaurant.social.instagram.value} target="_blank" rel="noopener noreferrer" tabIndex={navOpen ? 0 : -1}>
             {restaurant.social.instagramHandle.value} <Arrow />
           </a>
@@ -222,10 +222,7 @@ function ReservationDrawer({
         <p className="u-lede res__lede">{t.reserve.panelBody}</p>
 
         <div className="res__routes">
-          <Link className="btn res__line" href={`/${locale}/book`} onClick={onClose}>
-            {t.booking.heading} <Arrow />
-          </Link>
-          <a className="link-arrow" href={lineUrl} target="_blank" rel="noopener noreferrer">
+          <a className="btn res__line" href={lineUrl} target="_blank" rel="noopener noreferrer">
             {t.cta.reserveLine} <Arrow />
           </a>
         </div>

@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 const B = "http://localhost:4700/Suanzen-Omakase-Restaurant";
-const b = await chromium.launch();
+const b = await chromium.launch({ channel: "chrome" }).catch(() => chromium.launch());
 const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
 const p = await ctx.newPage();
 const pass = (n, ok, extra = "") => console.log(`  ${ok ? "PASS" : "FAIL"}  ${n}${extra ? "  — " + extra : ""}`);
@@ -27,15 +27,19 @@ const drag = await p.evaluate(() => {
 pass("rail photos refuse the browser's image drag", drag === "none", `-webkit-user-drag: ${drag}`);
 
 // 3 · gallery drag then click opens the lightbox
-await p.locator(".rail").first().scrollIntoViewIfNeeded();
-await p.waitForTimeout(600);
-const box = await p.locator(".rail__btn").first().boundingBox();
 let opened = 0, panned = 0;
 for (let t = 0; t < 4; t++) {
+  /* Measure the rail before every drag. Measuring once up front went stale as
+     soon as the click below scrolled the page, and the later drags landed
+     beside the rail instead of on it — a fault in the test, not the gallery. */
+  await p.locator(".rail").first().scrollIntoViewIfNeeded();
+  await p.waitForTimeout(500);
+  const box = await p.locator(".rail").first().boundingBox();
+  const x = box.x + box.width * 0.6, y = box.y + box.height * 0.4;
   const before = await p.evaluate(() => document.querySelector(".rail").scrollLeft);
-  await p.mouse.move(box.x + 120, box.y + 80);
+  await p.mouse.move(x, y);
   await p.mouse.down();
-  for (let i = 1; i <= 20; i++) { await p.mouse.move(box.x + 120 - i * 12, box.y + 80); await p.waitForTimeout(8); }
+  for (let i = 1; i <= 20; i++) { await p.mouse.move(x - i * 12, y); await p.waitForTimeout(8); }
   await p.mouse.up();
   await p.waitForTimeout(350);
   const after = await p.evaluate(() => document.querySelector(".rail").scrollLeft);

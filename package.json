@@ -8,7 +8,6 @@
     "start": "next start -p 4321",
     "lint": "next lint",
     "qa": "node qa/shots.mjs",
-    "qa:booking": "node qa/booking.mjs",
     "qa:a11y": "node qa/a11y.mjs",
     "export": "node scripts/export.mjs",
     "check:sheet": "node scripts/check-sheet.mjs",

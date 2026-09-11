@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Mark } from "./Mark";
 import { restaurant } from "@/content/restaurant";
 import { getDict, type Locale } from "@/content/dictionary";
@@ -32,12 +31,10 @@ export default function Footer({ locale }: { locale: Locale }) {
           <a className="foot__link" href={r.contact.lineUrl.value} target="_blank" rel="noopener noreferrer">
             LINE {r.contact.lineDisplayId.value}
           </a>
-          <Link className="foot__link" href={`/${locale}/book`}>{t.nav.book}</Link>
         </div>
 
         <div className="foot__col">
           <span className="u-label">{t.footer.followUs}</span>
-          <Link className="foot__link" href={`/${locale}/instagram`}>{t.journal.label}</Link>
           <a className="foot__link" href={r.social.instagram.value} target="_blank" rel="noopener noreferrer">Instagram</a>
           <a className="foot__link" href={r.social.facebook.value} target="_blank" rel="noopener noreferrer">Facebook</a>
           <a className="foot__link" href={r.social.tiktok.value} target="_blank" rel="noopener noreferrer">TikTok</a>

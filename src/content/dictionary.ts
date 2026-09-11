@@ -38,6 +38,7 @@ export const dict = {
     cta: {
       reserve: "Reserve",
       reserveLine: "Reserve on LINE",
+      viewMenu: "View the menu",
       viewCourses: "View courses",
       directions: "Directions",
       call: "Call",
@@ -88,7 +89,7 @@ export const dict = {
     },
 
     coursesSection: {
-      label: "The Courses",
+      label: "The Menu",
       heading: "Choose the length of the evening.",
       body: "Ichi, ni, san, yon — one, two, three, four. The ladder is the number of bites and the time you spend on them. Prices are quoted ++.",
       pieces: "bites",
@@ -97,6 +98,7 @@ export const dict = {
       firstTimers: "Most first visits start here",
       partialNote: "A selection — the full course runs longer",
       hoverHint: "Point at a dish to see it",
+      jumpLabel: "Jump to a course",
       tapHint: "Tap a dish to see it",
       alaLabel: "À la carte",
       footnote:
@@ -318,6 +320,7 @@ export const dict = {
     cta: {
       reserve: "จองรอบ",
       reserveLine: "จองผ่าน LINE",
+      viewMenu: "ดูเมนู",
       viewCourses: "ดูคอร์ส",
       directions: "นำทาง",
       call: "โทร",
@@ -363,7 +366,7 @@ export const dict = {
     },
 
     coursesSection: {
-      label: "คอร์ส",
+      label: "เมนู",
       heading: "เลือกความยาวของค่ำคืน",
       body: "อิจิ นิ ซัง ยอน — หนึ่ง สอง สาม สี่ ไล่ตามจำนวนคำและเวลาที่ใช้ ราคายังไม่รวม ++",
       pieces: "คำ",
@@ -372,6 +375,7 @@ export const dict = {
       firstTimers: "คนมาครั้งแรกส่วนใหญ่เริ่มที่คอร์สนี้",
       partialNote: "เป็นตัวอย่าง — คอร์สจริงยาวกว่านี้",
       hoverHint: "ชี้ที่ชื่อคำเพื่อดูรูป",
+      jumpLabel: "เลือกดูคอร์ส",
       tapHint: "แตะที่ชื่อคำเพื่อดูรูป",
       alaLabel: "อาหารตามสั่ง",
       footnote: "คอร์สเปลี่ยนตามวัตถุดิบที่เข้ามา ถามคอร์สล่าสุดตอนจองได้เลย",

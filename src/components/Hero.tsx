@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { asset } from "@/lib/asset";
 import Media from "./Media";
 import { heroShot } from "@/lib/slots";
@@ -61,12 +60,15 @@ export default function Hero({ locale }: { locale: Locale }) {
           </div>
 
           <div className="hero__acts reveal" style={{ ["--d" as string]: "580ms" }}>
-            <Link className="btn" href={`/${locale}/book`}>{t.cta.reserve}</Link>
-            <a className="btn btn--ghost" href={asset(`/${locale}#courses`)}>{t.cta.viewCourses}</a>
+            {/* The menu is what a guest opens the brochure for, so it leads. */}
+            <a className="btn" href={asset(`/${locale}#courses`)}>{t.cta.viewMenu}</a>
+            <a className="btn btn--ghost" href={restaurant.contact.lineUrl.value} target="_blank" rel="noopener noreferrer">
+              {t.cta.reserveLine}
+            </a>
           </div>
 
           <div className="hero__foot reveal" style={{ ["--d" as string]: "700ms" }}>
-            <a className="hero__scroll" href={asset(`/${locale}#garden`)}>
+            <a className="hero__scroll" href={asset(`/${locale}#courses`)}>
               <span className="u-label">{t.hero.scroll}</span>
               <span className="hero__line" aria-hidden="true" />
             </a>

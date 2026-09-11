@@ -31,24 +31,8 @@ await p.locator('.rail__btn').first().click(); await p.waitForTimeout(700);
 console.log("gallery click opens:", (await p.locator('.lb.is-open').count())===1);
 await p.keyboard.press('Escape');
 
-// booking hands off to LINE
-await p.goto(BASE+"/en/book/", { waitUntil: "domcontentloaded" });
-await p.waitForTimeout(1800);
-await p.locator('.cal__day:not(.is-closed)').nth(3).click();
-await p.getByRole('button',{name:/Continue/i}).click(); await p.waitForTimeout(400);
-await p.locator('.seat:not(.is-off)').first().click();
-await p.getByRole('button',{name:/Continue/i}).click(); await p.waitForTimeout(400);
-await p.locator('.pick').first().click();
-await p.getByRole('button',{name:/Continue/i}).click(); await p.waitForTimeout(400);
-await p.locator('.party__n').nth(1).click();
-await p.getByRole('button',{name:/Continue/i}).click(); await p.waitForTimeout(400);
-await p.locator('input[type="text"]').first().fill('Nat Suanpong');
-await p.locator('input[type="tel"]').fill('081 234 5678');
-await p.getByRole('button',{name:/Continue/i}).click(); await p.waitForTimeout(500);
-await p.getByRole('button',{name:/Send request/i}).click(); await p.waitForTimeout(900);
-const heading = await p.locator('.bk--done h2').innerText().catch(()=>'');
-const msg = await p.locator('.bk__msg').innerText().catch(()=>'');
-console.log("booking result:", heading);
-console.log("LINE message composed:\n   " + msg.split('\n').join('\n   '));
+// reserving goes straight to LINE — the brochure has no form anywhere
+console.log("LINE links on the page:", await p.locator('a[href*="lin.ee"]').count());
+console.log("forms on the page:", await p.locator("form").count());
 console.log(errs.length ? "\nERRORS: "+errs.join(" | ") : "\nno JS/console errors");
 await b.close();

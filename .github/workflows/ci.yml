@@ -42,5 +42,4 @@ jobs:
             sleep 1
           done
           npm run qa:a11y
-          npm run qa:booking
           node qa/shots.mjs /en

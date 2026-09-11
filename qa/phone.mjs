@@ -4,8 +4,6 @@ const p = await (await b.newContext({ viewport: { width: 390, height: 844 }, isM
 for (const [name, url, scroll] of [
   ["hero", "/en", 0],
   ["hero_th", "/th", 0],
-  ["book", "/en/book", 0],
-  ["ig", "/en/instagram", 300],
 ]) {
   await p.goto("http://localhost:4321" + url, { waitUntil: "domcontentloaded" });
   await p.waitForTimeout(url.includes("instagram") ? 9000 : 2600);

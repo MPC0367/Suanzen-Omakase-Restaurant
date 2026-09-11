@@ -67,7 +67,10 @@ export async function generateMetadata({
       card: "summary_large_image", title: t.meta.title,
       description: t.meta.description, images: [OG_IMAGE],
     },
-    robots: { index: true, follow: true },
+    /* A brochure, not a website: shared by link, never listed. Crawlers are
+       still let in — blocking them in robots.txt would hide this instruction
+       from the very search engines it is addressed to. */
+    robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
   };
 }
 

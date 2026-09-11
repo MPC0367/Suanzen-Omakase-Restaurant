@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Chrome from "@/components/Chrome";
 import Courses from "@/components/Courses";
 import Gallery from "@/components/Gallery";
@@ -10,7 +9,6 @@ import Warmth from "@/components/Warmth";
 import ALaCarte from "@/components/ALaCarte";
 import { gardenShots, counterShot, afterDarkShot } from "@/lib/slots";
 import Footer from "@/components/Footer";
-import { Mark } from "@/components/Mark";
 import { restaurant } from "@/content/restaurant";
 import { getDict, locales, type Locale } from "@/content/dictionary";
 import { notFound } from "next/navigation";
@@ -35,22 +33,68 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <main id="main">
         <Hero locale={locale} />
 
-        {/* ── 02 · SUAN ZEN ───────────────────────────────────────────────── */}
-        <section className="section prop" data-section-world="night">
-          <div className="shell grid">
-            <div className="prop__text reveal">
-              <span className="u-label">{t.proposition.label}</span>
-              <h2 className="display display--section prop__h">{t.proposition.heading}</h2>
-              <p className="u-lede">{t.proposition.body}</p>
-              <p className="prop__aside">{t.proposition.aside}</p>
-            </div>
-            <div className="prop__mark reveal" style={{ ["--d" as string]: "160ms" }} aria-hidden="true">
-              <Mark size={112} />
+        {/* ── 02 · THE COURSES ────────────────────────────────────────────── */}
+        <section className="section courses-sec" id="courses" data-section-world="day">
+          <div className="shell">
+            <header className="secthead secthead--wide reveal">
+              <span className="u-label">{t.coursesSection.label}</span>
+              <h2 className="display display--section">{t.coursesSection.heading}</h2>
+              <p className="u-lede">{t.coursesSection.body}</p>
+            </header>
+            <Courses locale={locale} />
+          </div>
+        </section>
+
+        {/* ── 02b · À LA CARTE ────────────────────────────────────────────── */}
+        <ALaCarte locale={locale} />
+
+        {/* ── 03 · GALLERY ────────────────────────────────────────────────── */}
+        <section className="section gal" id="gallery" data-section-world="night">
+          <div className="shell">
+            <header className="secthead reveal">
+              <span className="u-label">{t.gallery.label}</span>
+              <h2 className="display display--section">{t.gallery.heading}</h2>
+            </header>
+          </div>
+          <Gallery locale={locale} />
+        </section>
+
+        {/* ── 04 · THE ROOM, AND THE PEOPLE IN IT ────────────────────────── */}
+        <section className="section warmsec" id="room" data-section-world="night">
+          <div className="shell">
+            <header className="secthead secthead--wide reveal">
+              <span className="u-label">{t.warmth.label}</span>
+              <h2 className="display display--section">{t.warmth.heading}</h2>
+              <p className="u-lede">{t.warmth.body}</p>
+            </header>
+          </div>
+          <Warmth locale={locale} />
+        </section>
+
+        {/* ── 05 · AFTER DARK — verified: Thu–Sat, 20.30–24.00 ─────────────── */}
+        <section className="section dark" id="after-dark" data-section-world="night">
+          <div className="dark__bg" aria-hidden="true">
+            <Media src={afterDarkShot?.file} seed="izakaya-bar" tone="ember" motif="counter" ratio={2.4}
+                   alt="" sizes="100vw" still />
+          </div>
+          <div className="shell dark__in">
+            <div className="reveal">
+              <span className="u-label">{t.afterDark.label}</span>
+              <h2 className="display display--section">{t.afterDark.heading}</h2>
+              <p className="u-lede">{t.afterDark.body}</p>
+              <p className="dark__hours">
+                <span className="u-label">{t.afterDark.hoursLabel}</span>
+                <span className="u-numeral dark__time">
+                  {locale === "th" ? r.izakaya.daysTh.value : r.izakaya.days.value}
+                  {"  ·  "}
+                  {r.izakaya.hours.value}
+                </span>
+              </p>
             </div>
           </div>
         </section>
 
-        {/* ── 03 · THE GARDEN ─────────────────────────────────────────────── */}
+        {/* ── 06 · THE GARDEN ─────────────────────────────────────────────── */}
         <section className="section garden" id="garden" data-section-world="night">
           <div className="shell">
             <header className="secthead reveal">
@@ -87,7 +131,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </section>
 
-        {/* ── 04 · THE COUNTER — the site steps into daylight here ─────────── */}
+        {/* ── 07 · THE COUNTER — back into daylight ─────────── */}
         <section className="section counter" id="counter" data-section-world="day">
           <div className="shell grid">
             <div className="counter__media reveal">
@@ -111,67 +155,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           </div>
         </section>
 
-        {/* ── 05 · THE COURSES ────────────────────────────────────────────── */}
-        <section className="section courses-sec" id="courses" data-section-world="day">
-          <div className="shell">
-            <header className="secthead secthead--wide reveal">
-              <span className="u-label">{t.coursesSection.label}</span>
-              <h2 className="display display--section">{t.coursesSection.heading}</h2>
-              <p className="u-lede">{t.coursesSection.body}</p>
-            </header>
-            <Courses locale={locale} />
-          </div>
-        </section>
-
-        {/* ── 05b · À LA CARTE ────────────────────────────────────────────── */}
-        <ALaCarte locale={locale} />
-
-        {/* ── 05c · THE ROOM, AND THE PEOPLE IN IT ────────────────────────── */}
-        <section className="section warmsec" id="room" data-section-world="night">
-          <div className="shell">
-            <header className="secthead secthead--wide reveal">
-              <span className="u-label">{t.warmth.label}</span>
-              <h2 className="display display--section">{t.warmth.heading}</h2>
-              <p className="u-lede">{t.warmth.body}</p>
-            </header>
-          </div>
-          <Warmth locale={locale} />
-        </section>
-
-        {/* ── 06 · AFTER DARK — verified: Thu–Sat, 20.30–24.00 ─────────────── */}
-        <section className="section dark" id="after-dark" data-section-world="night">
-          <div className="dark__bg" aria-hidden="true">
-            <Media src={afterDarkShot?.file} seed="izakaya-bar" tone="ember" motif="counter" ratio={2.4}
-                   alt="" sizes="100vw" still />
-          </div>
-          <div className="shell dark__in">
-            <div className="reveal">
-              <span className="u-label">{t.afterDark.label}</span>
-              <h2 className="display display--section">{t.afterDark.heading}</h2>
-              <p className="u-lede">{t.afterDark.body}</p>
-              <p className="dark__hours">
-                <span className="u-label">{t.afterDark.hoursLabel}</span>
-                <span className="u-numeral dark__time">
-                  {locale === "th" ? r.izakaya.daysTh.value : r.izakaya.days.value}
-                  {"  ·  "}
-                  {r.izakaya.hours.value}
-                </span>
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ── 07 · GALLERY ────────────────────────────────────────────────── */}
-        <section className="section gal" id="gallery" data-section-world="night">
-          <div className="shell">
-            <header className="secthead reveal">
-              <span className="u-label">{t.gallery.label}</span>
-              <h2 className="display display--section">{t.gallery.heading}</h2>
-            </header>
-          </div>
-          <Gallery locale={locale} />
-        </section>
-
         {/* ── 08 · FROM SUAN ZEN ──────────────────────────────────────────── */}
         <section className="section social" data-section-world="night">
           <div className="shell grid">
@@ -179,9 +162,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <span className="u-label">{t.social.label}</span>
               <h2 className="display display--section">{t.social.heading}</h2>
               <p className="u-lede">{t.social.body}</p>
-              <Link className="link-arrow social__link" href={`/${locale}/instagram`}>
-                {t.journal.label} <Arrow />
-              </Link>
+              <a className="link-arrow social__link" href={r.social.instagram.value} target="_blank" rel="noopener noreferrer">
+                {t.cta.viewInstagram} <Arrow />
+              </a>
               <p className="social__handle u-numeral">{t.social.handle}</p>
             </div>
             <div className="social__rail reveal" style={{ ["--d" as string]: "120ms" }}>

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { restaurant } from "@/content/restaurant";
 import { getDict, type Locale } from "@/content/dictionary";
 
@@ -19,10 +18,7 @@ export default function Reserve({ locale }: { locale: Locale }) {
         <p className="u-lede resv__lede">{t.reserve.body}</p>
 
         <div className="resv__acts">
-          <Link className="btn resv__btn" href={`/${locale}/book`}>
-            {t.booking.heading} <Arrow />
-          </Link>
-          <a className="link-arrow" href={restaurant.contact.lineUrl.value} target="_blank" rel="noopener noreferrer">
+          <a className="btn resv__btn" href={restaurant.contact.lineUrl.value} target="_blank" rel="noopener noreferrer">
             {t.cta.reserveLine} <Arrow />
           </a>
           <a className="link-arrow" href={`tel:${restaurant.contact.phoneIntl.value}`}>

@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 const B = "http://localhost:4700/Suanzen-Omakase-Restaurant";
-const b = await chromium.launch();
+const b = await chromium.launch({ channel: "chrome" }).catch(() => chromium.launch());
 const p = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
 const pass = (n, ok, x = "") => console.log(`  ${ok ? "PASS" : "FAIL"}  ${n}${x ? "  — " + x : ""}`);
 
@@ -32,13 +32,8 @@ const navOk = await p.evaluate(() => {
 });
 pass("navigation clickable while the curtain is up", navOk);
 
-// 3 · on a move between pages
-await p.waitForTimeout(1600);
-await p.locator('a[href$="/en/book/"]').first().click();
-await p.waitForTimeout(120);
-pass("raised when moving to another page", (await p.locator(".curtain").count()) === 1);
-
-// 4 · on the change of language
+// 3 · on the change of language — a single page now, so arriving and
+// switching language are the two times the curtain rises
 await p.waitForTimeout(1800);
 await p.locator(".lang").click();
 await p.waitForTimeout(120);

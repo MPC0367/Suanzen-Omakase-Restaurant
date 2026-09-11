@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { asset } from "@/lib/asset";
 import { activeCourses, formatBaht, allDishes, type Course, type Dish } from "@/content/courses";
 import { getDict, type Locale } from "@/content/dictionary";
+import { restaurant } from "@/content/restaurant";
 
 const Arrow = () => (
   <svg width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true">
@@ -56,8 +56,34 @@ export default function Courses({ locale }: { locale: Locale }) {
     setOpen((cur) => (cur === id ? null : id));
   }, []);
 
+  /* The shortcuts: every course with its price, one tap from the top of the
+     menu. Choosing a course here always opens it, never closes it, and brings
+     its heading into view under the header. */
+  const jumpTo = useCallback((id: string) => {
+    setOpen(id);
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.requestAnimationFrame(() => {
+      document.getElementById(`course-${id}`)?.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" });
+    });
+  }, []);
+
   return (
     <div className="menu">
+      <nav className="menu__jump" aria-label={t.coursesSection.jumpLabel}>
+        {activeCourses.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            className={`jump ${open === c.id ? "is-on" : ""}`}
+            onClick={() => jumpTo(c.id)}
+            aria-controls={`course-panel-${c.key}`}
+          >
+            <span className="jump__name">{locale === "th" ? c.nameTh : c.nameEn}</span>
+            <span className="jump__price u-numeral">{formatBaht(c.price)}</span>
+          </button>
+        ))}
+      </nav>
+
       <ul className="menu__list">
         {activeCourses.map((c) => (
           <CourseRow
@@ -130,7 +156,7 @@ function CourseRow({
   const total = allDishes(course).length;
 
   return (
-    <li className={`course ${isOpen ? "is-open" : ""}`}>
+    <li className={`course ${isOpen ? "is-open" : ""}`} id={`course-${course.id}`}>
       <h3 className="course__h">
         <button className="course__btn" onClick={onToggle} aria-expanded={isOpen} aria-controls={panelId}>
           <span className="course__idx u-numeral">{course.index}</span>
@@ -168,7 +194,6 @@ function CourseRow({
                     locale={locale}
                     touch={touch}
                     onShow={() => show(d)}
-                    fallback={fallback}
                   />
                 ))}
               </ol>
@@ -176,9 +201,9 @@ function CourseRow({
           ))}
 
           <div className="course__acts">
-            <Link className="btn" href={`/${locale}/book?course=${course.slug}`}>
-              {t.cta.reserve} <Arrow />
-            </Link>
+            <a className="btn" href={restaurant.contact.lineUrl.value} target="_blank" rel="noopener noreferrer">
+              {t.cta.reserveLine} <Arrow />
+            </a>
             <span className="course__total u-numeral">
               {total} {unit}
             </span>
@@ -191,19 +216,22 @@ function CourseRow({
 
 /* ── One dish ─────────────────────────────────────────────────────────────── */
 function DishRow({
-  dish, n, locale, touch, onShow, fallback,
+  dish, n, locale, touch, onShow,
 }: {
   dish: Dish;
   n: number;
   locale: Locale;
   touch: boolean;
   onShow: () => void;
-  fallback?: string;
 }) {
   const [shown, setShown] = useState(false);
   const ref = useRef<HTMLLIElement>(null);
   const name = locale === "th" ? (dish.nameTh ?? dish.nameEn) : dish.nameEn;
-  const src = dish.photo ?? fallback;
+  /* Only a dish's own photograph opens under its name. Falling back to the
+     course's picture here put a photograph of a different dish directly under
+     this one's name on phones. The desktop stage still borrows the course
+     picture, but captions it with the course, never the dish. */
+  const src = dish.photo;
 
   return (
     <li
@@ -214,8 +242,8 @@ function DishRow({
     >
       <button
         className="dish__btn"
-        onClick={() => { onShow(); if (touch) setShown((v) => !v); }}
-        aria-expanded={touch ? shown : undefined}
+        onClick={() => { onShow(); if (touch && src) setShown((v) => !v); }}
+        aria-expanded={touch && src ? shown : undefined}
       >
         <span className="dish__n u-numeral">{String(n).padStart(2, "0")}</span>
         <span className="dish__name">{name}</span>
