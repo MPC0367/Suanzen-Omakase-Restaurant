@@ -108,4 +108,3 @@ export const photos = literal(read('media.ts'), 'photos');
 export const dict = literal(read('dictionary.ts'), 'dict');
 export const restaurant = literal(read('restaurant.ts'), 'restaurant');
 export const alaCarte = literal(read('alacarte.ts'), 'alaCarte');
-export const booking = literal(read('booking.ts'), 'booking');

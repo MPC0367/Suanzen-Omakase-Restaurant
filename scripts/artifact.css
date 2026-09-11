@@ -355,3 +355,44 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .bk__ref{display:grid;gap:.3rem}
 .bk__refcode{font-family:var(--serif);font-size:clamp(1.8rem,5vw,2.6rem);color:var(--accent);letter-spacing:.06em}
 .resv{text-align:start}
+
+/* ═══ THE MENU PAGE ═════════════════════════════════════════════════════════
+   The menu opens the page, straight under the fixed header. */
+.tnum{font-variant-numeric:tabular-nums}
+.courses-sec--top{padding-top:calc(var(--hdr-h,72px) + clamp(1.4rem,4vh,2.8rem))}
+.menu-intro{margin-bottom:clamp(1.2rem,3vh,2rem);gap:.6rem}
+.menu-intro__h{font-size:clamp(2rem,5.6vw,3.4rem)}
+
+/* ── course shortcuts ── every course and its price, one tap from the top.
+   Sideways on a phone rather than a wall of wrapped buttons. */
+.menu__jump{display:flex;gap:.5rem;overflow-x:auto;scrollbar-width:none;margin:0 calc(var(--gutter) * -1);padding:.2rem var(--gutter) .4rem}
+.menu__jump::-webkit-scrollbar{display:none}
+.jump{flex:0 0 auto;display:inline-flex;align-items:baseline;gap:.55rem;min-height:44px;padding:.55rem 1.05rem;border:1px solid var(--rule-strong);border-radius:999px;color:var(--fg);font-size:.92rem;white-space:nowrap;transition:background-color var(--t-ui) var(--ease),border-color var(--t-ui) var(--ease),color var(--t-ui) var(--ease)}
+.jump:hover{border-color:var(--accent)}
+.jump.is-on{background:var(--accent);border-color:var(--accent);color:#14110a}
+.jump__name{font-family:var(--serif)}
+.jump__price{font-size:.8rem;color:var(--fg-quiet);font-variant-numeric:tabular-nums}
+.jump.is-on .jump__price{color:inherit;opacity:.78}
+@media(min-width:64rem){.menu__jump{flex-wrap:wrap;margin:0;padding:0;overflow:visible}.course{scroll-margin-top:calc(var(--hdr-h,72px) + 1rem)}}
+@media(hover:hover) and (pointer:fine) and (min-width:75rem){.menu__jump{grid-column:1}}
+/* On a phone the bar pins under the header, so any course is one tap away
+   from anywhere in a long menu; it draws the one line above the courses. */
+@media(max-width:63.99rem){
+  .menu__jump{position:sticky;top:var(--hdr-h,64px);z-index:30;background:var(--bg);padding-block:.6rem;border-bottom:1px solid var(--rule)}
+  .course{scroll-margin-top:calc(var(--hdr-h,64px) + 4.4rem)}
+  .menu__list{border-top:0}
+}
+
+/* ── visit ── */
+.visit__info{display:grid;gap:1.8rem;align-content:start}
+.visit__acts{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem 1.4rem}
+.sheet__tel{align-self:flex-start;color:#f0ebe0}
+
+/* ── the curtain ── the seal on near-black, held, then lifted. */
+.curtain{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#050504;pointer-events:none;opacity:0;visibility:hidden}
+.curtain.is-up{animation:curtainLift 1.5s var(--ease) both}
+.curtain__mark{width:116px;height:116px;box-shadow:0 0 0 1px color-mix(in srgb,var(--amber) 34%,transparent),0 0 60px color-mix(in srgb,var(--amber) 12%,transparent)}
+.curtain.is-up .curtain__mark{animation:curtainMark .9s var(--ease-out) both}
+@keyframes curtainLift{0%,55%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes curtainMark{0%{opacity:0;transform:scale(.86)}60%{opacity:1}100%{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.curtain{display:none}}
