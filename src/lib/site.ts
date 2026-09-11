@@ -1,8 +1,8 @@
 /**
  * The site's public address, in one place.
  *
- * This is what canonical, hreflang, og:url, the sitemap, robots.txt and the
- * JSON-LD all publish as "where this page really lives". It was hardcoded to
+ * This is what canonical, hreflang, og:url, og:image and the JSON-LD all
+ * publish as "where this page really lives". It was hardcoded to
  * https://suanzen.com — a placeholder that was never replaced, and a domain
  * that is not merely un-pointed but unregistered. Every URL the site offered
  * search engines and LINK previews resolved to nothing.

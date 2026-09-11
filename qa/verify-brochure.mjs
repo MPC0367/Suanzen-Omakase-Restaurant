@@ -33,11 +33,17 @@ pass("header: Menu and Visit", nav.join("|") === "Menu|Visit", nav.join(" · "))
 pass("no form anywhere", (await d.locator("form").count()) === 0);
 pass("nothing links to a booking page", (await d.locator('a[href*="/book"]').count()) === 0);
 const robots = await d.$eval('meta[name="robots"]', (m) => m.content).catch(() => "none");
-pass("not offered to search engines", /noindex/.test(robots), robots);
+pass("not offered to search engines", /noindex,\s*nofollow/.test(robots), robots);
 const rootHtml = await (await fetch(B + "/")).text();
 pass("the root link (the one in the QR) previews as Menu and is not listed",
-     /<title>[^<]*Menu/.test(rootHtml) && /noindex/.test(rootHtml) && /og:image/.test(rootHtml),
+     /<title>[^<]*Menu/.test(rootHtml) && /noindex,\s*nofollow/.test(rootHtml),
      (rootHtml.match(/<title>([^<]*)/) || [])[1] || "no title");
+// robots.txt keeps /photos/ out of image search, so a preview picture there
+// may never show in LINE. The root link must use the one in /og/.
+const rootImg = (rootHtml.match(/property="og:image" content="([^"]*)"/) || [])[1] || "";
+pass("the root link's preview picture is the /og/ one", /\/og\/suan-zen\.jpg$/.test(rootImg), rootImg || "no og:image");
+const nf = await fetch(B + "/404.html");
+pass("the 404 page is not listed either", nf.ok && /noindex,\s*nofollow/.test(await nf.text()), `HTTP ${nf.status}`);
 await d.screenshot({ path: "qa/shots/platform-desktop.png" });
 await d.locator(".hdr__cta").click(); await d.waitForTimeout(700);
 const line = await d.locator(".res.is-open .res__line").getAttribute("href").catch(() => null);

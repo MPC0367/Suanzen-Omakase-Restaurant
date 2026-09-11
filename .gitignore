@@ -5,15 +5,14 @@ node_modules
 next-env.d.ts
 
 # Secrets. .env.example is the committed template; anything .local holds real
-# values (the Sheets webhook secret) and must never be committed.
+# values and must never be committed.
 .env*.local
 .env
 
-# Booking requests filed by the API route — real guest data, never committed.
+# Anything a server ever writes about guests. Nothing does now; never commit it.
 .data/
 
 # The static export is a build artefact; the Pages Action rebuilds it.
-# Delete this line if you upload out/ by hand (option B in DEPLOY.md).
 out/
 
 # QA screenshots.

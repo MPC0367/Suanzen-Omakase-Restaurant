@@ -28,8 +28,8 @@ jobs:
         run: node scripts/export.mjs
 
       # The QA suite drives a real browser against the built site: four
-      # viewports for overflow and console errors, contrast ratios computed off
-      # the rendered colours, and the booking form's validation.
+      # viewports for overflow and console errors, and contrast ratios computed
+      # off the rendered colours.
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 

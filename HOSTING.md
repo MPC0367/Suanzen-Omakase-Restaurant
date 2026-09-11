@@ -8,8 +8,9 @@ engines. It is hosted on GitHub Pages and rebuilds on every push to `main`.
 
 ## How it stays off Google
 
-- **Every page says `noindex, nofollow`**, including the root redirect page.
-  Google and Bing drop a page when they see that, and never list it.
+- **Every page says `noindex, nofollow`**: the menu in both languages, the root
+  redirect page and the 404. Google and Bing drop a page when they see that,
+  and never list it.
 - **robots.txt lets crawlers in.** They have to read a page to see its
   `noindex`. Never add `Disallow` for the pages; a blocked page can still be
   listed from links, just without its contents.
@@ -38,15 +39,25 @@ tick.
 ## Putting it on the restaurant's own domain
 
 `public/CNAME` is the one switch. When it holds a domain, the workflow builds
-for the domain root and points the link preview at that domain. Until the
-domain is attached in GitHub, a build like that breaks the github.io address,
-so do the steps in this order.
+for the domain root and points the link preview at that domain. GitHub does
+not read the file itself; the domain is attached in the repo's settings.
 
-1. **Register the domain in the restaurant's name.** A `.com` at Cloudflare
-   Registrar costs about 345 THB a year, sold at cost, with contact details
-   hidden. Leave the *Organization* field blank, or the restaurant's name is
-   published in the domain's public record. Turn on auto-renew.
-2. **Point the DNS at GitHub.** At the registrar, add:
+Do the steps in this order. Verifying first stops anyone else attaching the
+domain to their own GitHub site in the gap before you do.
+
+1. **Register the domain to the restaurant.**
+   - Put the restaurant's legal name in the *Organization* field, so the
+     business, not whoever fills in the form, owns the domain.
+   - If the registrar asks whether to publish that name, decline. Check the
+     public record afterwards at [lookup.icann.org](https://lookup.icann.org).
+   - Turn on auto-renew, with a card that will not expire.
+   - A `.com` at Cloudflare Registrar is sold at cost, in US dollars: US$10.46
+     (about 345 THB) a year until 31 October 2026, about US$11.2 (365–370 THB)
+     from 1 November.
+2. **Verify the domain with GitHub.** Your GitHub profile → **Settings →
+   Pages → Add a domain**. Add the TXT record it shows
+   (`_github-pages-challenge-mpc0367`) at the registrar, then click **Verify**.
+3. **Point the DNS at GitHub.** At the registrar, add:
 
    | Type | Name | Value |
    |---|---|---|
@@ -60,29 +71,33 @@ so do the steps in this order.
    | AAAA | `@` | `2606:50c0:8003::153` |
    | CNAME | `www` | `mpc0367.github.io` |
 
-   On Cloudflare DNS, set each record to **DNS only** (grey cloud), or GitHub
-   cannot issue the HTTPS certificate.
-3. **Verify the domain with GitHub** so nobody else can attach it: your GitHub
-   profile → **Settings → Pages → Add a domain**, then add the TXT record it
-   shows.
-4. **Attach it:** the repo → **Settings → Pages → Custom domain**, enter the
-   domain, **Save**. Wait for the DNS check to pass, then tick
-   **Enforce HTTPS** once it lets you (the certificate can take up to an hour).
-5. **Add `public/CNAME` and push:**
+   Cloudflare DNS proxies new records by default (orange cloud). Set each of
+   these to **DNS only** (grey cloud) and leave them that way: it is the widely
+   reported fix for GitHub failing to issue or renew the HTTPS certificate,
+   though neither company documents it. If the domain has CAA records, one
+   must allow `letsencrypt.org`.
+4. **Attach it, and push the switch straight away.** In the repo → **Settings
+   → Pages → Custom domain**, enter the domain and **Save**. Then at once:
 
    ```bash
    echo "suanzenomakase.com" > public/CNAME
    git add public/CNAME && git commit -m "Serve the menu from the restaurant's domain" && git push
    ```
 
+   Between the Save and the green tick on that push, the page shows without
+   its styling: GitHub is serving the old build at the new address. It is a
+   minute or two.
+5. **Turn on Enforce HTTPS** in the same settings once it lets you. The
+   certificate usually arrives within an hour; GitHub allows up to 24.
 6. **Regenerate the QR code** for the new address:
 
    ```bash
    node scripts/make-qr.mjs https://suanzenomakase.com/
    ```
 
-The old github.io address forwards to the domain from step 4 on, so links
-already sent in LINE keep working.
+Once the domain is attached, GitHub redirects the old github.io address to it
+permanently, keeping the rest of the path, so links already sent in LINE keep
+working. Open an old link after step 4 to check.
 
 ---
 

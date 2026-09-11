@@ -1,13 +1,11 @@
 /**
  * Two builds come out of this one codebase.
  *
- *  npm run build   — the full app. Booking requests POST to /api/reservations,
- *                    which validates them and files them. Deploy to Vercel,
- *                    Netlify, or any Node host.
+ *  npm run build   — the ordinary Next build, for `npm run start` locally or
+ *                    any Node host.
  *
  *  npm run export  — a folder of static HTML for GitHub Pages. There is no
- *                    server, so the booking form hands off to LINE instead of
- *                    posting, and Next's image optimiser is turned off.
+ *                    server, so Next's image optimiser is turned off.
  *
  * STATIC_EXPORT is set by the export script; BASE_PATH is for a GitHub project
  * site served from /<repo>/ rather than the domain root.

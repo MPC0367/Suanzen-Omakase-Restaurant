@@ -36,8 +36,13 @@ jobs:
         run: |
           owner="${GITHUB_REPOSITORY_OWNER,,}"
           if [ -f public/CNAME ]; then
+            domain="$(tr -d '[:space:]' < public/CNAME)"
+            if [[ ! "$domain" =~ ^[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
+              echo "::error::public/CNAME must hold a bare domain, like suanzenomakase.com"
+              exit 1
+            fi
             echo "path=" >> "$GITHUB_OUTPUT"
-            echo "origin=https://$(tr -d '[:space:]' < public/CNAME)" >> "$GITHUB_OUTPUT"
+            echo "origin=https://$domain" >> "$GITHUB_OUTPUT"
           elif [[ "${{ github.repository }}" == *".github.io" ]]; then
             echo "path=" >> "$GITHUB_OUTPUT"
             echo "origin=https://$owner.github.io" >> "$GITHUB_OUTPUT"

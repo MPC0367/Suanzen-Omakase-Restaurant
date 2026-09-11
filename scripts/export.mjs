@@ -69,7 +69,7 @@ const prefix = basePath || '';
 // bilingual because it speaks for both. Keep the image in step with OG_IMAGE
 // in src/lib/site.ts.
 const origin = (process.env.NEXT_PUBLIC_SITE_ORIGIN || 'https://mpc0367.github.io').replace(/\/$/, '');
-const preview = `${origin}${prefix}/photos/78893251dcbe.jpg`;
+const preview = `${origin}${prefix}/og/suan-zen.jpg`;
 fs.writeFileSync(
   path.join(OUT, 'index.html'),
   `<!doctype html>
@@ -86,9 +86,11 @@ fs.writeFileSync(
 <meta property="og:description" content="The omakase menu: seven courses and every dish, with prices. · เมนูโอมากาเสะ 7 คอร์ส พร้อมรายการอาหารทุกจานและราคา">
 <meta property="og:url" content="${origin}${prefix}/">
 <meta property="og:image" content="${preview}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="800">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="${preview}">
-<link rel="canonical" href="${prefix}/en/">
+<link rel="canonical" href="${origin}${prefix}/en/">
 <meta http-equiv="refresh" content="0; url=${prefix}/en/">
 <script>
   // Send Thai browsers to the Thai site; everyone else to English.
@@ -110,9 +112,13 @@ fs.writeFileSync(
 );
 
 // A 404 that keeps people inside the site rather than on Pages' default page.
-const notFound = path.join(OUT, '404.html');
-if (!fs.existsSync(notFound)) {
-  fs.copyFileSync(path.join(OUT, 'index.html'), notFound);
+// Next writes its own not-found page to 404.html and 404/index.html, marked
+// only "noindex"; replace both with the redirect page above, so a mistyped
+// address lands on the menu and says noindex, nofollow like every other page.
+for (const f of ['404.html', path.join('404', 'index.html')]) {
+  if (fs.existsSync(path.join(OUT, path.dirname(f)))) {
+    fs.copyFileSync(path.join(OUT, 'index.html'), path.join(OUT, f));
+  }
 }
 
 const size = execSync(`du -sh "${OUT}"`).toString().trim().split(/\s+/)[0];

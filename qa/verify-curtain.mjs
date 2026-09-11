@@ -1,5 +1,5 @@
 import { chromium } from "playwright";
-const B = "http://localhost:4700/Suanzen-Omakase-Restaurant";
+const B = process.argv[2] || "http://localhost:4700/Suanzen-Omakase-Restaurant";
 const b = await chromium.launch({ channel: "chrome" }).catch(() => chromium.launch());
 const p = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
 const pass = (n, ok, x = "") => console.log(`  ${ok ? "PASS" : "FAIL"}  ${n}${x ? "  — " + x : ""}`);
