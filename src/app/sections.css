@@ -504,6 +504,13 @@
     border-bottom: 1px solid var(--rule);
   }
   .course { scroll-margin-top: calc(var(--hdr-h, 64px) + 4.4rem); }
+  /* Every course shows from the first paint, before Courses.tsx takes over
+     and opens them all itself (letting a guest fold one away). The page is
+     its full length at once: a #visit link lands on Visit, and nothing opens
+     late above the guest. !important because globals.css hides [hidden]
+     with !important; this outranks it only until .is-live is set. */
+  .menu:not(.is-live) .course__panel[hidden] { display: block !important; }
+  .menu:not(.is-live) .course .cx { transform: rotate(180deg); color: var(--accent); }
   /* The pinned bar already draws the line above the courses; the list's own
      top border would stack a second one just under it. */
   .menu__list { border-top: 0; }

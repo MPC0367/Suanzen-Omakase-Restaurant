@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { asset } from "@/lib/asset";
 import { activeCourses, formatBaht, allDishes, type Course, type Dish } from "@/content/courses";
@@ -19,24 +19,140 @@ const Chevron = () => (
   </svg>
 );
 
+/* Where the phone layout begins: the width below which sections.css pins the
+   course bar under the header, and shows every course before this script
+   takes over. Keep the two in step. */
+const PHONE = "(max-width: 63.99rem)";
+const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 /**
  * The menu. Each course opens to its full list of dishes; pointing at a dish
  * shows the restaurant's photograph of it, where one exists. Dishes with no
  * photograph fall back to a picture from the same course rather than an empty
  * frame, and nothing is ever shown against the wrong dish.
+ *
+ * On a phone the menu reads straight down: every course is already open, and
+ * the pinned course bar spotlights whichever course is under it as the guest
+ * scrolls. They are open from the first paint (sections.css shows them before
+ * this script runs), because a course opening late, or above the one being
+ * read, would shove the page and throw a #visit link off its mark.
  */
 export default function Courses({ locale }: { locale: Locale }) {
   const t = getDict(locale);
-  const [open, setOpen] = useState<string | null>(activeCourses[0]?.id ?? null);
+  const [open, setOpen] = useState<string[]>(activeCourses[0] ? [activeCourses[0].id] : []);
   const [preview, setPreview] = useState<{ src: string; label: string } | null>(null);
   const [touch, setTouch] = useState(false);
+  const [phone, setPhone] = useState(false);
+  const [live, setLive] = useState(false);
+  const [spot, setSpot] = useState<string | null>(activeCourses[0]?.id ?? null);
+  const barRef = useRef<HTMLElement>(null);
+  const jumping = useRef(false);
+  const settle = useRef<number | undefined>(undefined);
+  const openRef = useRef(open);
+  const spotRef = useRef(spot);
+  const anchor = useRef<string | null>(null);
+
+  useEffect(() => { openRef.current = open; }, [open]);
+  useEffect(() => { spotRef.current = spot; }, [spot]);
 
   useEffect(() => {
     setTouch(!window.matchMedia("(hover: hover) and (pointer: fine)").matches);
   }, []);
 
+  /* A phone opens every course; a desktop keeps one. Crossing between the two
+     (a rotated tablet, a resized window) keeps the course being read: it stays
+     open and is brought back into view, rather than the menu snapping shut
+     around the first course and leaving the guest somewhere past it. */
+  useEffect(() => {
+    const mq = window.matchMedia(PHONE);
+    const apply = (first: boolean) => {
+      const cur = openRef.current;
+      const reading = mq.matches ? (cur[0] ?? null) : spotRef.current;
+      if (!first) anchor.current = reading;
+      setPhone(mq.matches);
+      setLive(true);
+      setOpen(
+        mq.matches ? activeCourses.map((c) => c.id)
+        : !first && reading ? [reading]
+        : cur.slice(0, 1),
+      );
+    };
+    apply(true);
+    const onChange = () => apply(false);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  useLayoutEffect(() => {
+    const id = anchor.current;
+    if (!id) return;
+    anchor.current = null;
+    document.getElementById(`course-${id}`)?.scrollIntoView({ block: "start", behavior: "instant" });
+  }, [open, phone]);
+
+  /* The spotlight: the last course whose heading has reached a line just
+     below the pinned bar. Above the first course, the first is spotlit. */
+  const measure = useCallback(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    const line = bar.getBoundingClientRect().bottom + 24;
+    let id = activeCourses[0]?.id ?? null;
+    for (const c of activeCourses) {
+      const el = document.getElementById(`course-${c.id}`);
+      if (el && el.getBoundingClientRect().top <= line) id = c.id;
+      else break;
+    }
+    setSpot(id);
+  }, []);
+
+  /* While a tapped shortcut is scrolling the page, the spotlight stays on the
+     tapped course instead of passing over every course in between. It lets go
+     once the page has been still for a moment, or the guest takes over. */
+  const hold = useCallback((ms: number) => {
+    jumping.current = true;
+    window.clearTimeout(settle.current);
+    settle.current = window.setTimeout(() => { jumping.current = false; measure(); }, ms);
+  }, [measure]);
+
+  useEffect(() => {
+    if (!phone) return;
+    let frame = 0;
+    const onScroll = () => {
+      if (jumping.current) return hold(160);
+      if (!frame) frame = window.requestAnimationFrame(() => { frame = 0; measure(); });
+    };
+    // A finger, a wheel or a key means the guest is scrolling by hand now.
+    const release = () => {
+      if (!jumping.current) return;
+      jumping.current = false;
+      window.clearTimeout(settle.current);
+      measure();
+    };
+    const input = ["touchstart", "wheel", "keydown"] as const;
+    window.addEventListener("scroll", onScroll, { passive: true });
+    input.forEach((e) => window.addEventListener(e, release, { passive: true }));
+    measure();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      input.forEach((e) => window.removeEventListener(e, release));
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(settle.current);
+      jumping.current = false;
+    };
+  }, [phone, measure, hold]);
+
+  // The bar slides sideways to keep the spotlit course in view.
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!phone || !spot || !bar) return;
+    const chip = bar.querySelector<HTMLElement>(`[data-course="${spot}"]`);
+    if (!chip) return;
+    const left = chip.offsetLeft - (bar.clientWidth - chip.offsetWidth) / 2;
+    bar.scrollTo({ left: Math.max(0, left), behavior: still() ? "auto" : "smooth" });
+  }, [phone, spot]);
+
   const openCourse = useMemo(
-    () => activeCourses.find((c) => c.id === open) ?? null,
+    () => activeCourses.find((c) => c.id === open[open.length - 1]) ?? null,
     [open],
   );
 
@@ -52,31 +168,37 @@ export default function Courses({ locale }: { locale: Locale }) {
     }
   }, [openCourse, locale]);
 
+  // On a desktop one course is open at a time; on a phone each keeps its own state.
   const toggle = useCallback((id: string) => {
-    setOpen((cur) => (cur === id ? null : id));
-  }, []);
+    setOpen((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : phone ? [...cur, id] : [id]));
+  }, [phone]);
 
   /* The shortcuts: every course with its price, one tap from the top of the
      menu. Choosing a course here always opens it, never closes it, and brings
      its heading into view under the header. */
   const jumpTo = useCallback((id: string) => {
-    setOpen(id);
-    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setOpen((cur) => (phone ? (cur.includes(id) ? cur : [...cur, id]) : [id]));
+    if (phone) { setSpot(id); hold(500); }
     window.requestAnimationFrame(() => {
-      document.getElementById(`course-${id}`)?.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" });
+      document.getElementById(`course-${id}`)?.scrollIntoView({ behavior: still() ? "auto" : "smooth", block: "start" });
     });
-  }, []);
+  }, [phone, hold]);
+
+  // On a phone the bar spotlights the course being read; on a desktop, the open one.
+  const lit = phone ? spot : (open[0] ?? null);
 
   return (
-    <div className="menu">
-      <nav className="menu__jump" aria-label={t.coursesSection.jumpLabel}>
+    <div className={`menu ${live ? "is-live" : ""}`}>
+      <nav className="menu__jump" aria-label={t.coursesSection.jumpLabel} ref={barRef}>
         {activeCourses.map((c) => (
           <button
             key={c.id}
             type="button"
-            className={`jump ${open === c.id ? "is-on" : ""}`}
+            className={`jump ${lit === c.id ? "is-on" : ""}`}
             onClick={() => jumpTo(c.id)}
             aria-controls={`course-panel-${c.key}`}
+            aria-current={lit === c.id ? "true" : undefined}
+            data-course={c.id}
           >
             <span className="jump__name">{locale === "th" ? c.nameTh : c.nameEn}</span>
             <span className="jump__price u-numeral">{formatBaht(c.price)}</span>
@@ -90,7 +212,7 @@ export default function Courses({ locale }: { locale: Locale }) {
             key={c.id}
             course={c}
             locale={locale}
-            isOpen={open === c.id}
+            isOpen={open.includes(c.id)}
             onToggle={() => toggle(c.id)}
             onPreview={setPreview}
             touch={touch}

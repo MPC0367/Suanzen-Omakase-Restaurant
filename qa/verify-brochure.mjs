@@ -82,25 +82,105 @@ const bar = await m.evaluate(() => ({ top: Math.round(document.querySelector(".m
   hdr: Math.round(document.querySelector(".hdr").getBoundingClientRect().bottom) }));
 pass("the course bar stays pinned under the header", Math.abs(bar.top - bar.hdr) <= 2, `bar at ${bar.top}px, header ends ${bar.hdr}px`);
 const mchips = m.locator(".menu__jump .jump");
+const nChips = await mchips.count();
+const lit = () => m.$$eval(".menu__jump .jump", (cs) => cs.findIndex((c) => c.classList.contains("is-on")));
+const openCount = await m.locator(".course.is-open").count();
+pass("on a phone every course is already open", openCount === nChips, `${openCount} of ${nChips} open`);
+
+// Scroll by hand (instantly, so nothing is measured mid-scroll) until a course
+// sits just under the pinned bar.
+const underBar = (i) => m.evaluate((i) => {
+  const under = document.querySelector(".hdr").getBoundingClientRect().height
+    + document.querySelector(".menu__jump").getBoundingClientRect().height;
+  const c = document.querySelectorAll(".course")[i];
+  scrollTo({ top: scrollY + c.getBoundingClientRect().top - under - 8, behavior: "instant" });
+}, i);
+await underBar(3); await m.waitForTimeout(500);
+pass("scrolling down spotlights the course being read", (await lit()) === 3, `spotlit: ${await lit()}`);
+const inBar = await m.evaluate(() => {
+  const bar = document.querySelector(".menu__jump").getBoundingClientRect();
+  const on = document.querySelector(".menu__jump .jump.is-on")?.getBoundingClientRect();
+  return !!on && on.left >= bar.left - 1 && on.right <= bar.right + 1;
+});
+pass("the bar slides to keep the spotlit course in view", inBar);
+await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(500);
+pass("back at the top, the first course is spotlit", (await lit()) === 0, `spotlit: ${await lit()}`);
+
+// Tap a course from the top and watch the spotlight all the way there.
 const mwant = (await mchips.nth(5).locator(".jump__name").textContent()).trim();
-await mchips.nth(5).tap(); await m.waitForTimeout(1400);
-const mgot = await openCourse(m);
-pass("a course tapped from the bar opens just below it", !!mgot && mgot.name === mwant && mgot.top >= bar.bottom - 2 && mgot.top < bar.bottom + 140,
-     mgot ? `${mgot.name} at ${mgot.top}px, bar ends ${bar.bottom}px` : "nothing open");
+await m.evaluate(() => {
+  window.__lit = []; const t0 = performance.now();
+  const tick = () => {
+    const i = [...document.querySelectorAll(".menu__jump .jump")].findIndex((c) => c.classList.contains("is-on"));
+    if (window.__lit[window.__lit.length - 1] !== i) window.__lit.push(i);
+    if (performance.now() - t0 < 2600) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});
+await mchips.nth(5).tap(); await m.waitForTimeout(2800);
+const seen = await m.evaluate(() => window.__lit);
+const landed = await m.evaluate(() => {
+  const c = document.querySelectorAll(".course")[5];
+  return { name: c.querySelector(".course__name").textContent.trim(), top: Math.round(c.getBoundingClientRect().top),
+           bar: Math.round(document.querySelector(".menu__jump").getBoundingClientRect().bottom) };
+});
+pass("a course tapped from the bar lands just below it", landed.name === mwant && landed.top >= landed.bar - 2 && landed.top < landed.bar + 140,
+     `${landed.name} at ${landed.top}px, bar ends ${landed.bar}px`);
+pass("the spotlight goes straight to the tapped course", seen.at(-1) === 5 && seen.slice(1).every((i) => i === 5), seen.join(" → "));
 await m.screenshot({ path: "qa/shots/platform-phone-pinned.png" });
 
-const open = m.locator(".course.is-open");
-await open.locator(".dish:not(.has-photo) .dish__btn").first().tap(); await m.waitForTimeout(700);
-pass("a dish with no photo of its own shows no picture", (await open.locator(".dish:not(.has-photo) .dish__shot").count()) === 0);
-await open.locator(".dish.has-photo .dish__btn").first().tap(); await m.waitForTimeout(1000);
-pass("a dish with its own photo opens it", (await open.locator(".dish.has-photo.is-shown .dish__shot img").count()) === 1);
+// The dish photos, in the course the bar just brought into view (it has both kinds).
+const c5 = m.locator(".course").nth(5);
+await c5.locator(".dish:not(.has-photo) .dish__btn").first().tap(); await m.waitForTimeout(700);
+pass("a dish with no photo of its own shows no picture", (await c5.locator(".dish:not(.has-photo) .dish__shot").count()) === 0);
+await c5.locator(".dish.has-photo .dish__btn").first().tap(); await m.waitForTimeout(1000);
+pass("a dish with its own photo opens it", (await c5.locator(".dish.has-photo.is-shown .dish__shot img").count()) === 1);
 
-await m.evaluate(() => scrollTo(0, 0)); await m.waitForTimeout(400);
+await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(400);
 await m.locator(".burger").tap(); await m.waitForTimeout(900);
 const sheet = await m.$$eval(".sheet__nav a", (as) => as.map((a) => ({ t: a.textContent.replace(/[0-9]/g, "").trim(), h: Math.round(a.getBoundingClientRect().height) })));
 pass("phone menu: Menu and Visit", sheet.map((s) => s.t).join("|") === "Menu|Visit", sheet.map((s) => s.t).join(" · "));
 pass("phone menu: links are at least 44px tall", sheet.every((s) => s.h >= 44), sheet.map((s) => s.h + "px").join(", "));
 pass("phone menu: Reserve on LINE", (await m.locator('.sheet a[href*="lin.ee"]').count()) >= 1);
+
+// The Visit link reloads the page at #visit (/en → /en/#visit). With every
+// course showing from the first paint, it has to land on Visit itself.
+await m.goto(B + "/en/#visit", { waitUntil: "domcontentloaded" }); await ready(m); await m.waitForTimeout(2000);
+const visit = await m.evaluate(() => ({ top: Math.round(document.getElementById("visit").getBoundingClientRect().top),
+  hdr: Math.round(document.querySelector(".hdr").getBoundingClientRect().height) }));
+pass("a link to #visit lands on Visit", Math.abs(visit.top) <= visit.hdr + 10, `Visit at ${visit.top}px, header ${visit.hdr}px`);
+
+// Turning a tablet, or widening the window, past the desktop width keeps the
+// course being read open and in view.
+await m.goto(B + "/en/", { waitUntil: "domcontentloaded" }); await ready(m);
+await underBar(4); await m.waitForTimeout(500);
+await m.setViewportSize({ width: 1440, height: 900 }); await m.waitForTimeout(1000);
+const wide = await m.evaluate(() => {
+  const cs = [...document.querySelectorAll(".course")];
+  return { open: cs.flatMap((c, i) => (c.classList.contains("is-open") ? [i] : [])),
+           top: Math.round(cs[4].getBoundingClientRect().top) };
+});
+pass("widening to a desktop keeps the course being read, in view", wide.open.join() === "4" && wide.top >= 0 && wide.top < 450,
+     `open: ${wide.open.join(", ")}; that course at ${wide.top}px`);
+
+// Before the script runs (a slow phone, a slow network), a phone must already
+// show every course, so nothing opens late above the guest; a desktop, one.
+// globals.css hides [hidden] with !important, which once made this rule inert
+// while the #visit check above still passed on timing alone.
+for (const [w, h, want] of [[390, 844, 7], [1440, 900, 1]]) {
+  const pc = await b.newContext({ viewport: { width: w, height: h }, isMobile: w < 1024, hasTouch: w < 1024 });
+  const pp = await pc.newPage();
+  await pp.route("**/_next/static/**/*.js", (r) => r.abort());
+  await pp.goto(B + "/en/", { waitUntil: "load" }); await pp.waitForTimeout(500);
+  const shown = await pp.$$eval(".course__panel", (ps) => ps.filter((x) => getComputedStyle(x).display !== "none").length);
+  pass(`before the script runs, ${w}px shows ${want === 1 ? "one course" : "every course"}`, shown === want, `${shown} of 7 showing`);
+  await pc.close();
+}
+
+console.log("desktop, again");
+await d.locator(".menu__jump .jump").nth(2).click(); await d.waitForTimeout(900);
+const dOpen = await d.locator(".course.is-open").count();
+pass("a desktop keeps one course open at a time", dOpen === 1, `${dOpen} open`);
 
 console.log(errs.length ? "  JS errors:\n    " + errs.join("\n    ") : "  no JS errors");
 await b.close();
