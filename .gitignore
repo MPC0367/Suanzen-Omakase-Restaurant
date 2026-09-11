@@ -18,5 +18,6 @@ out/
 # QA screenshots.
 qa/shots/
 
-# The single-file artifact is a build product; npm run artifact rebuilds it.
+# The artifact package is a build product; npm run artifact rebuilds it.
+.artifact/
 *.artifact.html

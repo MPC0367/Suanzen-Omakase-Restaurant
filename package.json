@@ -10,7 +10,7 @@
     "qa": "node qa/shots.mjs",
     "qa:a11y": "node qa/a11y.mjs",
     "export": "node scripts/export.mjs",
-    "artifact": "node scripts/optimise-for-artifact.mjs && node scripts/build-artifact.mjs"
+    "artifact": "node scripts/export.mjs --base \"\" && node scripts/artifact-from-export.mjs"
   },
   "dependencies": {
     "next": "15.5.4",
