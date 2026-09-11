@@ -61,7 +61,7 @@ export async function generateMetadata({
       url: `${SITE}/${locale}`,
       locale: locale === "th" ? "th_TH" : "en_US",
       alternateLocale: locale === "th" ? "en_US" : "th_TH",
-      images: [{ url: OG_IMAGE, width: 1200, height: 900, alt: t.meta.title }],
+      images: [{ url: OG_IMAGE, width: 1200, height: 800, alt: t.meta.title }],
     },
     twitter: {
       card: "summary_large_image", title: t.meta.title,

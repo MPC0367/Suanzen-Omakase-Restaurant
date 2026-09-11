@@ -18,5 +18,7 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export const SITE = `${ORIGIN}${BASE}`;
 
-/** The image link previews use. A real photograph of the room, not a logo. */
-export const OG_IMAGE = `${SITE}/photos/78893251dcbe.jpg`;
+/** The image link previews use. A real photograph of the room, not a logo.
+ *  It sits in /og/, not /photos/: robots.txt keeps /photos/ out of image
+ *  search, and LINE's preview fetcher still has to reach this one. */
+export const OG_IMAGE = `${SITE}/og/suan-zen.jpg`;

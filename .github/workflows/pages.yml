@@ -28,22 +28,28 @@ jobs:
       - run: npm ci
 
       # A project site is served from /<repo>/, a user or custom-domain site
-      # from the root. Work out which this is so asset paths come out right.
-      - name: Work out the base path
+      # from the root. Work out which this is, and the address it lives at, so
+      # asset paths and the link preview come out right. public/CNAME is the
+      # one switch: put the domain in it and both follow.
+      - name: Work out where the site lives
         id: base
         run: |
-          if [ -f public/CNAME ] || [[ "${{ github.repository }}" == *".github.io" ]]; then
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          if [ -f public/CNAME ]; then
             echo "path=" >> "$GITHUB_OUTPUT"
+            echo "origin=https://$(tr -d '[:space:]' < public/CNAME)" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.repository }}" == *".github.io" ]]; then
+            echo "path=" >> "$GITHUB_OUTPUT"
+            echo "origin=https://$owner.github.io" >> "$GITHUB_OUTPUT"
           else
             echo "path=/${{ github.event.repository.name }}" >> "$GITHUB_OUTPUT"
+            echo "origin=https://$owner.github.io" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build the static site
         env:
-          # Where canonical, hreflang, og:url, the sitemap and robots.txt point.
-          # On a custom domain, set this to that domain — public/CNAME already
-          # switches the base path, and the two together give correct URLs.
-          NEXT_PUBLIC_SITE_ORIGIN: https://mpc0367.github.io
+          # Where canonical, hreflang, og:url and og:image point.
+          NEXT_PUBLIC_SITE_ORIGIN: ${{ steps.base.outputs.origin }}
         run: node scripts/export.mjs --base "${{ steps.base.outputs.path }}"
 
 
