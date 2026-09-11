@@ -6,6 +6,7 @@ import Link from "next/link";
 import { asset } from "@/lib/asset";
 import { activeCourses, courseById, formatBaht, allDishes, type Course, type Dish } from "@/content/courses";
 import { adviceFor, advisorCopy, fill } from "@/content/advisor";
+import { photoRatio } from "@/content/photo-sizes";
 import { getDict, type Locale } from "@/content/dictionary";
 import { reserveLink } from "@/lib/line";
 import { COURSE_EVENT, hasPointer, openReserve } from "@/lib/events";
@@ -40,6 +41,51 @@ const now = (move: () => void) => {
   html.style.scrollBehavior = was;
 };
 
+/* How far down the screen the fixed header, and the pinned course bar under
+   it, reach. Measured live: the header compacts and the bar pins as the page moves. */
+const cover = () => Math.max(
+  0,
+  document.querySelector(".hdr")?.getBoundingClientRect().bottom ?? 0,
+  document.querySelector(".menu__jump")?.getBoundingClientRect().bottom ?? 0,
+);
+
+/* Whether the guest is moving the page by hand: a drag or a wheel since the
+   last tap. A tapped link or course-bar shortcut carries the page past many
+   dishes at once, and none of them should open a photograph on the way (each
+   would also push the place it is heading for further down). Counted rather
+   than timed, so only the order matters. One set of listeners for every dish. */
+const hand = { n: 0, drag: 0, tap: 0, on: false };
+const byHand = () => hand.drag > hand.tap;
+/* Whether a finger is on the glass, kept once for every dish: a photograph
+   that opened by itself in the middle of a drag has to know the finger was
+   already down when it opened. */
+const finger = { down: false };
+const watchHand = () => {
+  if (hand.on) return;
+  hand.on = true;
+  const drag = () => { hand.drag = ++hand.n; };
+  const tap = () => { hand.tap = ++hand.n; };
+  const lift = (e: Event) => { finger.down = ((e as TouchEvent).touches?.length ?? 0) > 0; };
+  window.addEventListener("touchmove", drag, { passive: true });
+  window.addEventListener("wheel", drag, { passive: true });
+  window.addEventListener("click", tap, { capture: true });
+  window.addEventListener("hashchange", tap);
+  // Captured, so the finger's state is known before any dish's own touch handler runs.
+  window.addEventListener("touchstart", () => { finger.down = true; }, { passive: true, capture: true });
+  window.addEventListener("touchend", lift, { passive: true, capture: true });
+  window.addEventListener("touchcancel", lift, { passive: true, capture: true });
+};
+
+/* Photographs folding away above the screen give their height back together.
+   Rows whose timers run out together fold in one render, and may sit in
+   several dish lists: each list's loss is counted once, and the page is put
+   back by the sum, from where it was before any of them folded. */
+const giveBack = { y: 0, lists: new Map<HTMLElement, number>(), open: false };
+
+/* When a photograph last opened by itself. In a fling several dishes can cross
+   the middle in one frame, and each picture would push the next off it. */
+let lastAuto = -Infinity;
+
 /**
  * The menu. Each course opens to its full list of dishes; pointing at a dish
  * shows the restaurant's photograph of it, where one exists. Dishes with no
@@ -50,7 +96,9 @@ const now = (move: () => void) => {
  * the pinned course bar spotlights whichever course is under it as the guest
  * scrolls. They are open from the first paint (sections.css shows them before
  * this script runs), because a course opening late, or above the one being
- * read, would shove the page and throw a #visit link off its mark.
+ * read, would shove the page and throw a #visit link off its mark. As the
+ * guest scrolls, each dish the restaurant has a photograph of opens it in the
+ * middle of the screen, and folds it away again once scrolled past.
  *
  * Every course says who it is for before it is opened, and what sets it apart
  * once it is; its Reserve opens LINE with that course already in the message.
@@ -517,6 +565,7 @@ function DishRow({
      this one's name on phones. The desktop stage still borrows the course
      picture, but captions it with the course, never the dish. */
   const src = dish.photo;
+  const ratio = src ? photoRatio(src) : 0.75;   // its height ÷ width, known before the picture loads
   // Just before a photograph above the screen folds: its list's height and the page's position.
   const folding = useRef<{ h: number; y: number } | null>(null);
 
@@ -537,16 +586,12 @@ function DishRow({
     const li = ref.current;
     const list = li?.closest<HTMLElement>(".dishes");
     if (!touch || !shown || !li || !list) return;
-    const cover = () => Math.max(
-      0,
-      document.querySelector(".hdr")?.getBoundingClientRect().bottom ?? 0,
-      document.querySelector(".menu__jump")?.getBoundingClientRect().bottom ?? 0,
-    );
+    watchHand();
     const watched = () => {
       const cols = getComputedStyle(list).columnCount;
       return cols !== "auto" && Number(cols) > 1 ? list : li;
     };
-    let idle = 0, frame = 0, touching = false, waiting = false;
+    let idle = 0, frame = 0, waiting = false;
     const fold = () => {
       waiting = false;
       if (!li.getBoundingClientRect().height) return setShown(false);   // its course was closed: nothing to give back
@@ -558,7 +603,7 @@ function DishRow({
       waiting = true;
       window.clearTimeout(idle);
       idle = window.setTimeout(() => {
-        if (touching) return;                                             // a resting finger is not "still"
+        if (finger.down) return;                                          // a resting finger is not "still"
         if (watched().getBoundingClientRect().bottom > cover()) { waiting = false; return; }
         fold();
       }, 180);
@@ -573,15 +618,12 @@ function DishRow({
       window.clearTimeout(idle);
     };
     const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(check); };
-    const down = () => { touching = true; };
-    const up = () => { touching = false; if (waiting) arm(); };
+    const up = () => { if (waiting) arm(); };   // the finger lifted: start the wait again
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("touchstart", down, { passive: true });
     window.addEventListener("touchend", up, { passive: true });
     window.addEventListener("touchcancel", up, { passive: true });
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("touchstart", down);
       window.removeEventListener("touchend", up);
       window.removeEventListener("touchcancel", up);
       window.clearTimeout(idle);
@@ -596,11 +638,77 @@ function DishRow({
     const f = folding.current;
     if (shown || !f) return;
     folding.current = null;
+    if (!giveBack.open) {
+      giveBack.open = true;
+      giveBack.y = f.y;
+      giveBack.lists.clear();
+      window.requestAnimationFrame(() => {
+        giveBack.open = false;
+        document.documentElement.style.overflowAnchor = "";
+      });
+    }
     const list = ref.current?.closest<HTMLElement>(".dishes");
-    const gone = list ? f.h - list.getBoundingClientRect().height : 0;
-    if (gone > 0.5) now(() => window.scrollTo(0, f.y - gone));
-    window.requestAnimationFrame(() => { document.documentElement.style.overflowAnchor = ""; });
+    if (list) giveBack.lists.set(list, Math.max(0, f.h - list.getBoundingClientRect().height));
+    let gone = 0;
+    giveBack.lists.forEach((g) => { gone += g; });
+    if (gone > 0.5) now(() => window.scrollTo(0, giveBack.y - gone));
   }, [shown]);
+
+  /* On a phone a dish's own photograph also opens by itself as the guest
+     scrolls down to it. It opens at the moment its name crosses the line where
+     the picture, opening beneath it, will sit in the middle of what is
+     visible, and folds away again once scrolled past, as above. Nothing on
+     screen moves when it opens: the picture grows below the name, into the
+     part of the page still to come.
+     - Only scrolling down. Scrolling back up, the part below the name is what
+       the guest has just read — a picture opening there would shove it, and
+       any picture already in the middle, down the screen.
+     - Only when the scroll itself carried the name across. A photograph opened
+       or closed by a tap moves the dishes below it without any scrolling, and
+       that is not the guest bringing a dish to the middle.
+     - Only when scrolling by hand (see byHand): a shortcut sweeping past opens nothing.
+     - Only while the name is in sight, only one at a time (see lastAuto), and
+       only when the picture fits on the screen: on a phone held sideways it
+       would open with its name at the top edge and run on for screens.
+     - Only in a one-column list: in two columns an opening photo re-balances
+       the columns under the guest's eyes. */
+  const shownRef = useRef(shown);
+  useEffect(() => { shownRef.current = shown; }, [shown]);
+  useEffect(() => {
+    const li = ref.current;
+    const btn = li?.querySelector<HTMLElement>(".dish__btn");
+    const list = li?.closest<HTMLElement>(".dishes");
+    if (!touch || !src || !li || !btn || !list) return;
+    watchHand();
+    // Where the name was last seen: which side of the line (-1 above, 1 below,
+    // 0 not yet), how far down the screen, and the page's position then.
+    let side = 0, lastBottom = 0, lastY = 0, frame = 0;
+    const check = () => {
+      frame = 0;
+      const r = btn.getBoundingClientRect();
+      const y = window.scrollY;
+      const cols = getComputedStyle(list).columnCount;
+      if (!r.height || (cols !== "auto" && Number(cols) > 1)) { side = 0; return; }
+      const top = cover();
+      const room = window.innerHeight - top;          // what is visible under the header and the bar
+      const shot = li.clientWidth * ratio + 22;       // the picture once open, and its padding
+      const line = top + Math.max(r.height, (room - shot) / 2);
+      const at = r.bottom <= line ? -1 : 1;
+      const byScroll = Math.abs(lastBottom - r.bottom - (y - lastY)) < 2;
+      const t = performance.now();
+      if (side === 1 && at === -1 && y > lastY && byScroll
+          && r.bottom > top && r.top < window.innerHeight && shot <= room
+          && !shownRef.current && byHand() && t - lastAuto > 300) {
+        lastAuto = t;
+        setShown(true);
+      }
+      side = at; lastBottom = r.bottom; lastY = y;
+    };
+    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(check); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    check();
+    return () => { window.removeEventListener("scroll", onScroll); window.cancelAnimationFrame(frame); };
+  }, [touch, src, ratio]);
 
   return (
     <li
@@ -622,7 +730,7 @@ function DishRow({
       {/* On touch the picture opens under the dish, since there is no hover. */}
       {touch && shown && src && (
         <div className="dish__shot">
-          <Image src={asset(src)} alt="" width={640} height={480} className="dish__shotimg" sizes="90vw" />
+          <Image src={asset(src)} alt="" width={640} height={Math.round(640 * ratio)} className="dish__shotimg" sizes="90vw" />
         </div>
       )}
     </li>

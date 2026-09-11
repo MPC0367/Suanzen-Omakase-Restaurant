@@ -146,7 +146,9 @@
 }
 
 /* ═══ 05 COURSES — the menu ═════════════════════════════════════════════════ */
-.menu { position: relative; display: grid; gap: clamp(1.4rem, 3vw, 2.6rem); }
+/* One column that never grows past the screen: an auto track would widen to
+   the longest course row and push the whole page sideways on a small phone. */
+.menu { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(1.4rem, 3vw, 2.6rem); }
 .menu__list { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--rule); }
 .menu__stage { display: none; }
 .menu__foot { font-size: 0.88rem; color: var(--fg-faint); max-width: 54ch; }
@@ -227,6 +229,12 @@
 .course__count { font-size: 0.76rem; color: var(--fg-quiet); letter-spacing: 0.07em; white-space: nowrap; }
 .course__price { font-size: clamp(1rem, 1.8vw, 1.35rem); white-space: nowrap; }
 .course__price i { font-style: normal; font-size: 0.6em; color: var(--fg-faint); margin-inline-start: 0.15em; }
+/* The narrowest phones (320px): the row tightens so the longest course, its
+   tag, count and price still sit on one line inside the screen. */
+@media (max-width: 22.5rem) {
+  .course__btn { column-gap: 0.55rem; }
+  .course__name { font-size: 1.35rem; }
+}
 .cx { color: var(--fg-faint); transition: transform var(--t-ui) var(--ease), color var(--t-ui) var(--ease); }
 .course.is-open .cx { transform: rotate(180deg); color: var(--accent); }
 

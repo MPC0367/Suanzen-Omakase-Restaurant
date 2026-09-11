@@ -193,6 +193,141 @@ const anchorStyle = await m.evaluate(() => document.documentElement.style.overfl
 pass("closing a course with a photo open leaves scrolling as it was", anchorStyle === "", `overflow-anchor inline: '${anchorStyle}'`);
 await m.locator(".course").nth(1).locator(".course__btn").tap(); await m.waitForTimeout(500);
 
+// Scrolling by hand opens each dish's own photo as the dish reaches the middle
+// of the screen, with the picture landing in the middle, and folds it away again
+// once scrolled past. A tapped shortcut sweeping past the same dishes opens none.
+const coverOf = () => Math.max(document.querySelector(".hdr").getBoundingClientRect().bottom,
+                               document.querySelector(".menu__jump").getBoundingClientRect().bottom);
+await m.evaluate(() => document.querySelectorAll(".dish.is-shown .dish__btn").forEach((x) => x.click()));
+await m.waitForTimeout(400);
+const autoName = await m.evaluate(() => {
+  const li = document.querySelector(".course.is-open .dish.has-photo");
+  const r = li.querySelector(".dish__btn").getBoundingClientRect();
+  scrollTo({ top: scrollY + r.top - innerHeight + 40, behavior: "instant" });   // its name just up from the bottom edge
+  li.dataset.auto = "1";
+  return li.querySelector(".dish__name").textContent.trim();
+});
+await m.waitForTimeout(500);
+await m.mouse.move(180, 600);
+let autoAt = null;
+for (let k = 0; k < 60 && !autoAt; k++) {
+  await m.mouse.wheel(0, 30); await m.waitForTimeout(80);
+  autoAt = await m.evaluate(`(${(() => {
+    const li = document.querySelector('[data-auto="1"]');
+    if (!li.classList.contains("is-shown")) return null;
+    return { step: true };
+  }).toString()})()`);
+}
+await m.waitForTimeout(1200);   // the page settles and the picture loads
+const centred = autoAt && await m.evaluate(`(() => {
+  const coverOf = ${coverOf.toString()};
+  const s = document.querySelector('[data-auto="1"] .dish__shot').getBoundingClientRect();
+  return { off: Math.round((s.top + s.bottom) / 2 - (coverOf() + innerHeight) / 2), h: Math.round(s.height) };
+})()`);
+pass("scrolling by hand opens a dish's photo as it reaches the middle of the screen", !!autoAt, autoAt ? autoName : `${autoName}: never opened`);
+pass("…with the picture in the middle of the screen", !!centred && Math.abs(centred.off) <= 70,
+     centred ? `${centred.off}px from the middle, ${centred.h}px tall` : "");
+for (let k = 0; k < 80; k++) {
+  await m.mouse.wheel(0, 60); await m.waitForTimeout(60);
+  const past = await m.evaluate(`(() => { const coverOf = ${coverOf.toString()};
+    return document.querySelector('[data-auto="1"]').getBoundingClientRect().bottom <= coverOf() - 40; })()`);
+  if (past) break;
+}
+await m.waitForTimeout(1000);
+pass("…and folds it away again once scrolled past", (await m.locator('[data-auto="1"].is-shown').count()) === 0);
+await m.evaluate(() => document.querySelectorAll(".dish.is-shown .dish__btn").forEach((x) => x.click()));
+await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(600);
+await m.mouse.wheel(0, 10); await m.waitForTimeout(300);       // the guest has been scrolling by hand…
+await mchips.nth(5).tap(); await m.waitForTimeout(2800);       // …then taps a course far down the bar
+const swept = await m.evaluate(() => {
+  const c = document.querySelectorAll(".course")[5];
+  return { open: document.querySelectorAll(".dish.is-shown").length, top: Math.round(c.getBoundingClientRect().top),
+           bar: Math.round(document.querySelector(".menu__jump").getBoundingClientRect().bottom) };
+});
+pass("a shortcut sweeping past dishes opens none of their photos, and still lands", swept.open === 0 && swept.top >= swept.bar - 2 && swept.top < swept.bar + 140,
+     `${swept.open} open; course at ${swept.top}px, bar ends ${swept.bar}px`);
+
+// Scrolling back up past a dish opens nothing: the part below its name is what
+// the guest has just read, and a picture opening there would shove it down.
+await m.evaluate(() => {
+  const r = document.querySelectorAll(".course")[2].querySelector(".dish.has-photo .dish__btn").getBoundingClientRect();
+  scrollTo({ top: scrollY + r.top - 150, behavior: "instant" });   // Zen Ni's first photo dish near the top, above its line
+});
+await m.waitForTimeout(600); await m.mouse.move(180, 600);
+for (let k = 0; k < 16; k++) { await m.mouse.wheel(0, -40); await m.waitForTimeout(70); }
+await m.waitForTimeout(500);
+pass("scrolling back up past photo dishes opens none of them", (await m.locator(".dish.is-shown").count()) === 0,
+     `${await m.locator(".dish.is-shown").count()} open`);
+
+// Bring an element to a given distance under the header and course bar. In two
+// steps: the page below settles as it comes into view, so a single jump from
+// far away can land off.
+const placeAt = async (selectorJs, below) => {
+  // A jump by the test, like a tapped shortcut's: not the guest scrolling by hand.
+  await m.evaluate(() => document.body.click());
+  for (let i = 0; i < 2; i++) {
+    await m.evaluate(`(() => { const coverOf = ${coverOf.toString()}; const el = ${selectorJs};
+      scrollTo({ top: scrollY + el.getBoundingClientRect().top - coverOf() - ${below}, behavior: "instant" }); })()`);
+    await m.waitForTimeout(350);
+  }
+};
+
+// A photo opened by a tap pushes the dishes below it down without any
+// scrolling; the next small scroll must not pop one of them open off the middle.
+const tapShift = await m.evaluate(() => {
+  const [first, second] = [...document.querySelectorAll(".course")[2].querySelectorAll(".dish.has-photo")];
+  first.dataset.tapfirst = "1"; second.dataset.shift = "1";
+  return [first, second].map((li) => li.querySelector(".dish__name").textContent.trim());
+});
+await placeAt(`document.querySelector('[data-tapfirst="1"] .dish__btn')`, 30);
+const shiftSetup = await m.evaluate(`(() => { const coverOf = ${coverOf.toString()};
+  return Math.round(document.querySelector('[data-shift="1"] .dish__btn').getBoundingClientRect().bottom - coverOf()); })()`);
+await m.locator(".course").nth(2).locator(".dish.has-photo .dish__btn").first().tap(); await m.waitForTimeout(700);
+await m.mouse.move(180, 600); await m.mouse.wheel(0, 30); await m.waitForTimeout(500);
+const popped = (await m.locator('[data-shift="1"].is-shown').count()) === 1;
+let shiftOpen = null;
+for (let k = 0; k < 60 && !shiftOpen; k++) {
+  await m.mouse.wheel(0, 30); await m.waitForTimeout(80);
+  if ((await m.locator('[data-shift="1"].is-shown').count()) === 1) {
+    await m.waitForTimeout(900);
+    shiftOpen = await m.evaluate(`(() => { const coverOf = ${coverOf.toString()};
+      const s = document.querySelector('[data-shift="1"] .dish__shot').getBoundingClientRect();
+      return Math.round((s.top + s.bottom) / 2 - (coverOf() + innerHeight) / 2); })()`);
+  }
+}
+pass("a photo opened by a tap doesn't pop the next one open off the middle", !popped && shiftOpen !== null && Math.abs(shiftOpen) <= 70,
+     `${tapShift.join(" → ")} (its name ${shiftSetup}px under the bar before the tap): ${popped ? "popped open on a 30px nudge" : shiftOpen === null ? "never opened" : `opened ${shiftOpen}px from the middle`}`);
+
+// Photos in two courses folding away together give back both their heights.
+// A finger resting on the glass holds every fold; when it lifts, each photo out
+// of sight folds at the same moment — here Zen Ichi's and Zen Ni's.
+await m.evaluate(() => document.querySelectorAll(".dish.is-shown .dish__btn").forEach((x) => x.click()));
+await m.waitForTimeout(400);
+for (const ci of [1, 2]) {
+  await placeAt(`document.querySelectorAll(".course")[${ci}].querySelector(".dish.has-photo .dish__btn")`, 40);
+  await m.evaluate((ci) => document.querySelectorAll(".course")[ci].querySelector(".dish.has-photo .dish__btn").click(), ci);
+  await m.waitForTimeout(400);
+  if (ci === 1) await m.evaluate(() => window.dispatchEvent(new Event("touchstart")));   // the finger goes down
+}
+const multiBefore = await m.evaluate(`(() => { const coverOf = ${coverOf.toString()};
+  const open = [...document.querySelectorAll(".dish.is-shown")];
+  const lowest = Math.max(...open.map((li) => li.getBoundingClientRect().bottom));
+  scrollTo({ top: scrollY + lowest - coverOf() + 300, behavior: "instant" });   // both out of sight above
+  return open.length;
+})()`);
+await m.waitForTimeout(500);                                                     // still held: nothing folds
+const heldOpen = await m.locator(".dish.is-shown").count();
+const multiTop = await m.evaluate(`(() => { const coverOf = ${coverOf.toString()};
+  window.__mref = [...document.querySelectorAll(".dish__name, .course__name")].find((el) => el.getBoundingClientRect().top > coverOf() + 20);
+  window.dispatchEvent(new Event("touchend"));                                   // the finger lifts
+  return Math.round(window.__mref.getBoundingClientRect().top); })()`);
+await m.waitForTimeout(1000);
+const multiAfter = await m.evaluate(() => ({ open: document.querySelectorAll(".dish.is-shown").length, top: Math.round(window.__mref.getBoundingClientRect().top) }));
+const multiBefore_ = { n: multiBefore, top: multiTop };
+pass("photos in two courses folding together move nothing on screen",
+     multiBefore_.n === 2 && heldOpen === 2 && multiAfter.open === 0 && Math.abs(multiAfter.top - multiBefore_.top) <= 2,
+     `${multiBefore_.n} open, ${heldOpen} held under the finger → ${multiAfter.open}; reading position moved ${multiAfter.top - multiBefore_.top}px`);
+
 // On a tablet the dishes sit in two columns, and folding one photo re-balances
 // them: a fold there must still move nothing on screen.
 const tp = await (await b.newContext({ viewport: { width: 768, height: 1024 }, hasTouch: true, isMobile: true })).newPage();
@@ -213,7 +348,36 @@ const tAfter = await tp.evaluate(() => Math.round(window.__tref.getBoundingClien
 const tOpen = await tp.locator(".dish.is-shown").count();
 pass("on a tablet (two columns of dishes), a fold moves nothing on screen", tOpen === 0 && Math.abs(tAfter - tBefore) <= 2,
      `${tOpen ? "still open; " : ""}reading position moved ${tAfter - tBefore}px`);
+// …and there, where an opening photo would re-balance the columns, none opens by itself.
+await tp.mouse.move(380, 700);
+for (let k = 0; k < 30; k++) { await tp.mouse.wheel(0, 80); await tp.waitForTimeout(60); }
+await tp.waitForTimeout(600);
+pass("on a tablet (two columns), scrolling by hand opens no photo by itself", (await tp.locator(".dish.is-shown").count()) === 0);
 await tp.context().close();
+
+// A phone held sideways keeps one column, but a photo there is taller than
+// the screen: it would open with its name at the top edge and run on for
+// screens, so none opens by itself (a tap still opens it).
+const ls = await (await b.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true, isMobile: true })).newPage();
+ls.on("pageerror", (e) => errs.push("landscape: " + String(e).slice(0, 140)));
+await ls.goto(B + "/en/", { waitUntil: "domcontentloaded" }); await ready(ls);
+const lsCols = await ls.evaluate(() => getComputedStyle(document.querySelector(".dishes")).columnCount);
+await ls.mouse.move(330, 250);
+for (let k = 0; k < 60; k++) { await ls.mouse.wheel(0, 120); await ls.waitForTimeout(50); }
+await ls.waitForTimeout(500);
+pass("on a phone held sideways, a photo too tall for the screen doesn't open by itself",
+     (await ls.locator(".dish.is-shown").count()) === 0, `dish columns: ${lsCols}`);
+await ls.context().close();
+
+// The narrowest phones still in use (320px) get the page without sideways scrolling.
+for (const loc of ["en", "th"]) {
+  const np = await (await b.newContext({ viewport: { width: 320, height: 568 }, hasTouch: true })).newPage();
+  np.on("pageerror", (e) => errs.push("320px: " + String(e).slice(0, 140)));
+  await np.goto(`${B}/${loc}/`, { waitUntil: "domcontentloaded" }); await ready(np);
+  const w = await np.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }));
+  pass(`at 320px wide, /${loc}/ doesn't scroll sideways`, w.sw <= w.cw, `${w.sw}px of content in ${w.cw}px`);
+  await np.context().close();
+}
 
 await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(400);
 await m.locator(".burger").tap(); await m.waitForTimeout(900);

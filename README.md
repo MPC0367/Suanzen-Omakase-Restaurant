@@ -19,23 +19,36 @@ It also explains how the page stays off Google.
 
 ## What is on the page
 
-**The menu.** Seven courses with the restaurant's prices and dish lists. The
-shortcuts at the top jump to each course, and stay pinned under the header on a
-phone.
+**Find your course.** The page opens on "Which course is right for you?": a
+family path (younger diners, teenage diners, adult diners, each with their
+course), a two-to-three-tap finder, and the four adult courses side by side.
+Every course says who it is for and, for the adult courses, what sets it apart.
+Each course also has its own unlisted page, `/en/courses/<slug>/`, for staff to
+send, and a Reserve that opens LINE with that course already in the message.
 
-| | Course | | Price | Dishes listed |
+**The menu.** Seven courses in family order, with the restaurant's prices and
+full lists. Courses are counted in **bites** (**คำ** in Thai), the way omakase
+is served; Zen Sweet in menus. The shortcuts at the top jump to each course,
+and stay pinned under the header on a phone.
+
+| | Course | For | Length | Price |
 |---|---|---|---|---|
-| 一 | Zen Ichi | 14 bites | ฿2,000++ | 7 (a published selection of the 14) |
-| 二 | Zen Ni | 16 bites | ฿2,890++ | 16 |
-| 三 | Zen San | 17 bites | ฿3,890++ | 17 |
-| 将 | Zen Boss | 12 bites | ฿3,890++ | 12 |
-| 四 | Zen Yon | 13 bites | ฿4,500++ | 13 |
-| 子 | Zen Kids | 9 bites | ฿1,290++ | 9 |
-| 甘 | Zen Sweet | 3 menus × 5 | ฿1,890++ | 15 |
+| 子 | Zen Kids | ages 7–11 | 9 bites | ฿1,290++ |
+| 一 | Zen Ichi | ages 12–14 | 14 bites | ฿2,000++ |
+| 二 | Zen Ni | adults | 16 bites | ฿2,890++ |
+| 三 | Zen San | adults | 17 bites | ฿3,890++ |
+| 将 | Zen Boss | adults | 12 bites | ฿3,890++ |
+| 四 | Zen Yon | adults | 13 bites | ฿4,500++ |
+| 甘 | Zen Sweet | dessert | 3 menus × 5 | ฿1,890++ |
 
-**23 of the 89 dishes have a photograph that genuinely shows them**, and only
+**14 of the 96 dishes have a photograph that genuinely shows them**, and only
 those open one. A dish without its own photograph shows none rather than
-borrowing another dish's.
+borrowing another dish's. On a phone every course is open, the course bar
+spotlights the one being read, and each of those photographs opens by itself in
+the middle of the screen as the guest scrolls its dish there, then folds away
+once scrolled past. It opens only for a guest scrolling by hand, never for a
+tapped shortcut carrying the page past it, and never in the two-column lists
+of a tablet.
 
 **À la carte** renders a designed "ask us on LINE" state until the list arrives.
 
@@ -46,6 +59,12 @@ Every reserve button on the page opens LINE. There is no booking form.
 ---
 
 ## Still needed from the restaurant
+
+What the menu cannot state until the restaurant confirms it — the Zen Ichi age,
+which dish lists are current, whether Zen Boss and Zen Sweet still run, the
+LINE pre-filled message on their own phones — is listed in
+[`src/content/OPEN-QUESTIONS.md`](src/content/OPEN-QUESTIONS.md). No page loads
+that file, so nothing internal ships in the site's JavaScript. Besides those:
 
 1. **The à la carte list.** Add the sections and items to
    `src/content/alacarte.ts` and set `published: true`; the section, its Thai
@@ -66,10 +85,13 @@ written into a component.
 | File | Holds |
 |---|---|
 | `restaurant.ts` | Address, geo, phone, LINE, hours, socials |
-| `courses.ts` | The courses, prices, lengths and dishes |
+| `courses.ts` | The courses, prices, lengths and dishes, and where each fact comes from |
+| `advisor.ts` | Who each course is for and why, the finder, the comparison, and their copy |
+| `OPEN-QUESTIONS.md` | What still needs the restaurant's word (never shipped) |
 | `alacarte.ts` | The à la carte list, unpublished until it arrives |
-| `dictionary.ts` | All EN and TH copy |
+| `dictionary.ts` | All other EN and TH copy |
 | `media.ts` | Every photograph: what it shows, alt text in both languages |
+| `photo-sizes.ts` | Each dish photograph's size, so it opens at its true height |
 
 **Thai is written as Thai**, not translated from the English. It gets its own
 line-height, because stacked vowels and tone marks clip at Latin leading, and
@@ -83,8 +105,13 @@ as each section crosses a line across the viewport (`src/lib/motion.ts`).
 no third-party script. `scripts/make-qr.mjs` makes the handover QR for the
 page's own address.
 
-**The artifact.** `npm run artifact` builds the same page as one
-self-contained HTML file, for sharing a preview.
+**The artifact.** `npm run artifact` packages the real static export in
+`.artifact/`, to publish as a Claude artifact for a preview on a phone before
+pushing: the pages on one level (`index.html` is `/en/`, `th.html` is `/th/`,
+`en-zen-ichi.html` is `/en/courses/zen-ichi/`…), their files with relative
+addresses, only the font slices the pages use, and `files.json` listing what to
+publish alongside `index.html`. `node qa/verify-artifact.mjs <base>` checks the
+package, served locally, both as built and wrapped the way an artifact wraps it.
 
 ---
 
@@ -92,7 +119,8 @@ self-contained HTML file, for sharing a preview.
 
 ```bash
 npx playwright install chromium       # once
-node qa/verify-brochure.mjs [base]    # the page's contract: menu first, phone, unlisted
-node qa/verify-curtain.mjs            # the opening seal
-npm run qa:a11y                       # headings, alt text, names, contrast
+node qa/verify-brochure.mjs [base]    # the page's contract: menu, phone behaviour, unlisted
+node qa/verify-advisor.mjs [base]     # the course advisor, course pages, LINE messages
+node qa/verify-curtain.mjs [base]     # the opening seal
+node qa/a11y.mjs [base]               # headings, alt text, names, contrast
 ```
