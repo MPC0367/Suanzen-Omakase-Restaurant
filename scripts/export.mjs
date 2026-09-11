@@ -87,6 +87,13 @@ fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
 
 // There is no server to redirect / to /en/, so ship a page that does it.
 const prefix = basePath || '';
+// The root address is the one the handover QR encodes and the one the LINE OA
+// will most likely send, so this redirect page carries the same link preview
+// and the same do-not-list instruction as the pages it forwards to. It is
+// bilingual because it speaks for both. Keep the image in step with OG_IMAGE
+// in src/lib/site.ts.
+const origin = (process.env.NEXT_PUBLIC_SITE_ORIGIN || 'https://mpc0367.github.io').replace(/\/$/, '');
+const preview = `${origin}${prefix}/photos/78893251dcbe.jpg`;
 fs.writeFileSync(
   path.join(OUT, 'index.html'),
   `<!doctype html>
@@ -94,7 +101,17 @@ fs.writeFileSync(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Suan Zen Omakase — Omakase in Nonthaburi</title>
+<title>Suan Zen Omakase — Menu · เมนู</title>
+<meta name="description" content="The omakase menu: seven courses and every dish, with prices. · เมนูโอมากาเสะ 7 คอร์ส พร้อมรายการอาหารทุกจานและราคา">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Suan Zen Omakase">
+<meta property="og:title" content="Suan Zen Omakase — Menu · เมนู">
+<meta property="og:description" content="The omakase menu: seven courses and every dish, with prices. · เมนูโอมากาเสะ 7 คอร์ส พร้อมรายการอาหารทุกจานและราคา">
+<meta property="og:url" content="${origin}${prefix}/">
+<meta property="og:image" content="${preview}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${preview}">
 <link rel="canonical" href="${prefix}/en/">
 <meta http-equiv="refresh" content="0; url=${prefix}/en/">
 <script>

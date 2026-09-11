@@ -34,6 +34,10 @@ pass("no form anywhere", (await d.locator("form").count()) === 0);
 pass("nothing links to a booking page", (await d.locator('a[href*="/book"]').count()) === 0);
 const robots = await d.$eval('meta[name="robots"]', (m) => m.content).catch(() => "none");
 pass("not offered to search engines", /noindex/.test(robots), robots);
+const rootHtml = await (await fetch(B + "/")).text();
+pass("the root link (the one in the QR) previews as Menu and is not listed",
+     /<title>[^<]*Menu/.test(rootHtml) && /noindex/.test(rootHtml) && /og:image/.test(rootHtml),
+     (rootHtml.match(/<title>([^<]*)/) || [])[1] || "no title");
 await d.screenshot({ path: "qa/shots/platform-desktop.png" });
 await d.locator(".hdr__cta").click(); await d.waitForTimeout(700);
 const line = await d.locator(".res.is-open .res__line").getAttribute("href").catch(() => null);
