@@ -97,9 +97,9 @@ export const dict = {
       onRequestHint: "Current price and length on LINE",
       firstTimers: "Most first visits start here",
       partialNote: "A selection — the full course runs longer",
-      hoverHint: "Point at a dish to see it",
+      hoverHint: "Point at a bite to see it",
       jumpLabel: "Jump to a course",
-      tapHint: "Tap a dish to see it",
+      tapHint: "Tap a bite to see it",
       alaLabel: "À la carte",
       footnote:
         "Courses follow the market, so the sequence changes. Ask for the current one when you book.",
@@ -292,7 +292,7 @@ export const dict = {
     meta: {
       title: "Suan Zen Omakase — Menu",
       description:
-        "The omakase menu: seven courses and every dish, with prices. Reserve on LINE.",
+        "The omakase menu: seven courses and every bite, with prices. Reserve on LINE.",
       ogAlt: "Suan Zen Omakase, Nonthaburi",
     },
   },
@@ -374,9 +374,9 @@ export const dict = {
       onRequestHint: "ถามราคาและจำนวนคำล่าสุดทาง LINE",
       firstTimers: "คนมาครั้งแรกส่วนใหญ่เริ่มที่คอร์สนี้",
       partialNote: "เป็นตัวอย่าง — คอร์สจริงยาวกว่านี้",
-      hoverHint: "ชี้ที่ชื่อคำเพื่อดูรูป",
+      hoverHint: "ชี้ที่ชื่อเมนูเพื่อดูรูป",
       jumpLabel: "เลือกดูคอร์ส",
-      tapHint: "แตะที่ชื่อคำเพื่อดูรูป",
+      tapHint: "แตะที่ชื่อเมนูเพื่อดูรูป",
       alaLabel: "อาหารตามสั่ง",
       footnote: "คอร์สเปลี่ยนตามวัตถุดิบที่เข้ามา ถามคอร์สล่าสุดตอนจองได้เลย",
     },
@@ -565,7 +565,7 @@ export const dict = {
     meta: {
       title: "สวน เซน โอมากาเสะ — เมนู",
       description:
-        "เมนูโอมากาเสะ 7 คอร์ส พร้อมรายการอาหารทุกจานและราคา จองผ่าน LINE",
+        "เมนูโอมากาเสะ 7 คอร์ส ครบทุกคำ พร้อมราคา จองผ่าน LINE",
       ogAlt: "สวน เซน โอมากาเสะ นนทบุรี",
     },
   },

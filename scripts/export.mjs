@@ -78,12 +78,12 @@ fs.writeFileSync(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Suan Zen Omakase — Menu · เมนู</title>
-<meta name="description" content="The omakase menu: seven courses and every dish, with prices. · เมนูโอมากาเสะ 7 คอร์ส พร้อมรายการอาหารทุกจานและราคา">
+<meta name="description" content="The omakase menu: seven courses and every bite, with prices. · เมนูโอมากาเสะ 7 คอร์ส ครบทุกคำ พร้อมราคา">
 <meta name="robots" content="noindex, nofollow">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Suan Zen Omakase">
 <meta property="og:title" content="Suan Zen Omakase — Menu · เมนู">
-<meta property="og:description" content="The omakase menu: seven courses and every dish, with prices. · เมนูโอมากาเสะ 7 คอร์ส พร้อมรายการอาหารทุกจานและราคา">
+<meta property="og:description" content="The omakase menu: seven courses and every bite, with prices. · เมนูโอมากาเสะ 7 คอร์ส ครบทุกคำ พร้อมราคา">
 <meta property="og:url" content="${origin}${prefix}/">
 <meta property="og:image" content="${preview}">
 <meta property="og:image:width" content="1200">
