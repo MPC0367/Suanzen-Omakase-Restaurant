@@ -44,11 +44,16 @@ and stay pinned under the header on a phone.
 **14 of the 96 dishes have a photograph that genuinely shows them**, and only
 those open one. A dish without its own photograph shows none rather than
 borrowing another dish's. On a phone every course is open, the course bar
-spotlights the one being read, and each of those photographs opens by itself in
-the middle of the screen as the guest scrolls its dish there, then folds away
-once scrolled past. It opens only for a guest scrolling by hand, never for a
-tapped shortcut carrying the page past it, and never in the two-column lists
-of a tablet.
+spotlights the one being read, and the middle of the screen works like a
+pointer resting on the menu: the dish under it is lit, its photograph slides
+open beneath it, and when the middle moves on the one before closes, so only
+one is ever open. The dish at the middle never moves while a photograph above
+it closes: the page scrolls by exactly what the closing photograph takes away,
+frame by frame. On an iPhone, where a scroll set by the page would stop a fling
+dead, a photograph above the middle fades at once and slides shut when the page
+comes to rest. A tap glides a dish to the middle. Nothing opens while
+a tapped shortcut carries the page, and a tablet's two-column lists keep
+tap-to-open.
 
 **À la carte** renders a designed "ask us on LINE" state until the list arrives.
 

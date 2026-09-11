@@ -294,11 +294,37 @@
 
 /* Touch: the photograph opens under the dish instead. */
 .dish__shot { padding: 0.5rem 0 0.9rem; }
+/* Never taller than what shows under the header and the course bar (about
+   9rem with the bar and the picture's margins), so a phone held sideways, or a
+   tablet, sees the whole picture. */
+.dish__shot .dish__shotimg { max-height: min(62svh, calc(100svh - var(--hdr-h, 64px) - 9rem)); object-fit: cover; }
 .dish__shotimg {
   width: 100%; height: auto; border-radius: 2px; display: block;
   animation: menuFade var(--t-ui) var(--ease) both;
 }
 @keyframes menuFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Phones: the middle of the screen rests on one dish at a time, as a pointer
+   would (Courses.tsx, "The spotlight"). That dish is lit as a pointer lights
+   it, and its photograph slides open beneath it — the picture's true height is
+   known before it loads, so the slide is the whole height from the start. */
+.dish.is-lit .dish__btn { color: var(--fg); }
+.dish.is-lit.has-photo .dish__btn { color: var(--accent); }
+.dish.is-lit .dish__dot { opacity: 1; transform: scale(1.5); }
+/* The slide itself: its height is set in pixels by Courses.tsx (so it can be
+   frozen part-way on an iPhone), and it only ever animates that height. */
+.dish__drop { height: 0; overflow: hidden; transition: height 300ms var(--ease); }
+.dish__drop > .dish__shot { padding: 0; display: flow-root; }   /* keeps the picture's margins inside, so the slide's height includes them */
+.dish__drop .dish__shotimg {
+  margin: 0.5rem 0 0.9rem;
+  animation: none; opacity: 0; transition: opacity 300ms var(--ease);
+}
+.dish.is-shown > .dish__drop .dish__shotimg { opacity: 1; }
+/* On an iPhone a photograph above the middle can't slide shut mid-fling (see
+   Courses.tsx): it fades out at once and keeps its place until the page rests. */
+.dish.is-leaving > .dish__drop .dish__shotimg { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .dish__drop, .dish__drop .dish__shotimg { transition: none; } }
+
 
 .course__acts {
   display: flex; align-items: center; justify-content: space-between;

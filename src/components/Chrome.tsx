@@ -33,6 +33,9 @@ export default function Chrome({ locale }: { locale: Locale }) {
   useReveal();
   useWorld();
 
+  // In-page links glide from now on; the first scroll to a #fragment on load doesn't (globals.css).
+  useEffect(() => { document.documentElement.setAttribute("data-smooth", ""); }, []);
+
   // ── Header behaviour: compact once the page moves, and always there. It used
   //    to slide away on the way down; the menu's course bar now pins itself
   //    under the header, so the header has to stay put for it to sit under. ──
