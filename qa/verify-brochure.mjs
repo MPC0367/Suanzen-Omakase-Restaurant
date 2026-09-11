@@ -69,9 +69,10 @@ const m = await (await b.newContext({ viewport: { width: 390, height: 844 }, has
 m.on("pageerror", (e) => errs.push("phone: " + String(e).slice(0, 140)));
 await m.goto(B + "/en/", { waitUntil: "domcontentloaded" }); await ready(m);
 console.log("phone");
-const first = await m.locator(".course__btn").first().boundingBox();
-pass("the first course is on the first screen", !!first && first.y + first.height <= 844,
-     first ? `its header ends at ${Math.round(first.y + first.height)}px of 844` : "no course");
+// The page opens on finding your course: a course for every age, in a glance.
+const fam = await m.locator(".family").boundingBox();
+pass("the page opens on a course for every age, all on the first screen", !!fam && fam.y + fam.height <= 844,
+     fam ? `the family path ends at ${Math.round(fam.y + fam.height)}px of 844` : "no family path");
 await m.screenshot({ path: "qa/shots/platform-phone-top.png" });
 
 await m.evaluate(() => { document.documentElement.style.scrollBehavior = "auto";
@@ -168,7 +169,7 @@ pass("it stays open while any of it is on screen", (await shots()) === 1);
 // A photo opened before the course bar has pinned itself must not fold while
 // any of it is still on screen (it once did, on a measurement taken at open).
 await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(600);
-await m.locator(".course").nth(0).locator(".dish.has-photo .dish__btn").first().tap(); await m.waitForTimeout(900);
+await m.locator(".course:has(.dish.has-photo)").first().locator(".dish.has-photo .dish__btn").first().tap(); await m.waitForTimeout(900);
 let early = null, folded = false;
 for (let k = 0; k < 90 && !folded; k++) {
   const outOfSight = await m.evaluate(() => {

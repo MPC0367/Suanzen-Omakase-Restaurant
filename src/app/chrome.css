@@ -21,14 +21,16 @@
 .hdr.is-scrolled .hdr__in { padding-block: clamp(0.6rem, 1.1vw, 0.95rem); }
 
 .hdr__brand { display: inline-flex; align-items: center; gap: 0.7rem; flex: 0 0 auto; }
+/* The matte mark on its own warm ink, ringed by a hairline. No glow: the
+   brand's gold is printed ink, not light off metal. */
 .mark {
   display: block; flex: 0 0 auto; border-radius: 50%; overflow: hidden;
-  background: #000;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber) 26%, transparent);
+  background: var(--ink);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber-warm) 30%, transparent);
   transition: box-shadow var(--t-ui) var(--ease);
 }
 .mark__img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.hdr__brand:hover .mark { box-shadow: 0 0 0 1px var(--amber), 0 0 18px color-mix(in srgb, var(--amber) 26%, transparent); }
+.hdr__brand:hover .mark { box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber-warm) 70%, transparent); }
 
 .wordmark {
   font-family: var(--serif);

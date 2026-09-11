@@ -1,9 +1,9 @@
 import { chromium } from "playwright";
 
-const BASE = "http://localhost:4321";
-const pages = ["/en", "/th"];
+const BASE = (process.argv[2] || "http://localhost:4321").replace(/\/$/, "");
+const pages = ["/en/", "/th/", "/en/courses/zen-ichi/", "/th/courses/zen-ichi/"];
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ channel: "chrome" }).catch(() => chromium.launch());
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await ctx.newPage();
 
@@ -44,7 +44,7 @@ for (const path of pages) {
       const name = (
         el.textContent || el.getAttribute("aria-label") || el.getAttribute("title") || ""
       ).trim();
-      if (!name && el.offsetParent !== null) {
+      if (!name && el.offsetParent !== null && !el.closest('[aria-hidden="true"]')) {
         out.noName.push(el.tagName + "." + String(el.className).slice(0, 30));
       }
       const r = el.getBoundingClientRect();
@@ -72,7 +72,7 @@ for (const path of pages) {
       return { sel, fg: parse(cs.color), bg: parse(bg), size: cs.fontSize };
     };
 
-    out.pairs = [".u-lede", ".u-label", ".foot__tag", ".tile__date", ".bk__hint", ".igbar__count"]
+    out.pairs = [".u-lede", ".u-label", ".foot__tag", ".course__tag", ".family__who", ".family__tag", ".finder__ah", ".advice dt", ".compare__table tbody th"]
       .map(swatch)
       .filter(Boolean);
     return out;
@@ -94,7 +94,7 @@ for (const path of pages) {
   console.log("  headings:", report.headings.join(","), jumps.length ? "JUMPS " + jumps : "order ok");
   console.log("  images without alt:", report.noAlt.length ? report.noAlt : "none");
   console.log("  controls without a name:", report.noName.length ? report.noName : "none");
-  console.log("  under 44px tall:", report.small.length ? [...new Set(report.small)].slice(0, 6) : "none");
+  console.log("  under 44px tall:", report.small.length ? [...new Set(report.small)] : "none");
   console.log("  contrast under 4.5:1:", low.length ? low : "none");
 }
 

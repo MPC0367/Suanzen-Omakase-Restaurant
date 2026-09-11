@@ -5,9 +5,9 @@ import "../globals.css";
 import "../chrome.css";
 import "../sections.css";
 import "../pages.css";
+import "../advisor.css";
 import { dict, locales, type Locale } from "@/content/dictionary";
 import { restaurant } from "@/content/restaurant";
-import { courses } from "@/content/courses";
 import { SITE, OG_IMAGE } from "@/lib/site";
 import Curtain from "@/components/Curtain";
 
@@ -43,14 +43,8 @@ export async function generateMetadata({
 
   return {
     metadataBase: new URL(SITE),
-    title: { default: t.meta.title, template: `%s — ${restaurant.name.en}` },
+    title: { default: t.meta.title, template: `%s — ${restaurant.name[locale as Locale]}` },
     description: t.meta.description,
-    keywords:
-      locale === "th"
-        ? ["โอมากาเสะ นนทบุรี", "ร้านโอมากาเสะ นนทบุรี", "สวน เซน โอมากาเสะ",
-           "ร้านอาหารญี่ปุ่น นนทบุรี", "โอมากาเสะ ซอยนนทบุรี 48", "อิซากายะ นนทบุรี"]
-        : ["omakase Nonthaburi", "Suan Zen Omakase", "sushi Nonthaburi",
-           "Japanese restaurant Nonthaburi", "omakase near Bangkok", "izakaya Nonthaburi"],
     alternates: {
       canonical: `${SITE}/${locale}`,
       languages: { en: `${SITE}/en`, th: `${SITE}/th`, "x-default": `${SITE}/en` },
@@ -69,7 +63,9 @@ export async function generateMetadata({
     },
     /* A brochure, not a website: shared by link, never listed. Crawlers are
        still let in — blocking them in robots.txt would hide this instruction
-       from the very search engines it is addressed to. */
+       from the very search engines it is addressed to. There are no keywords
+       and no structured data either: both exist only for search engines, and
+       the structured data used to publish every course's price as fact. */
     robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
   };
 }
@@ -90,75 +86,6 @@ export default async function LocaleLayout({
   const { locale } = await params;
   if (!locales.includes(locale as Locale)) notFound();
   const t = dict[locale as Locale];
-  const a = restaurant.address;
-
-  /* Prices and courses come from the restaurant. Seating rounds and the
-     open-days question are still unconfirmed, so they are left out rather
-     than published to Google as fact. */
-  const schema = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Restaurant",
-        "@id": `${SITE}/#restaurant`,
-        name: restaurant.name.en,
-        alternateName: restaurant.name.th,
-        url: `${SITE}/${locale}`,
-        telephone: restaurant.contact.phoneIntl.value,
-        servesCuisine: ["Japanese", "Sushi", "Omakase"],
-        priceRange: "฿฿฿",
-        currenciesAccepted: "THB",
-        address: {
-          "@type": "PostalAddress",
-          streetAddress: a.street.value,
-          addressLocality: a.district.value,
-          addressRegion: a.province.value,
-          postalCode: a.postalCode.value,
-          addressCountry: a.country.value,
-        },
-        geo: {
-          "@type": "GeoCoordinates",
-          latitude: restaurant.geo.value.lat,
-          longitude: restaurant.geo.value.lng,
-        },
-        hasMap: restaurant.maps.directions.value,
-        acceptsReservations: restaurant.contact.lineUrl.value,
-        amenityFeature: [
-          { "@type": "LocationFeatureSpecification", name: "Parking", value: true },
-          { "@type": "LocationFeatureSpecification", name: "Counter seating", value: true },
-        ],
-        sameAs: [
-          restaurant.social.instagram.value,
-          restaurant.social.facebook.value,
-          restaurant.social.tiktok.value,
-        ],
-        hasMenu: {
-          "@type": "Menu",
-          name: locale === "th" ? "คอร์สโอมากาเสะ" : "Omakase courses",
-          hasMenuSection: {
-            "@type": "MenuSection",
-            name: "Omakase",
-            hasMenuItem: courses
-              .filter((c) => c.active)
-              .map((c) => ({
-                "@type": "MenuItem",
-                name: c.nameEn,
-                description: locale === "th" ? c.descTh : c.descEn,
-                offers: { "@type": "Offer", price: c.price, priceCurrency: "THB" },
-              })),
-          },
-        },
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${SITE}/#website`,
-        url: SITE,
-        name: restaurant.name.en,
-        inLanguage: locale === "th" ? "th-TH" : "en-US",
-        publisher: { "@id": `${SITE}/#restaurant` },
-      },
-    ],
-  };
 
   return (
     <html
@@ -170,10 +97,6 @@ export default async function LocaleLayout({
         <a className="skip" href="#main">{t.a11y.skip}</a>
         <Curtain />
         {children}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
       </body>
     </html>
   );

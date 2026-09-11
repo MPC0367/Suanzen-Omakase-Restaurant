@@ -6,9 +6,12 @@ import Link from "next/link";
 import { asset } from "@/lib/asset";
 import { Mark, Wordmark } from "./Mark";
 import { restaurant } from "@/content/restaurant";
-import { activeCourses } from "@/content/courses";
+import { activeCourses, courseById } from "@/content/courses";
+import { advisorCopy, fill } from "@/content/advisor";
 import { getDict, type Locale } from "@/content/dictionary";
 import { qrPath } from "@/lib/qr";
+import { reserveMessage } from "@/lib/line";
+import { RESERVE_EVENT } from "@/lib/events";
 import { useReveal, useWorld } from "@/lib/motion";
 
 const Arrow = () => (
@@ -25,6 +28,7 @@ export default function Chrome({ locale }: { locale: Locale }) {
   const [scrolled, setScrolled] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [resOpen, setResOpen] = useState(false);
+  const [resCourse, setResCourse] = useState<string | null>(null);
 
   useReveal();
   useWorld();
@@ -71,11 +75,15 @@ export default function Chrome({ locale }: { locale: Locale }) {
     return () => { document.body.style.overflow = ""; };
   }, [navOpen, resOpen]);
 
-  // Anything asking to open the reservation panel.
+  // Anything asking to open the reservation panel — with a course, when a
+  // desktop guest chose Reserve on one (a desktop can't open LINE's chat).
   useEffect(() => {
-    const open = () => setResOpen(true);
-    window.addEventListener("suanzen:reserve", open);
-    return () => window.removeEventListener("suanzen:reserve", open);
+    const open = (e: Event) => {
+      setResCourse((e as CustomEvent<{ course?: string }>).detail?.course ?? null);
+      setResOpen(true);
+    };
+    window.addEventListener(RESERVE_EVENT, open);
+    return () => window.removeEventListener(RESERVE_EVENT, open);
   }, []);
 
   // ── Language: the aperture closes over the page, the words change, it opens.
@@ -92,8 +100,8 @@ export default function Chrome({ locale }: { locale: Locale }) {
   /* Two stops: the menu, and how to get there. The page is sent as a link in
      Suan Zen's LINE OA to guests who already mean to come — nothing else to find. */
   const nav = [
-    { href: asset(`/${locale}#courses`), label: t.nav.menu },
-    { href: asset(`/${locale}#visit`), label: t.nav.visit },
+    { href: asset(`/${locale}/#courses`), label: t.nav.menu },
+    { href: asset(`/${locale}/#visit`), label: t.nav.visit },
   ];
 
   return (
@@ -118,7 +126,7 @@ export default function Chrome({ locale }: { locale: Locale }) {
             <button className="lang" onClick={switchLang} aria-label={t.switchToLabel} lang={other}>
               {t.switchTo}
             </button>
-            <button type="button" className="btn hdr__cta" onClick={() => setResOpen(true)}>
+            <button type="button" className="btn hdr__cta" onClick={() => { setResCourse(null); setResOpen(true); }}>
               {t.nav.reserve}
             </button>
             <button
@@ -163,7 +171,12 @@ export default function Chrome({ locale }: { locale: Locale }) {
         </div>
       </div>
 
-      <ReservationDrawer open={resOpen} onClose={() => setResOpen(false)} locale={locale} />
+      <ReservationDrawer
+        open={resOpen}
+        onClose={() => setResOpen(false)}
+        locale={locale}
+        course={resCourse}
+      />
 
       {/* The aperture that carries the language change. */}
     </>
@@ -172,20 +185,39 @@ export default function Chrome({ locale }: { locale: Locale }) {
 
 /* ── RESERVATION ─────────────────────────────────────────────────────────────
    LINE is the restaurant's actual booking channel, so the panel is a real
-   handoff to LINE — not a form that pretends to hold a table.               */
+   handoff to LINE — not a form that pretends to hold a table. Opened for a
+   course from a desktop, it also carries that course's message to copy: the
+   QR takes the guest's phone to LINE, and the message says which course.     */
 function ReservationDrawer({
-  open, onClose, locale,
-}: { open: boolean; onClose: () => void; locale: Locale }) {
+  open, onClose, locale, course,
+}: { open: boolean; onClose: () => void; locale: Locale; course: string | null }) {
   const t = getDict(locale);
+  const a = advisorCopy[locale];
   const panel = useRef<HTMLDivElement>(null);
   const lineUrl = restaurant.contact.lineUrl.value;
   const qr = useMemo(() => qrPath(lineUrl), [lineUrl]);
+  const k = course ? courseById(course) : undefined;
+  const kName = k ? (locale === "th" ? k.nameTh : k.nameEn) : "";
+  const message = k ? reserveMessage(k, locale) : "";
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => { setCopied(false); }, [course, open]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopied(true);
+    } catch {
+      /* No clipboard: the message stays on screen to select by hand. */
+    }
+  };
 
   // Focus goes into the panel, and stays there while it is open.
   useEffect(() => {
     if (!open) return;
     const node = panel.current;
     if (!node) return;
+    const prev = document.activeElement as HTMLElement | null;   // focus goes back here on close
     const sel = 'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])';
     const first = node.querySelector<HTMLElement>(sel);
     first?.focus();
@@ -193,12 +225,15 @@ function ReservationDrawer({
       if (e.key !== "Tab") return;
       const items = Array.from(node.querySelectorAll<HTMLElement>(sel)).filter((el) => el.offsetParent !== null);
       if (!items.length) return;
-      const a = items[0], z = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); }
-      else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     };
     node.addEventListener("keydown", onKey);
-    return () => node.removeEventListener("keydown", onKey);
+    return () => {
+      node.removeEventListener("keydown", onKey);
+      prev?.focus({ preventScroll: true });
+    };
   }, [open]);
 
   const seatings = restaurant.seatings.value;
@@ -211,7 +246,7 @@ function ReservationDrawer({
         ref={panel}
         role="dialog"
         aria-modal="true"
-        aria-label={t.reserve.panelHeading}
+        aria-label={k ? fill(a.course.reserve, { course: kName }) : t.reserve.panelHeading}
       >
         <div className="res__head">
           <span className="u-label">{t.reserve.label}</span>
@@ -222,8 +257,20 @@ function ReservationDrawer({
           </button>
         </div>
 
-        <h2 className="display display--course">{t.reserve.panelHeading}</h2>
+        <h2 className="display display--course">
+          {k ? fill(a.course.reserve, { course: kName }) : t.reserve.panelHeading}
+        </h2>
         <p className="u-lede res__lede">{t.reserve.panelBody}</p>
+
+        {k && (
+          <div className="res__course">
+            <p className="res__note">{a.course.desktopNote}</p>
+            <pre className="res__msg">{message}</pre>
+            <button type="button" className="res__copy" onClick={copy} aria-live="polite">
+              {copied ? a.course.copied : a.course.copy}
+            </button>
+          </div>
+        )}
 
         <div className="res__routes">
           <a className="btn res__line" href={lineUrl} target="_blank" rel="noopener noreferrer">
@@ -258,7 +305,7 @@ function ReservationDrawer({
           </div>
           <div>
             <dt className="u-label">{t.reserve.chooseCourse}</dt>
-            <dd>{activeCourses.map((c) => (locale === "th" ? c.nameTh : c.nameEn)).join(", ")}</dd>
+            <dd>{k ? kName : activeCourses.map((c) => (locale === "th" ? c.nameTh : c.nameEn)).join(", ")}</dd>
           </div>
           <div>
             <dt className="u-label">{t.reserve.dietaryHeading}</dt>

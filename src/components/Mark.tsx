@@ -7,15 +7,17 @@ import { asset } from "@/lib/asset";
  * restaurant's own Facebook profile, so it is the real mark rather than a
  * drawing of it.
  *
- * It carries its own black ground, which reads as an ink stamp on the pale
- * daylight sections and disappears into the dark ones — so it is used as-is,
- * unmasked, at every size.
+ * Shown in its matte treatment (scripts/make-matte-logo.cjs): the same mark,
+ * every edge its own, recoloured from the glossy original into its own
+ * mid-tone gold, muted, on warm ink — printed-ink amber rather than polished
+ * metal. It reads as an ink stamp on the pale daylight sections and settles
+ * into the dark ones.
  */
 export function Mark({ size = 34, priority = false }: { size?: number; priority?: boolean }) {
   return (
     <span className="mark" style={{ width: size, height: size }}>
       <Image
-        src={asset("/brand/logo-512.jpg")}
+        src={asset("/brand/logo-matte-512.png")}
         alt=""
         width={size * 2}
         height={size * 2}

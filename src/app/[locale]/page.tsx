@@ -1,5 +1,7 @@
 import Chrome from "@/components/Chrome";
 import Courses from "@/components/Courses";
+import CourseAdvisor from "@/components/CourseAdvisor";
+import CourseCompare from "@/components/CourseCompare";
 import ALaCarte from "@/components/ALaCarte";
 import Footer from "@/components/Footer";
 import { restaurant } from "@/content/restaurant";
@@ -13,33 +15,31 @@ const Arrow = () => (
 );
 
 /**
- * The menu, first and almost only. This page is the link Suan Zen sends in its
- * LINE OA in place of photographs of the menu, to guests who already mean to
- * come. So it opens on the courses, and after the menu there is only what a
- * guest needs next: when, how to reserve, and where.
+ * The menu as a course advisor. This page is the link Suan Zen sends in its
+ * LINE OA to guests who already mean to come. It opens on the question they
+ * all have — which course is right for me — answered first by who is dining;
+ * then every course in family order, and the four adult courses side by side.
+ * After the menu there is only what a guest needs next: when, how to reserve,
+ * and where.
  */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
   if (!locales.includes(raw as Locale)) notFound();
   const locale = raw as Locale;
-  const t = getDict(locale);
 
   return (
     <>
       <Chrome locale={locale} />
 
       <main id="main">
-        {/* ── 01 · THE MENU ─────────────────────────────────────────────────── */}
+        {/* ── 01 · FIND YOUR COURSE, AND THE MENU ───────────────────────────── */}
         <section className="section courses-sec courses-sec--top" id="courses" data-section-world="day">
           <div className="shell">
             {/* Not a .reveal: the menu is the page, so nothing in it waits for
                 the scripts before it can be seen. */}
-            <header className="secthead secthead--wide menu-intro">
-              <span className="u-label">{t.coursesSection.label}</span>
-              <h1 className="display menu-intro__h">{t.coursesSection.heading}</h1>
-              <p className="u-lede">{t.coursesSection.body}</p>
-            </header>
+            <CourseAdvisor locale={locale} />
             <Courses locale={locale} />
+            <CourseCompare locale={locale} />
           </div>
         </section>
 

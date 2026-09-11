@@ -67,7 +67,11 @@ export const restaurant = {
   contact: {
     phone: v("062-458-5588"),
     phoneIntl: v("+66624585588"),
-    lineDisplayId: v("@suan.zen.omakase"),
+    /* The restaurant's own Facebook post (2024-09-06) gives "Line OA
+       @suanzenomakase"; LINE's server shows it is the account lin.ee/ubxSiHp
+       opens (Basic ID @847pimpq). The site used to show @suan.zen.omakase,
+       which is the TikTok handle and does not exist on LINE. */
+    lineDisplayId: v("@suanzenomakase"),
     lineUrl: v("https://lin.ee/ubxSiHp"),
   },
 

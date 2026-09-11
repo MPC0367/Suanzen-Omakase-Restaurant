@@ -121,6 +121,42 @@ for (const f of ['404.html', path.join('404', 'index.html')]) {
   }
 }
 
+// Course links without a language — /courses/zen-ichi/ — for staff to send in
+// LINE. Each one forwards to the guest's language and keeps the course; it
+// carries that course's own link preview, and says noindex like every page.
+const courseDir = path.join(OUT, 'en', 'courses');
+if (fs.existsSync(courseDir)) {
+  for (const slug of fs.readdirSync(courseDir)) {
+    const page = path.join(courseDir, slug, 'index.html');
+    if (!fs.existsSync(page)) continue;
+    const preview = (fs.readFileSync(page, 'utf8').match(/<meta (?:property|name)="(?:og|twitter):[^>]*>/g) || []).join('\n');
+    const to = `${prefix}/en/courses/${slug}/`;
+    const dir = path.join(OUT, 'courses', slug);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, 'index.html'),
+      `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Suan Zen Omakase</title>
+<meta name="robots" content="noindex, nofollow">
+${preview}
+<link rel="canonical" href="${origin}${to}">
+<meta http-equiv="refresh" content="0; url=${to}">
+<script>
+  var th = (navigator.language || '').toLowerCase().indexOf('th') === 0;
+  location.replace('${prefix}/' + (th ? 'th' : 'en') + '/courses/${slug}/');
+</script>
+</head>
+<body><p><a href="${to}">Suan Zen Omakase</a></p></body>
+</html>
+`,
+    );
+  }
+}
+
 const size = execSync(`du -sh "${OUT}"`).toString().trim().split(/\s+/)[0];
 const files = execSync(`find "${OUT}" -type f | wc -l`).toString().trim();
 console.log(`\nStatic site in out/  —  ${files} files, ${size}`);

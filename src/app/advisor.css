@@ -1,0 +1,198 @@
+/* ── THE COURSE ADVISOR ──────────────────────────────────────────────────────
+   Find your course: the family path, the finder, the comparison, and a course
+   on its own page. Set in type and thin rules like the rest of the menu — no
+   cards, no badges, no pills; the amber only marks, it never fills.         */
+
+.vh {
+  position: absolute !important; width: 1px; height: 1px; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ── The opening: the question, then a course for each of you ─────────────── */
+.advisor { display: grid; gap: clamp(1rem, 2.4vh, 1.6rem); margin-bottom: clamp(1.6rem, 4vh, 2.6rem); }
+.advisor__head { display: grid; gap: 0.6rem; max-width: 46rem; }
+.advisor__h { font-size: clamp(2rem, 5.6vw, 3.4rem); line-height: 1.06; margin: 0; text-wrap: balance; }
+.advisor__intro { margin: 0; max-width: 58ch; }
+
+.family { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.family__step {
+  display: grid; grid-template-columns: minmax(6.5rem, 11rem) minmax(0, 1fr);
+  gap: 0.25rem 1rem; align-items: baseline;
+  padding: 0.55rem 0; border-bottom: 1px solid var(--rule);
+}
+.family__who {
+  font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-quiet);
+}
+:lang(th) .family__who { text-transform: none; letter-spacing: 0.02em; font-size: 0.9rem; }
+.family__courses { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 1.6rem; }
+.family__course {
+  display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0.1rem 0.6rem;
+  min-height: 44px; align-content: center; color: var(--fg); text-decoration: none;
+}
+.family__name {
+  font-family: var(--font-display), var(--font-display-th), serif;
+  font-size: clamp(1.2rem, 2.4vw, 1.5rem); transition: color var(--t-ui) var(--ease);
+}
+.family__course:hover .family__name, .family__course:focus-visible .family__name { color: var(--accent); }
+.family__tag { font-size: 0.82rem; color: var(--fg-quiet); }
+@media (max-width: 40rem) {
+  .family__step { grid-template-columns: 1fr; gap: 0; padding-block: 0.7rem 0.45rem; }
+  .family__step--adult .family__courses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1rem; }
+}
+
+/* ── The finder: two or three taps, nothing to fill in ────────────────────── */
+.finder { display: grid; justify-items: start; }
+.finder__open {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0;
+  background: none; border: 0; color: var(--fg); font: inherit; font-size: 0.95rem; cursor: pointer;
+  text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 5px;
+}
+.finder__open:hover { color: var(--accent); }
+.finder__panel {
+  justify-self: stretch; margin-top: 0.6rem; padding: clamp(1rem, 2.4vw, 1.5rem) 0;
+  border-top: 1px solid var(--rule-strong); border-bottom: 1px solid var(--rule-strong);
+}
+.finder__panel[hidden] { display: none; }
+.finder__q { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 0.9rem; }
+.finder__legend {
+  padding: 0; margin-bottom: 0.9rem;
+  font-family: var(--font-display), var(--font-display-th), serif;
+  font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+}
+.finder__answers { display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)); gap: 0.6rem; }
+.finder__a {
+  display: grid; gap: 0.2rem; align-content: center; text-align: start;
+  min-height: 3.4rem; padding: 0.7rem 0.95rem;
+  border: 1px solid var(--rule-strong); border-radius: 2px;
+  background: none; color: var(--fg); font: inherit; cursor: pointer;
+  transition: border-color var(--t-ui) var(--ease), background-color var(--t-ui) var(--ease);
+}
+@media (hover: hover) { .finder__a:hover { border-color: var(--accent); } }
+.finder__a:focus-visible { border-color: var(--accent); }
+.finder__al { font-size: 1rem; }
+.finder__ah { font-size: 0.8rem; color: var(--fg-quiet); }
+.finder__note { margin: 0; font-size: 0.88rem; color: var(--fg-quiet); max-width: 62ch; }
+.finder__text {
+  justify-self: start; min-height: 44px; padding: 0; background: none; border: 0;
+  color: var(--fg-quiet); font: inherit; font-size: 0.88rem; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.finder__text:hover { color: var(--fg); }
+.finder__result { display: grid; gap: 0.7rem; }
+.finder__result [tabindex="-1"] { outline: none; }
+.finder__name { font-size: clamp(1.9rem, 4.4vw, 2.8rem); margin: 0; line-height: 1.05; }
+.finder__facts { margin: 0; color: var(--fg-quiet); }
+.finder__why { margin: 0; max-width: 60ch; }
+.finder__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.4rem; margin-top: 0.2rem; }
+.finder__also { margin: 0; font-size: 0.92rem; color: var(--fg-quiet); }
+.finder__also a { color: var(--fg); text-underline-offset: 3px; padding-block: 10px; }
+@media (prefers-reduced-motion: no-preference) {
+  .finder__q, .finder__result { animation: finderIn var(--t-ui) var(--ease) both; }
+}
+@keyframes finderIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+
+/* ── On each course: who it is for, before it opens ───────────────────────── */
+.course__tag {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg); white-space: nowrap;
+}
+.course__tag::before { content: ""; width: 0.9rem; height: 1px; background: var(--accent); }
+:lang(th) .course__tag { text-transform: none; letter-spacing: 0.02em; font-size: 0.84rem; }
+
+.advice {
+  display: grid; gap: 0.8rem 2rem; margin: 0.1rem 0 0.3rem; padding: 0.9rem 0;
+  border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+}
+@media (min-width: 48rem) { .advice { grid-template-columns: minmax(11rem, 1fr) 2fr; } }
+.advice__row { display: grid; gap: 0.3rem; align-content: start; }
+.advice dd { margin: 0; max-width: 62ch; }
+.advice__best { display: block; }
+@media (min-width: 48rem) { .advice__row--wide + .advice__row--wide { grid-column: 2; } }
+
+/* ── The adult courses, side by side ──────────────────────────────────────── */
+.compare { margin-top: clamp(2.4rem, 6vh, 4rem); display: grid; gap: 1rem; scroll-margin-top: calc(var(--hdr-h, 64px) + 1.5rem); }
+.compare__h { margin: 0; font-size: clamp(1.6rem, 3.4vw, 2.4rem); line-height: 1.1; text-wrap: balance; }
+
+/* The desktop photo stage, when a course has no photograph of its own dishes:
+   an empty frame reads as broken, so it keeps its place and stays unseen. */
+.menu__frame:empty { visibility: hidden; }
+.compare__pick { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.6rem; }
+.compare__pick .u-label { margin-right: 0.3rem; }
+.compare__chip {
+  min-height: 44px; padding: 0.5rem 0.9rem; border: 1px solid var(--rule-strong); border-radius: 2px;
+  background: none; color: var(--fg); font: inherit; font-size: 0.92rem; cursor: pointer;
+  transition: border-color var(--t-ui) var(--ease);
+}
+.compare__chip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
+.compare__scroll { overflow-x: auto; }
+.compare__table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.compare__table th, .compare__table td {
+  text-align: start; vertical-align: baseline; padding: 0.8rem 1rem 0.8rem 0; border-bottom: 1px solid var(--rule);
+}
+.compare__table thead th {
+  font-family: var(--font-display), var(--font-display-th), serif; font-size: 1.2rem; font-weight: 400;
+  border-bottom-color: var(--rule-strong);
+}
+.compare__table thead th a { color: inherit; text-decoration: none; display: inline-block; padding-block: 8px; margin-block: -8px; }
+.compare__table thead th a:hover { color: var(--accent); }
+.compare__table .compare__corner, .compare__table tbody th {
+  font-family: inherit; font-weight: 400; font-size: 0.74rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--fg-quiet); white-space: nowrap;
+}
+:lang(th) .compare__table .compare__corner, :lang(th) .compare__table tbody th { text-transform: none; letter-spacing: 0.02em; font-size: 0.86rem; }
+@media (min-width: 48rem) { .compare__pick { display: none; } }
+@media (max-width: 47.99rem) {
+  .compare__table [data-course]:not(.is-picked) { display: none; }
+}
+
+/* ── A course on its own page ─────────────────────────────────────────────── */
+.coursepage { padding-top: calc(var(--hdr-h, 72px) + clamp(1.4rem, 4vh, 2.8rem)); }
+.cdetail { display: grid; gap: 1.1rem; max-width: 52rem; }
+.cdetail__head { display: grid; gap: 0.45rem; }
+.cdetail__h { font-size: clamp(2.4rem, 7vw, 4.2rem); line-height: 1; margin: 0; }
+.cdetail__facts { margin: 0; color: var(--fg-quiet); font-size: 1.05rem; }
+.cdetail__facts i { font-style: normal; font-size: 0.7em; }
+.cdetail__desc { margin: 0; max-width: 62ch; }
+.cdetail__list { display: grid; gap: 0.6rem; }
+
+/* ── The reservation drawer, opened for one course on a desktop ───────────── */
+.res__course { display: grid; gap: 0.6rem; margin: 0.4rem 0 1rem; }
+.res__note { margin: 0; font-size: 0.9rem; color: var(--fg-quiet); }
+/* The drawer is dark whatever the page is, so these take its colour rather
+   than the page's day tokens. */
+.res__msg {
+  margin: 0; padding: 0.8rem 0.95rem; border-radius: 2px;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  font: inherit; font-size: 0.92rem; line-height: 1.6; white-space: pre-wrap;
+}
+.res__copy {
+  justify-self: start; min-height: 44px; padding: 0.4rem 0; background: none; border: 0;
+  color: inherit; font: inherit; font-size: 0.92rem; cursor: pointer;
+  text-decoration: underline; text-decoration-color: var(--amber-warm); text-underline-offset: 5px;
+}
+
+/* ── From the review ──────────────────────────────────────────────────────── */
+/* Three answers stack on a phone rather than leaving one orphaned. */
+@media (max-width: 40rem) { .finder__answers { grid-template-columns: 1fr; } }
+
+/* A course's name never breaks between its words. */
+.course__name, .family__name, .finder__name { white-space: nowrap; }
+
+/* Thai labels in the advisor at a size Thai can be read at. */
+:lang(th) .advisor__head .u-label, :lang(th) .advice .u-label, :lang(th) .finder__result .u-label,
+:lang(th) .compare__pick .u-label, :lang(th) .cdetail__list .u-label, :lang(th) .course__listhead .u-label { font-size: 0.86rem; letter-spacing: 0.02em; }
+
+/* On a phone the list is numbered, so the count under Reserve only repeats it. */
+@media (max-width: 40rem) { .course__total { display: none; } }
+
+/* The drawer is charcoal whatever world the page is in: give it night tokens,
+   so its small text and rules read against it. */
+.res__panel {
+  --fg: #f0ebe0; --fg-quiet: #a29b8c; --fg-faint: #8b8275;
+  --rule: rgba(240, 235, 224, 0.14); --rule-strong: rgba(240, 235, 224, 0.28);
+  --accent: var(--amber);
+}
+
+/* A course's own photograph on its page, where one shows its dishes. */
+.cdetail__photo { margin: 0; display: grid; gap: 0.5rem; max-width: 52rem; }
+.cdetail__img { width: 100%; height: auto; display: block; border-radius: 2px; aspect-ratio: 4 / 3; object-fit: cover; }

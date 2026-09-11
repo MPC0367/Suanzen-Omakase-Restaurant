@@ -2,10 +2,13 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { asset } from "@/lib/asset";
-import { activeCourses, formatBaht, allDishes, type Course, type Dish } from "@/content/courses";
+import { activeCourses, courseById, formatBaht, allDishes, type Course, type Dish } from "@/content/courses";
+import { adviceFor, advisorCopy, fill } from "@/content/advisor";
 import { getDict, type Locale } from "@/content/dictionary";
-import { restaurant } from "@/content/restaurant";
+import { reserveLink } from "@/lib/line";
+import { COURSE_EVENT, hasPointer, openReserve } from "@/lib/events";
 
 const Arrow = () => (
   <svg width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true">
@@ -48,6 +51,9 @@ const now = (move: () => void) => {
  * scrolls. They are open from the first paint (sections.css shows them before
  * this script runs), because a course opening late, or above the one being
  * read, would shove the page and throw a #visit link off its mark.
+ *
+ * Every course says who it is for before it is opened, and what sets it apart
+ * once it is; its Reserve opens LINE with that course already in the message.
  */
 export default function Courses({ locale }: { locale: Locale }) {
   const t = getDict(locale);
@@ -68,7 +74,7 @@ export default function Courses({ locale }: { locale: Locale }) {
   useEffect(() => { spotRef.current = spot; }, [spot]);
 
   useEffect(() => {
-    setTouch(!window.matchMedia("(hover: hover) and (pointer: fine)").matches);
+    setTouch(!hasPointer());
   }, []);
 
   /* A phone opens every course; a desktop keeps one. Crossing between the two
@@ -169,16 +175,15 @@ export default function Courses({ locale }: { locale: Locale }) {
     [open],
   );
 
-  // When a course opens, the stage shows that course until a dish is pointed at.
+  // When a course opens, the stage shows that course until a dish is pointed
+  // at — or nothing, when no photograph shows a dish from it.
   useEffect(() => {
-    if (!openCourse) return setPreview(null);
-    const first = openCourse.photos[0];
-    if (first) {
-      setPreview({
-        src: first,
-        label: locale === "th" ? openCourse.nameTh : openCourse.nameEn,
-      });
-    }
+    const first = openCourse?.photos[0];
+    if (!openCourse || !first) return setPreview(null);
+    setPreview({
+      src: first,
+      label: locale === "th" ? openCourse.nameTh : openCourse.nameEn,
+    });
   }, [openCourse, locale]);
 
   // On a desktop one course is open at a time; on a phone each keeps its own state.
@@ -196,6 +201,20 @@ export default function Courses({ locale }: { locale: Locale }) {
       document.getElementById(`course-${id}`)?.scrollIntoView({ behavior: still() ? "auto" : "smooth", block: "start" });
     });
   }, [phone, hold]);
+
+  // The advisor above, and the comparison below, ask for a course by id.
+  useEffect(() => {
+    const onCourse = (e: Event) => {
+      const id = (e as CustomEvent<{ id?: string }>).detail?.id;
+      if (!id) return;
+      jumpTo(id);
+      // Keyboard focus follows the view, so the next Tab carries on from the course.
+      requestAnimationFrame(() => requestAnimationFrame(() =>
+        document.querySelector<HTMLElement>(`#course-${id} .course__btn`)?.focus({ preventScroll: true })));
+    };
+    window.addEventListener(COURSE_EVENT, onCourse);
+    return () => window.removeEventListener(COURSE_EVENT, onCourse);
+  }, [jumpTo]);
 
   // On a phone the bar spotlights the course being read; on a desktop, the open one.
   const lit = phone ? spot : (open[0] ?? null);
@@ -219,6 +238,7 @@ export default function Courses({ locale }: { locale: Locale }) {
         ))}
       </nav>
 
+      <h2 className="vh">{t.coursesSection.label}</h2>
       <ul className="menu__list">
         {activeCourses.map((c) => (
           <CourseRow
@@ -255,6 +275,61 @@ export default function Courses({ locale }: { locale: Locale }) {
   );
 }
 
+/* ── Reserve this course ──────────────────────────────────────────────────
+   On a phone, LINE opens with the course already in the message. A desktop
+   can't open that chat, so there the reservation drawer shows the QR and the
+   message to copy. Without the script, the link still opens LINE. */
+function ReserveCourse({ course, locale }: { course: Course; locale: Locale }) {
+  const c = advisorCopy[locale];
+  const name = locale === "th" ? course.nameTh : course.nameEn;
+  return (
+    <a
+      className="btn"
+      href={reserveLink(course, locale)}
+      onClick={(e) => {
+        if (!hasPointer()) return;
+        e.preventDefault();
+        openReserve(course.id);
+      }}
+    >
+      {fill(c.course.reserve, { course: name })} <Arrow />
+    </a>
+  );
+}
+
+/* ── Best for, and what sets it apart ─────────────────────────────────────── */
+function AdviceBlock({ id, locale, full }: { id: string; locale: Locale; full?: boolean }) {
+  const adv = adviceFor(id);
+  const k = courseById(id);
+  if (!adv || !k) return null;
+  const c = advisorCopy[locale];
+  const name = locale === "th" ? k.nameTh : k.nameEn;
+  return (
+    <dl className="advice">
+      <div className="advice__row">
+        <dt className="u-label">{c.course.bestFor}</dt>
+        <dd>
+          {adv.bestFor.map((b, i) => (
+            <span key={i} className="advice__best">{b[locale]}</span>
+          ))}
+        </dd>
+      </div>
+      {(full || !adv.why) && (
+        <div className="advice__row advice__row--wide">
+          <dt className="u-label">{c.course.who}</dt>
+          <dd>{adv.who[locale]}</dd>
+        </div>
+      )}
+      {adv.why && (
+        <div className="advice__row advice__row--wide">
+          <dt className="u-label">{fill(c.course.why, { course: name })}</dt>
+          <dd>{adv.why[locale]}</dd>
+        </div>
+      )}
+    </dl>
+  );
+}
+
 /* ── One course ───────────────────────────────────────────────────────────── */
 function CourseRow({
   course, locale, isOpen, onToggle, onPreview, touch,
@@ -267,7 +342,9 @@ function CourseRow({
   touch: boolean;
 }) {
   const t = getDict(locale);
+  const c = advisorCopy[locale];
   const th = locale === "th";
+  const adv = adviceFor(course.id);
   const panelId = `course-panel-${course.key}`;
   const name = th ? course.nameTh : course.nameEn;
   const unit = th ? course.unitTh : course.unitEn;
@@ -288,7 +365,7 @@ function CourseRow({
     ? course.menus.map((m) => ({ label: th ? m.labelTh : m.labelEn, dishes: m.dishes }))
     : [{ label: "", dishes: course.dishes ?? [] }];
 
-  const total = allDishes(course).length;
+  const total = course.menus ? course.menus.length : allDishes(course).length;
 
   return (
     <li className={`course ${isOpen ? "is-open" : ""}`} id={`course-${course.id}`}>
@@ -298,6 +375,7 @@ function CourseRow({
           <span className="course__kanji" aria-hidden="true">{course.kanji}</span>
           <span className="course__name">{name}</span>
           <span className="course__meta">
+            {adv && <span className="course__tag">{adv.tag[locale]}</span>}
             <span className="course__count u-numeral">{course.count} {unit}</span>
             <span className="course__price u-numeral">{formatBaht(course.price)}<i>++</i></span>
           </span>
@@ -308,7 +386,10 @@ function CourseRow({
       <div className="course__panel" id={panelId} role="region" hidden={!isOpen}>
         <div className="course__inner">
           <p className="course__desc">{desc}</p>
-          {forWho && <p className="course__for">{forWho}</p>}
+          {/* The age is on the heading and "Best for" says the rest, so the
+              old one-line tagline would only repeat them. */}
+          {forWho && !adv && <p className="course__for">{forWho}</p>}
+          <AdviceBlock id={course.id} locale={locale} />
 
           <div className="course__listhead">
             <span className="u-label">{listLabel}</span>
@@ -317,28 +398,13 @@ function CourseRow({
             )}
           </div>
 
-          {groups.map((g, gi) => (
-            <div className="course__group" key={gi}>
-              {g.label && <p className="course__grouph u-label">{g.label}</p>}
-              <ol className="dishes" start={1}>
-                {g.dishes.map((d, i) => (
-                  <DishRow
-                    key={`${gi}-${i}`}
-                    dish={d}
-                    n={i + 1}
-                    locale={locale}
-                    touch={touch}
-                    onShow={() => show(d)}
-                  />
-                ))}
-              </ol>
-            </div>
-          ))}
+          <DishGroups groups={groups} locale={locale} touch={touch} onShow={show} />
 
           <div className="course__acts">
-            <a className="btn" href={restaurant.contact.lineUrl.value} target="_blank" rel="noopener noreferrer">
-              {t.cta.reserveLine} <Arrow />
-            </a>
+            <ReserveCourse course={course} locale={locale} />
+            <Link className="link-arrow" href={`/${locale}/courses/${course.slug}/`}>
+              {fill(c.course.open, { course: name })} <Arrow />
+            </Link>
             <span className="course__total u-numeral">
               {total} {unit}
             </span>
@@ -346,6 +412,90 @@ function CourseRow({
         </div>
       </div>
     </li>
+  );
+}
+
+function DishGroups({
+  groups, locale, touch, onShow,
+}: {
+  groups: { label: string; dishes: Dish[] }[];
+  locale: Locale;
+  touch: boolean;
+  onShow: (d: Dish) => void;
+}) {
+  return (
+    <>
+      {groups.map((g, gi) => (
+        <div className="course__group" key={gi}>
+          {g.label && <p className="course__grouph u-label">{g.label}</p>}
+          <ol className="dishes" start={1}>
+            {g.dishes.map((d, i) => (
+              <DishRow
+                key={`${gi}-${i}`}
+                dish={d}
+                n={i + 1}
+                locale={locale}
+                touch={touch}
+                onShow={() => onShow(d)}
+              />
+            ))}
+          </ol>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/* ── A course on its own page ─────────────────────────────────────────────
+   The link a member of staff sends to answer "which course for my
+   thirteen-year-old?": the course, who it is for, every dish, and Reserve. */
+export function CourseDetail({ id, locale }: { id: string; locale: Locale }) {
+  const [touch, setTouch] = useState(false);
+  useEffect(() => { setTouch(!hasPointer()); }, []);
+  const course = courseById(id);
+  if (!course) return null;
+  const c = advisorCopy[locale];
+  const th = locale === "th";
+  const adv = adviceFor(id);
+  const name = th ? course.nameTh : course.nameEn;
+  const unit = th ? course.unitTh : course.unitEn;
+  const groups = course.menus
+    ? course.menus.map((m) => ({ label: th ? m.labelTh : m.labelEn, dishes: m.dishes }))
+    : [{ label: "", dishes: course.dishes ?? [] }];
+
+  return (
+    <article className="cdetail">
+      <header className="cdetail__head">
+        {adv && <span className="course__tag cdetail__tag">{adv.tag[locale]}</span>}
+        <h1 className="display cdetail__h">{name}</h1>
+        <p className="cdetail__facts u-numeral">
+          {course.count} {unit} · {formatBaht(course.price)}<i>++</i>
+        </p>
+      </header>
+      {course.photos[0] && (
+        <figure className="cdetail__photo">
+          <Image
+            src={asset(course.photos[0])}
+            alt=""
+            width={1200}
+            height={900}
+            sizes="(max-width: 52rem) 100vw, 52rem"
+            className="cdetail__img"
+            priority
+          />
+        </figure>
+      )}
+      <p className="u-lede cdetail__desc">{th ? course.descTh : course.descEn}</p>
+      <AdviceBlock id={id} locale={locale} full />
+      <div className="cdetail__list">
+        <span className="u-label">{th ? course.listLabelTh : course.listLabelEn}</span>
+        <DishGroups groups={groups} locale={locale} touch={touch} onShow={() => {}} />
+      </div>
+      <div className="course__acts">
+        <ReserveCourse course={course} locale={locale} />
+        <Link className="link-arrow" href={`/${locale}/#courses`}>{c.course.all} <Arrow /></Link>
+      </div>
+    </article>
   );
 }
 
