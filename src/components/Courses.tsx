@@ -100,7 +100,12 @@ const giveBack = { y: 0, lists: new Map<HTMLElement, number>(), open: false };
    hold), and is back on for everything else, a late font among them.
    On an iPhone a scroll set by the page stops a fling dead (stopsFlings), so
    there a photograph above the middle fades out at once and keeps its space,
-   frozen, until the page comes to rest (linger); then it slides shut.
+   frozen, until the page comes to rest (linger); then it shuts in one step,
+   in a single correction. Only ever one waits: a second would double what the
+   page has to give back. The page counts as at rest only once it has also not
+   moved for three frames running, so it never corrects into a creeping glide.
+   A photograph a fling has already carried above the middle opens in one step
+   too, corrected in that frame rather than chased through a slide.
 
    The lit dish changes only once the middle is a few pixels past its edge, so
    a resting thumb doesn't make two dishes flicker. While a tapped link or
@@ -150,14 +155,19 @@ const holdStep = () => {
   let changed = false;
   moving.forEach((last, li) => {
     const r = li.getBoundingClientRect();
-    if (Math.abs(r.height - last) > 0.01) changed = true;
+    // Still moving: keep correcting for as long as it takes. A slide through a
+    // fling's dropped frames can outlast the time the loop was set to run for,
+    // and its tail would go uncorrected.
+    if (Math.abs(r.height - last) > 0.01) { changed = true; holdUntil = Math.max(holdUntil, performance.now() + 200); }
     if (r.top + Math.min(last, r.height) <= line) carry += r.height - last;   // wholly above the middle
     moving.set(li, r.height);
   });
-  // At the very bottom the browser has already pulled the page up by what it
-  // lost (a page can't stay scrolled past its end): don't give that back twice.
+  // At the end of the page the browser pulls the page up itself when what is
+  // above shrinks (a page can't stay scrolled past its end), and there the
+  // guest cannot be scrolling further down — so a move the page did not make is
+  // that pull. Give it back once, not twice.
   const max = maxScroll();
-  if (lastY >= lastMax - 1 && max < lastMax && carry < 0) carry += Math.min(lastMax - max, -carry);
+  if (carry < 0 && window.scrollY >= max - 2) carry += Math.max(0, Math.min(lastY - window.scrollY, -carry));
   // Only whole pixels: a browser rounds a scroll to its own grid, and a scroll
   // that moves nothing still stops a glide a tap has just started. Ask for it
   // all, see how far the page really moved, and keep the rest for later.
@@ -877,8 +887,14 @@ function DishRow({
     if (drop.dataset.to === to && !drop.dataset.frozen) return;
     delete drop.dataset.frozen;
     drop.dataset.to = to;
-    const snapped = spot.snap.delete(uid);   // it waited: now it shuts in one step, not a slide
-    if (spot.lit !== uid) hold(li);
+    let snapped = spot.snap.delete(uid);   // it waited: now it shuts in one step, not a slide
+    // Above the middle already (a fling carried it past): open in one step too,
+    // so the page corrects for it in that one frame instead of chasing a slide.
+    if (open && li.getBoundingClientRect().bottom <= lineY()) snapped = true;
+    // Every change is watched, lit or not: hold() corrects only what is above
+    // the middle at the time, and a fling can carry this dish above the middle
+    // before its photograph has finished opening.
+    hold(li);
     const from = drop.getBoundingClientRect().height;
     const target = open ? (drop.firstElementChild as HTMLElement).scrollHeight : 0;
     drop.style.transition = "none";
@@ -893,7 +909,7 @@ function DishRow({
       drop.style.height = open ? "auto" : "0px";
       void drop.offsetHeight;
       drop.style.transition = "";
-      if (spot.lit !== uid) holdNow();
+      holdNow();
     }
   }, [open, leaving, spotting, uid]);
   // Once fully open, its height follows the picture (a turned phone, a font arriving).
