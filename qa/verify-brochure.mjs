@@ -267,6 +267,33 @@ const ipRest = (await shownAll(ip)).length;
 pass("…while the page moves, only the lit dish shows its picture (one waits at most); at rest only it is open",
      onlyLitShows && mostOpen <= 2 && ipRest <= 1,
      `${waited ? "photos above faded and waited" : "none had to wait"}; at most ${mostOpen} open while moving, ${ipRest} at rest`);
+// Flinging across photo dishes: what the guest sees must not move — measured
+// after each frame is drawn, with the page's own corrective scrolls discounted.
+const flingSeen = await (async () => {
+  await toMiddle(ip, uids.trio[0], -300);
+  await ip.evaluate(`(() => { window.__own = 0; window.__seen = 0;
+    const sb = window.scrollBy.bind(window), st = window.scrollTo.bind(window);
+    window.scrollBy = function () { const y0 = scrollY; sb.apply(window, arguments); window.__own += scrollY - y0; };
+    window.scrollTo = function () { const y0 = scrollY; st.apply(window, arguments); window.__own += scrollY - y0; };
+    const line = ${LINE}; let el = null, top = 0, y = 0, own = 0; const ch = new MessageChannel();
+    ch.port1.onmessage = () => {
+      const hit = document.elementFromPoint(innerWidth / 2, ${LINE});
+      const e = hit?.closest("li.dish") || hit; const t = e ? e.getBoundingClientRect().top : 0;
+      const mine = (scrollY - y) - (window.__own - own);
+      if (e === el && el) window.__seen = Math.max(window.__seen, Math.abs((t - top) + mine));
+      el = e; top = t; y = scrollY; own = window.__own;
+      requestAnimationFrame(() => ch.port2.postMessage(0));
+    };
+    requestAnimationFrame(() => ch.port2.postMessage(0)); })()`);
+  const cdp = await ip.context().newCDPSession(ip);
+  for (let k = 0; k < 5; k++) {
+    await cdp.send("Input.synthesizeScrollGesture", { x: 190, y: 700, yDistance: -400 - k * 60, speed: 2500 + k * 800, gestureSourceType: "touch", preventFling: false });
+    await ip.waitForTimeout(800);
+  }
+  await ip.waitForTimeout(1200);
+  return Math.round(await ip.evaluate(() => window.__seen));
+})();
+pass("flinging across photo dishes moves nothing the guest didn't move", flingSeen <= 3, `worst ${flingSeen}px over five flings`);
 await ip.context().close();
 
 // From adversarial testing of the spotlight.
