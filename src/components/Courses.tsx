@@ -119,6 +119,7 @@ const spot = {
   open: null as string | null,          // the dish whose photograph is open
   dismissed: null as string | null,     // closed by a tap: stays shut until the middle moves on
   linger: new Set<string>(),            // closed, but held (faded, frozen) until the page rests
+  snap: new Set<string>(),              // shutting now, in one step rather than a slide
 };
 const spotListeners = new Set<() => void>();
 const spotEmit = () => spotListeners.forEach((l) => l());
@@ -243,7 +244,7 @@ function useSpotlight(touch: boolean) {
     const html = document.documentElement;
     const mq = window.matchMedia(ONE_COLUMN);
     let frame = 0, rest = 0, scrolling = false;
-    const clear = () => { spot.lit = spot.open = spot.dismissed = null; spot.linger.clear(); };
+    const clear = () => { spot.lit = spot.open = spot.dismissed = null; spot.linger.clear(); spot.snap.clear(); };
     const run = (rested: boolean) => {
       if (!spot.on) return;
       const settled = rested && !scrolling && !finger.down;
@@ -261,7 +262,12 @@ function useSpotlight(touch: boolean) {
         if (spot.dismissed !== uid) spot.dismissed = null;
         changed = true;
       }
-      const want = li && uid && li.classList.contains("has-photo") && uid !== spot.dismissed ? uid : null;
+      let want = li && uid && li.classList.contains("has-photo") && uid !== spot.dismissed ? uid : null;
+      // Only one photograph ever waits. A second would double what the page has
+      // to give back when they shut, and every pixel of that is a scroll the page
+      // sets itself — which on an iPhone stops a fling dead. So while one waits
+      // and the page is still moving, dishes light but no new photograph opens.
+      if (!settled && spot.linger.size && want !== spot.open) want = spot.open;
       if (want !== spot.open) {
         const prev = spot.open;
         spot.open = want;
@@ -272,19 +278,43 @@ function useSpotlight(touch: boolean) {
         }
         changed = true;
       }
-      if (settled && spot.linger.size) { spot.linger.clear(); changed = true; }
+      if (settled && spot.linger.size) {
+        spot.linger.forEach((u) => spot.snap.add(u));   // they shut at once now, in a single correction
+        spot.linger.clear();
+        changed = true;
+      }
       if (changed) spotEmit();
+    };
+    /* A glide can still be creeping when the scroll events stop, and a scroll the
+       page set itself then would cancel it. So the page counts as at rest only
+       once it has not moved for three frames running. */
+    let restId = 0;
+    const atRest = () => {
+      const mine = ++restId;
+      let y = window.scrollY, still = 0;
+      const check = () => {
+        if (mine !== restId) return;
+        if (window.scrollY !== y) { y = window.scrollY; still = 0; } else still++;
+        if (still < 3) return void window.requestAnimationFrame(check);
+        scrolling = false;
+        run(true);
+      };
+      window.requestAnimationFrame(check);
     };
     const onScroll = () => {
       scrolling = true;
+      restId++;
       window.clearTimeout(rest);
-      rest = window.setTimeout(() => { scrolling = false; run(true); }, 160);
+      rest = window.setTimeout(atRest, 160);
       if (!frame) frame = window.requestAnimationFrame(() => { frame = 0; run(false); });
     };
     const onLift = () => { window.setTimeout(() => run(true), 0); };
     const onDown = () => { if (stopsFlings() && moving.size) settleNow(); };
     const apply = () => {
-      spot.on = mq.matches;
+      // Only where the page scrolls itself. Inside a frame stretched to the
+      // whole page — how an iPhone often treats one — it never scrolls, so the
+      // page can neither tell what is on screen nor hold it still: tap to open.
+      spot.on = mq.matches && document.documentElement.scrollHeight > window.innerHeight + 4;
       html.toggleAttribute("data-spot", spot.on);
       clear();
       spotEmit();
@@ -847,6 +877,7 @@ function DishRow({
     if (drop.dataset.to === to && !drop.dataset.frozen) return;
     delete drop.dataset.frozen;
     drop.dataset.to = to;
+    const snapped = spot.snap.delete(uid);   // it waited: now it shuts in one step, not a slide
     if (spot.lit !== uid) hold(li);
     const from = drop.getBoundingClientRect().height;
     const target = open ? (drop.firstElementChild as HTMLElement).scrollHeight : 0;
@@ -855,9 +886,13 @@ function DishRow({
     void drop.offsetHeight;
     drop.style.transition = "";
     drop.style.height = `${target}px`;
-    // No slide to speak of (reduced motion shortens every transition to next to nothing): done at once.
-    if (Math.max(...getComputedStyle(drop).transitionDuration.split(",").map(parseFloat)) < 0.05) {
-      if (open) drop.style.height = "auto";
+    // In one step: a photograph that waited, and reduced motion (which shortens
+    // every transition to next to nothing). The page corrects for it at once.
+    if (snapped || Math.max(...getComputedStyle(drop).transitionDuration.split(",").map(parseFloat)) < 0.05) {
+      drop.style.transition = "none";
+      drop.style.height = open ? "auto" : "0px";
+      void drop.offsetHeight;
+      drop.style.transition = "";
       if (spot.lit !== uid) holdNow();
     }
   }, [open, leaving, spotting, uid]);

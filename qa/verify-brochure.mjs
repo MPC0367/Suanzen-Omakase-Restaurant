@@ -254,17 +254,19 @@ pass("on an iPhone (no scroll anchoring), the photo before closes once the page 
      (await shownAll(ip)).length === 0 && ipMoved <= 2, `moved ${ipMoved}px while the photo above closed`);
 await toMiddle(ip, uids.trio[0], -220);
 await ip.mouse.move(190, 600);
-let onlyLitShows = true, waited = false;
+let onlyLitShows = true, waited = false, mostOpen = 0;
 for (let k = 0; k < 45; k++) {
   await ip.mouse.wheel(0, 30); await ip.waitForTimeout(70);
   const s = await ip.evaluate(() => [...document.querySelectorAll(".dish.is-shown")].map((d) => ({ lit: d.classList.contains("is-lit"), leaving: d.classList.contains("is-leaving") })));
+  mostOpen = Math.max(mostOpen, s.length);
   if (s.some((x) => x.leaving)) waited = true;
   if (s.some((x) => !x.lit && !x.leaving)) onlyLitShows = false;   // an open picture that is neither lit nor fading
 }
 await ip.waitForTimeout(800);
 const ipRest = (await shownAll(ip)).length;
-pass("…while the page moves, only the lit dish shows its picture (the one before fades); at rest only it is open",
-     onlyLitShows && ipRest <= 1, `${waited ? "photos above faded and waited" : "none had to wait"}; ${ipRest} open at rest`);
+pass("…while the page moves, only the lit dish shows its picture (one waits at most); at rest only it is open",
+     onlyLitShows && mostOpen <= 2 && ipRest <= 1,
+     `${waited ? "photos above faded and waited" : "none had to wait"}; at most ${mostOpen} open while moving, ${ipRest} at rest`);
 await ip.context().close();
 
 // From adversarial testing of the spotlight.
