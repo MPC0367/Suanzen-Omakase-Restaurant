@@ -14,12 +14,16 @@
      it by twice the grain, so the grain shows where the light falls and all
      but vanishes in the dark corners, as it does in the logo. The colour
      beneath is the stone's own average: right from the first paint, before
-     either picture has arrived. */
+     either picture has arrived. Over all of it, a fifth of black: matched
+     level for level, the stone read too bright filling a phone screen with no
+     gold around it, so the whole ground sits one step below the photograph. */
   background-color: #120b07;
-  background-image: url("../assets/stone-grain.jpg"), url("../assets/stone-light.png");
-  background-size: 200px 200px, 100% 100%;
-  background-repeat: repeat, no-repeat;
-  background-blend-mode: overlay, normal;
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.2)),
+    url("../assets/stone-grain.jpg"), url("../assets/stone-light.png");
+  background-size: 100% 100%, 200px 200px, 100% 100%;
+  background-repeat: no-repeat, repeat, no-repeat;
+  background-blend-mode: normal, overlay, normal;
   display: grid; place-items: center;
   pointer-events: none;
   opacity: 1;
@@ -28,7 +32,7 @@
 }
 .curtain.is-lifting { opacity: 0; visibility: hidden; }
 @keyframes curtainFail { to { opacity: 0; visibility: hidden; } }
-@media (min-width: 64rem) { .curtain { background-size: 280px 280px, 100% 100%; } }
+@media (min-width: 64rem) { .curtain { background-size: 100% 100%, 280px 280px, 100% 100%; } }
 
 /* The seal forms. The dry garden comes up; the gold rim - a second layer on
    the same frame - is uncovered by a conic mask swept clockwise from the seam
