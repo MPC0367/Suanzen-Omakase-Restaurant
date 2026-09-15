@@ -9,8 +9,8 @@ import { asset } from "@/lib/asset";
  *
  * Shown here in its transparent version, whole. The scalloped gold rim is the
  * seal's own frame — it is not a circle, so there is no round crop, no ink
- * disc and no hairline ring. One 320px file serves the header, the footer and
- * the curtain, so the curtain's download is the header's too.
+ * disc and no hairline ring. One 320px file serves the header and the footer;
+ * the curtain builds its seal from two layers of its own (see Curtain.tsx).
  */
 export function Mark({ size = 34, priority = false }: { size?: number; priority?: boolean }) {
   return (

@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Mark } from "./Mark";
+import { asset } from "@/lib/asset";
 
 /**
- * The curtain. The restaurant's seal on its own stone, held for a moment and
- * then lifted — on the first load, on every move between pages, and on the
- * change of language.
+ * The curtain. The restaurant's seal on its own stone: the dry garden comes
+ * up, its gold rim draws itself clockwise from the seam at the top, and once
+ * the ring has closed the curtain lifts — on the first load, on every move
+ * between pages, and on the change of language.
+ *
+ * The seal is two layers of the restaurant's artwork registered to one frame:
+ * public/brand/logo-art.png (everything inside the rim) and logo-ring.png (the
+ * rim alone). The drawing itself is CSS — a conic mask swept round the rim, in
+ * sections.css — so it starts on first paint, before React arrives, and this
+ * component lifts the curtain when that animation reports it has finished.
  *
  * It renders on the server so it is already there when the first paint lands,
  * rather than flashing in once React arrives. Two consequences follow, and
@@ -21,42 +29,90 @@ import { Mark } from "./Mark";
  * Reduced motion skips it: those visitors go straight to the page.
  */
 
-/** Held at full, then the lift. Long enough to read as deliberate, short
-    enough that nobody waits on it. */
-const HOLD = 560;
+/** Held on the closed ring, then the lift. */
+const SETTLE = 320;
 const LIFT = 620;
+/** Only if the browser can't report the ring's animation: its delay plus
+    duration in sections.css. */
+const RING = 1680;
+
+type Phase = "held" | "lifting" | "gone";
 
 export default function Curtain() {
   const pathname = usePathname();
-  const [phase, setPhase] = useState<"held" | "lifting" | "gone">("held");
-  const firstRender = useRef(true);
+  const [phase, setPhase] = useState<Phase>("held");
+  // 0 is the curtain the server rendered; every later raise redraws quicker.
+  const [raise, setRaise] = useState(0);
+  const shownFor = useRef(pathname);
+  const ring = useRef<HTMLImageElement>(null);
 
+  // Every later pathname change — a page, or Thai ⇄ English — raises it again.
+  useEffect(() => {
+    if (shownFor.current === pathname) return;
+    shownFor.current = pathname;
+    setPhase("held");
+    setRaise((n) => n + 1);
+  }, [pathname]);
+
+  // With this raise on screen: wait for the ring to close, hold, then lift.
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setPhase("gone");
       return;
     }
 
-    // On the first pass the curtain is already up from the server render; on
-    // every later pathname change — a page, or the switch between Thai and
-    // English — it is raised again.
-    if (!firstRender.current) setPhase("held");
-    firstRender.current = false;
+    let alive = true;
+    let lift = 0;
+    let gone = 0;
+    const liftIn = (ms: number) => {
+      lift = window.setTimeout(() => setPhase("lifting"), ms);
+      gone = window.setTimeout(() => setPhase("gone"), ms + LIFT);
+    };
 
-    const lift = window.setTimeout(() => setPhase("lifting"), HOLD);
-    const gone = window.setTimeout(() => setPhase("gone"), HOLD + LIFT);
+    const drawing = ring.current?.getAnimations?.()[0];
+    if (drawing) {
+      drawing.finished.then(
+        () => {
+          if (alive) liftIn(SETTLE);
+        },
+        () => {},
+      );
+    } else {
+      liftIn(RING + SETTLE);
+    }
+
     return () => {
+      alive = false;
       window.clearTimeout(lift);
       window.clearTimeout(gone);
     };
-  }, [pathname]);
+  }, [raise]);
 
   if (phase === "gone") return null;
 
   return (
-    <div className={`curtain ${phase === "lifting" ? "is-lifting" : ""}`} aria-hidden="true">
+    <div
+      className={`curtain${raise > 0 ? " curtain--again" : ""}${phase === "lifting" ? " is-lifting" : ""}`}
+      aria-hidden="true"
+    >
       <span className="curtain__mark">
-        <Mark size={116} priority />
+        <Image
+          src={asset("/brand/logo-art-320.png")}
+          alt=""
+          width={232}
+          height={232}
+          priority
+          className="curtain__art"
+        />
+        <Image
+          ref={ring}
+          src={asset("/brand/logo-ring-320.png")}
+          alt=""
+          width={232}
+          height={232}
+          priority
+          className="curtain__ring"
+        />
       </span>
     </div>
   );

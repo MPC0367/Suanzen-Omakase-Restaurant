@@ -7,7 +7,7 @@ const pass = (n, ok, x = "") => console.log(`  ${ok ? "PASS" : "FAIL"}  ${n}${x 
 // 1 · present in the server HTML with the logo, before any JS
 const html = await (await fetch(B + "/en/")).text();
 pass("curtain ships in the HTML", html.includes('class="curtain'));
-pass("it carries the restaurant's logo", /curtain__mark[\s\S]{0,400}logo-320\.png/.test(html));
+pass("it carries the seal and its ring", /curtain__mark[\s\S]{0,900}logo-art-320\.png[\s\S]{0,900}logo-ring-320\.png/.test(html));
 
 // 2 · on first load: visible, then lifts, and never blocks a click
 await p.goto(B + "/en/", { waitUntil: "domcontentloaded" });
