@@ -1,22 +1,25 @@
 /* ═══ THE CURTAIN ═══════════════════════════════════════════════════════════
    The restaurant's seal on its own stone: on the first load, between pages,
-   and across the change of language. The ground is the warm charcoal stone
-   the seal is set in (public/brand/logo-stone.jpg) — its colours sampled from
-   that file, lit toward the middle and falling to near-black at the edges,
-   with a noise tile for its grain. It is decorative and aria-hidden, so it
-   never takes a pointer event — left able to, it sat over the navigation
-   swallowing clicks until React hydrated. The stylesheet also lifts it on its
-   own, so a visitor whose JavaScript never arrives is not left in the dark. */
+   and across the change of language. The ground is the stone the seal is set
+   in, measured from public/brand/logo-stone.jpg (scripts/make-stone.cjs): its
+   colour and its light across the picture — lit from the upper right, falling
+   to near black at the lower left — and its own crinkled grain. It is
+   decorative and aria-hidden, so it never takes a pointer event — left able
+   to, it sat over the navigation swallowing clicks until React hydrated. The
+   stylesheet also lifts it on its own, so a visitor whose JavaScript never
+   arrives is not left in the dark. */
 .curtain {
   position: fixed; inset: 0; z-index: 100;
-  /* Light on the stone, the stone's own darkening edge, and its grain: fractal
-     noise lit from the upper left, so it reads as a rough surface, not static. */
-  background-color: #19140f;
-  background-image:
-    radial-gradient(ellipse 62% 54% at 50% 45%, rgba(58, 45, 32, 0.42), transparent 72%),
-    radial-gradient(ellipse 115% 100% at 50% 46%, transparent 38%, rgba(5, 3, 2, 0.88) 100%),
-    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='400'%20height='400'%3E%3Cfilter%20id='g'%20x='0'%20y='0'%20width='100%25'%20height='100%25'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='.09'%20numOctaves='5'%20stitchTiles='stitch'%20result='n'/%3E%3CfeDiffuseLighting%20in='n'%20surfaceScale='2'%20diffuseConstant='1'%20lighting-color='%23fff'%3E%3CfeDistantLight%20azimuth='225'%20elevation='25'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect%20width='400'%20height='400'%20filter='url%28%23g%29'/%3E%3C/svg%3E");
-  background-blend-mode: normal, normal, overlay;
+  /* The grain laid over the light. `overlay` on a ground this dark multiplies
+     it by twice the grain, so the grain shows where the light falls and all
+     but vanishes in the dark corners, as it does in the logo. The colour
+     beneath is the stone's own average: right from the first paint, before
+     either picture has arrived. */
+  background-color: #120b07;
+  background-image: url("../assets/stone-grain.jpg"), url("../assets/stone-light.png");
+  background-size: 200px 200px, 100% 100%;
+  background-repeat: repeat, no-repeat;
+  background-blend-mode: overlay, normal;
   display: grid; place-items: center;
   pointer-events: none;
   opacity: 1;
@@ -25,6 +28,7 @@
 }
 .curtain.is-lifting { opacity: 0; visibility: hidden; }
 @keyframes curtainFail { to { opacity: 0; visibility: hidden; } }
+@media (min-width: 64rem) { .curtain { background-size: 280px 280px, 100% 100%; } }
 
 /* The seal forms. The dry garden comes up; the gold rim - a second layer on
    the same frame - is uncovered by a conic mask swept clockwise from the seam
