@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Mark } from "./Mark";
 
 /**
- * The curtain. The restaurant's seal on a dark ground, held for a moment and
+ * The curtain. The restaurant's seal on its own stone, held for a moment and
  * then lifted — on the first load, on every move between pages, and on the
  * change of language.
  *

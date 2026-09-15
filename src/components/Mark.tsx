@@ -3,21 +3,20 @@ import { asset } from "@/lib/asset";
 
 /**
  * The restaurant's own logo — the gold seal with the pine over rocks, the sun,
- * 枯山水 (karesansui, a dry garden) and OMAKASE. Recovered at 1284px from the
- * restaurant's own Facebook profile, so it is the real mark rather than a
- * drawing of it.
+ * 枯山水 (karesansui, a dry garden), OMAKASE and EST. 2024. This is the mark
+ * the restaurant supplied in September 2026, in three grounds; the masters
+ * are in public/brand/ (logo.png transparent, logo-black.png, logo-stone.jpg).
  *
- * Shown in its matte treatment (scripts/make-matte-logo.cjs): the same mark,
- * every edge its own, recoloured from the glossy original into its own
- * mid-tone gold, muted, on warm ink — printed-ink amber rather than polished
- * metal. It reads as an ink stamp on the pale daylight sections and settles
- * into the dark ones.
+ * Shown here in its transparent version, whole. The scalloped gold rim is the
+ * seal's own frame — it is not a circle, so there is no round crop, no ink
+ * disc and no hairline ring. One 320px file serves the header, the footer and
+ * the curtain, so the curtain's download is the header's too.
  */
 export function Mark({ size = 34, priority = false }: { size?: number; priority?: boolean }) {
   return (
     <span className="mark" style={{ width: size, height: size }}>
       <Image
-        src={asset("/brand/logo-matte-512.png")}
+        src={asset("/brand/logo-320.png")}
         alt=""
         width={size * 2}
         height={size * 2}

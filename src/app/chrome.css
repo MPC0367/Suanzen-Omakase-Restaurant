@@ -21,16 +21,14 @@
 .hdr.is-scrolled .hdr__in { padding-block: clamp(0.6rem, 1.1vw, 0.95rem); }
 
 .hdr__brand { display: inline-flex; align-items: center; gap: 0.7rem; flex: 0 0 auto; }
-/* The matte mark on its own warm ink, ringed by a hairline. No glow: the
-   brand's gold is printed ink, not light off metal. */
+/* The seal shown whole: its scalloped gold rim is its own frame, so no crop,
+   no disc and no ring. It reads on the night ground and on the day paper alike. */
 .mark {
-  display: block; flex: 0 0 auto; border-radius: 50%; overflow: hidden;
-  background: var(--ink);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber-warm) 30%, transparent);
-  transition: box-shadow var(--t-ui) var(--ease);
+  display: block; flex: 0 0 auto;
+  transition: filter var(--t-ui) var(--ease);
 }
-.mark__img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.hdr__brand:hover .mark { box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber-warm) 70%, transparent); }
+.mark__img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.hdr__brand:hover .mark { filter: brightness(1.12); }
 
 .wordmark {
   font-family: var(--serif);

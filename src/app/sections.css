@@ -1,12 +1,22 @@
 /* ═══ THE CURTAIN ═══════════════════════════════════════════════════════════
-   The restaurant's seal on a dark ground: on the first load, between pages,
-   and across the change of language. It is decorative and aria-hidden, so it
+   The restaurant's seal on its own stone: on the first load, between pages,
+   and across the change of language. The ground is the warm charcoal stone
+   the seal is set in (public/brand/logo-stone.jpg) — its colours sampled from
+   that file, lit toward the middle and falling to near-black at the edges,
+   with a noise tile for its grain. It is decorative and aria-hidden, so it
    never takes a pointer event — left able to, it sat over the navigation
    swallowing clicks until React hydrated. The stylesheet also lifts it on its
    own, so a visitor whose JavaScript never arrives is not left in the dark. */
 .curtain {
   position: fixed; inset: 0; z-index: 100;
-  background: var(--ink-deep);
+  /* Light on the stone, the stone's own darkening edge, and its grain: fractal
+     noise lit from the upper left, so it reads as a rough surface, not static. */
+  background-color: #19140f;
+  background-image:
+    radial-gradient(ellipse 62% 54% at 50% 45%, rgba(58, 45, 32, 0.42), transparent 72%),
+    radial-gradient(ellipse 115% 100% at 50% 46%, transparent 38%, rgba(5, 3, 2, 0.88) 100%),
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='400'%20height='400'%3E%3Cfilter%20id='g'%20x='0'%20y='0'%20width='100%25'%20height='100%25'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='.09'%20numOctaves='5'%20stitchTiles='stitch'%20result='n'/%3E%3CfeDiffuseLighting%20in='n'%20surfaceScale='2'%20diffuseConstant='1'%20lighting-color='%23fff'%3E%3CfeDistantLight%20azimuth='225'%20elevation='25'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect%20width='400'%20height='400'%20filter='url%28%23g%29'/%3E%3C/svg%3E");
+  background-blend-mode: normal, normal, overlay;
   display: grid; place-items: center;
   pointer-events: none;
   opacity: 1;
@@ -20,8 +30,9 @@
   display: block;
   animation: curtainMark 900ms var(--ease-out) both;
 }
+/* Raised off the stone, as it is in logo-stone.jpg: a close soft shadow, no ring. */
 .curtain__mark .mark {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber-warm) 34%, transparent);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.65));
 }
 @keyframes curtainMark {
   0%   { opacity: 0; transform: scale(0.86); }

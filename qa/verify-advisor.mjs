@@ -164,7 +164,7 @@ pass("choosing a third swaps out the one chosen first", v2.length === 2 && v2.in
 const lineId = await m.locator("#visit").textContent();
 pass("Visit shows the restaurant's real LINE ID", lineId.includes("@suanzenomakase"));
 const logo = await m.locator(".hdr .mark__img").getAttribute("src");
-pass("the header carries the matte logo", /logo-matte-512/.test(logo || ""), logo || "none");
+pass("the header carries the restaurant's logo", /logo-320\.png/.test(logo || ""), logo || "none");
 
 // A course on its own page.
 await m.goto(`${B}/en/courses/zen-ichi/`, { waitUntil: "domcontentloaded" }); await ready(m);
