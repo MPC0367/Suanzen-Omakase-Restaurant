@@ -432,12 +432,12 @@
 .visit__a { border-bottom: 1px solid var(--rule-strong); }
 .visit__a:hover { color: var(--accent); border-color: var(--accent); }
 .visit__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; }
-/* The map is Google's own embed. Its colours cannot be restyled without an
-   API key, so the frame is inverted and hue-rotated back: land drops to
-   near-black while water, parks and the red pin return to their own hues.
-   That alone reads as charcoal, not the site's navy — hue-rotating grey does
-   nothing — so a soft-light wash of indigo sits over it. Saturation is kept
-   high enough that the pin stays a clear red rather than washing to pink. */
+/* The map is Google's own embed, shown as Google draws it. It used to be
+   inverted and washed with indigo to read as night; that made a light map
+   look like part of the dark page, but a filter over an embedded map is a
+   known way to kill touch on an iPhone, and a map nobody can move is worth
+   less than a map that doesn't match. So the filter and the wash are gone: the
+   map is plainly a map, and the page holds it in a dark frame instead. */
 .visit__map { margin: 0; display: grid; gap: 0.7rem; }
 .visit__canvas {
   position: relative; overflow: hidden;
@@ -455,14 +455,9 @@
 .visit__frame.is-refused { display: none; }
 .visit__frame {
   position: absolute; inset: 0; width: 100%; height: 100%; border: 0; z-index: 1;
-  filter: invert(92%) hue-rotate(180deg) saturate(0.9) brightness(0.95) contrast(0.95);
 }
-/* The navy wash. pointer-events: none, so the map underneath stays fully
-   interactive, and it only tints Google's logo and attribution — never hides them. */
-.visit__canvas::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: #20406a; mix-blend-mode: soft-light; opacity: 0.9;
-}
+/* Nothing lies over the map. A blended wash on top of an embedded map is the
+   other way a phone can end up with a picture of a map it cannot move. */
 .visit__pinlabel {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   flex-wrap: wrap; font-size: 0.78rem; color: var(--fg-faint); letter-spacing: 0.07em;

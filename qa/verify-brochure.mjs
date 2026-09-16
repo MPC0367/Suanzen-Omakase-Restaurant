@@ -82,12 +82,18 @@ const map = await d.evaluate(async () => {
   if (!f) return { there: false };
   const r = f.getBoundingClientRect();
   const hit = document.elementFromPoint(Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2));
+  const over = getComputedStyle(document.querySelector(".visit__canvas"), "::after");
   return { there: true, src: f.getAttribute("src") || "", size: `${Math.round(r.width)}×${Math.round(r.height)}`,
-           takesThePointer: hit === f, wash: getComputedStyle(document.querySelector(".visit__canvas"), "::after").pointerEvents };
+           takesThePointer: hit === f, filter: getComputedStyle(f).filter,
+           over: over.content === "none" ? "nothing over it" : over.pointerEvents };
 });
-pass("the map at the bottom is Google's own, and takes the guest's finger",
-     map.there && /maps\.google\.com|google\.com\/maps/.test(map.src) && map.takesThePointer && map.wash === "none",
-     map.there ? `${map.size}, centre hits ${map.takesThePointer ? "the map" : "something over it"}` : "no map");
+// Shown as Google draws it: nothing over the map, and no filter on it. A map
+// dressed to match the page stops looking like a map, and a guest who doesn't
+// take it for a map never tries to move it.
+pass("the map at the bottom is Google's own, plainly drawn, and takes the guest's finger",
+     map.there && /maps\.google\.com|google\.com\/maps/.test(map.src) && map.takesThePointer
+       && (map.over === "nothing over it" || map.over === "none") && map.filter === "none",
+     map.there ? `${map.size}, centre hits ${map.takesThePointer ? "the map" : "something over it"}, ${map.over}, filter ${map.filter}` : "no map");
 
 // And where a browser refuses embedded pages — an in-app browser, a content
 // blocker, a preview that serves only the page's own files — the plan beneath
