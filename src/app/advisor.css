@@ -192,4 +192,4 @@
 
 /* The course's picture at the top of its own page — the same one the menu
    shows, sized by .course__img in sections.css. */
-.cdetail__photo { margin: 0; display: grid; gap: 0.5rem; max-width: 52rem; }
+.cdetail__photo { margin: 0; display: grid; gap: 0.5rem; max-width: 34rem; }

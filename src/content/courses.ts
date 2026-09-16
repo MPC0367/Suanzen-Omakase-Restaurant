@@ -90,6 +90,7 @@ export const courses: Course[] = [
     listLabelEn: "ALL NINE, IN ORDER",
     listLabelTh: "ครบทั้ง 9 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
+    sample: { src: "/photos/4cb2edf859a5.jpg", w: 954, h: 802 },
     photos: [],
     dishes: [
       { nameEn: "Yuzu juice" },
@@ -122,6 +123,7 @@ export const courses: Course[] = [
     listLabelEn: "ALL FOURTEEN, IN ORDER",
     listLabelTh: "ครบทั้ง 14 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
+    sample: { src: "/photos/3d4a8203a842.jpg", w: 1170, h: 1171 },
     photos: ["/photos/b6e6bff9bdd4.jpg", "/photos/b63e98c7df99.jpg"],
     dishes: [
       { nameEn: "Yuzu juice" },

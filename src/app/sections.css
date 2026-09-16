@@ -271,13 +271,12 @@
 .course__desc { font-size: 1.02rem; max-width: 60ch; color: var(--fg-quiet); }
 /* The one picture the restaurant sends for a course. It is given its measured
    size in the markup, so it holds its own height before it arrives and nothing
-   below it jumps; tall pictures are cropped rather than allowed to fill the
-   screen on a phone. */
-.course__photo { margin: 0; }
-.course__img {
-  width: 100%; height: auto; display: block; border-radius: 2px;
-  max-height: min(58svh, 30rem); object-fit: cover;
-}
+   below it jumps. It is never cropped: these are the restaurant's own sheets,
+   several dishes to a picture, and cutting one takes a dish out of it. The
+   width is capped instead, so a wide screen doesn't blow a square picture up
+   to the height of the page. */
+.course__photo { margin: 0; max-width: 34rem; }
+.course__img { width: 100%; height: auto; display: block; border-radius: 2px; }
 .course__for {
   font-size: 0.78rem; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent);
 }
