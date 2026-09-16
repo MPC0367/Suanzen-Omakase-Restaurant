@@ -48,7 +48,6 @@
 .bk__inline { color: var(--accent); border-bottom: 1px solid currentColor; }
 .bk__field { border: 0; padding: 0; margin: 0; display: grid; gap: 1.1rem; }
 .bk__err { color: #e8794b; font-size: 0.88rem; }
-[data-world="day"] .bk__err { color: #b8431a; }
 
 /* Calendar */
 .cal { display: grid; gap: 0.7rem; }

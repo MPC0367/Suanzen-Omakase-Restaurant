@@ -96,15 +96,16 @@ written into a component.
 | `alacarte.ts` | The à la carte list, unpublished until it arrives |
 | `dictionary.ts` | All other EN and TH copy |
 | `media.ts` | Every photograph: what it shows, alt text in both languages |
-| `photo-sizes.ts` | Each dish photograph's size, so it opens at its true height |
 
 **Thai is written as Thai**, not translated from the English. It gets its own
 line-height, because stacked vowels and tone marks clip at Latin leading, and
 its own casing rules: Thai has no uppercase, so `text-transform` is off
 wherever English labels are set in caps.
 
-**Day and night.** The page moves between a rice-paper palette and an ink one
-as each section crosses a line across the viewport (`src/lib/motion.ts`).
+**Night throughout.** The page is dark from top to bottom, at the restaurant's
+word. It used to cross from an ink palette into a rice-paper one as each
+section came up; that second world is gone, and `:root` in `globals.css` is the
+whole palette.
 
 **The QR codes.** `src/lib/qr.ts` is a small QR encoder, so the LINE code needs
 no third-party script. `scripts/make-qr.mjs` makes the handover QR for the

@@ -197,7 +197,6 @@
    the longest course row and push the whole page sideways on a small phone. */
 .menu { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(1.4rem, 3vw, 2.6rem); }
 .menu__list { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--rule); }
-.menu__stage { display: none; }
 .menu__foot { font-size: 0.88rem; color: var(--fg-faint); max-width: 54ch; }
 
 /* ── Course shortcuts ──────────────────────────────────────────────────────
@@ -222,32 +221,6 @@
 .jump__price { font-size: 0.8rem; color: var(--fg-quiet); }
 .jump.is-on .jump__price { color: inherit; opacity: 0.78; }
 @media (min-width: 64rem) { .menu__jump { flex-wrap: wrap; margin: 0; padding: 0; overflow: visible; } }
-
-/* On a wide pointer screen the photograph stands beside the menu. */
-@media (hover: hover) and (pointer: fine) and (min-width: 75rem) {
-  .menu {
-    grid-template-columns: minmax(0, 1fr) clamp(18rem, 27vw, 26rem);
-    gap: clamp(2rem, 5vw, 5rem); align-items: start;
-  }
-  .menu__jump { grid-column: 1; }
-  .menu__list { grid-column: 1; }
-  .menu__foot { grid-column: 1; }
-  .menu__stage {
-    display: block; grid-column: 2; grid-row: 1 / span 2;
-    position: sticky; top: 18vh;
-  }
-  .menu__frame {
-    position: relative; aspect-ratio: 4 / 5; overflow: hidden;
-    background: var(--bg-raise); border: 1px solid var(--rule); border-radius: 2px;
-  }
-  .menu__img { object-fit: cover; animation: menuFade var(--t-edit) var(--ease) both; }
-  @keyframes menuFade { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; } }
-  .menu__caption {
-    margin-top: 0.7rem; font-size: 0.78rem; letter-spacing: 0.09em;
-    text-transform: uppercase; color: var(--fg-faint);
-  }
-  :lang(th) .menu__caption { text-transform: none; letter-spacing: 0.02em; font-size: 0.88rem; }
-}
 
 /* ── the course row ──────────────────────────────────────────────────────── */
 /* scroll-margin: a course opened from the shortcuts lands below the fixed header. */
@@ -296,6 +269,15 @@
 @keyframes coursePanel { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .course__inner { animation: none; } }
 .course__desc { font-size: 1.02rem; max-width: 60ch; color: var(--fg-quiet); }
+/* The one picture the restaurant sends for a course. It is given its measured
+   size in the markup, so it holds its own height before it arrives and nothing
+   below it jumps; tall pictures are cropped rather than allowed to fill the
+   screen on a phone. */
+.course__photo { margin: 0; }
+.course__img {
+  width: 100%; height: auto; display: block; border-radius: 2px;
+  max-height: min(58svh, 30rem); object-fit: cover;
+}
 .course__for {
   font-size: 0.78rem; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent);
 }
@@ -316,61 +298,16 @@
 @media (min-width: 48rem) { .dishes { columns: 2; } }
 @media (hover: hover) and (pointer: fine) and (min-width: 75rem) { .dishes { columns: 2; } }
 
-.dish { break-inside: avoid; }
-.dish__btn {
-  width: 100%; background: none; border: 0; cursor: default; text-align: start;
-  display: grid; grid-template-columns: auto 1fr auto; align-items: baseline;
+.dish {
+  break-inside: avoid;
+  display: grid; grid-template-columns: auto 1fr; align-items: baseline;
   gap: 0.75rem; padding: 0.5rem 0.2rem; min-height: 40px;
   color: var(--fg-quiet);
   border-bottom: 1px solid color-mix(in srgb, var(--rule) 55%, transparent);
-  transition: color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
 }
-.dish.has-photo .dish__btn { cursor: pointer; }
-.dish__btn:hover, .dish__btn:focus-visible { color: var(--fg); }
-.dish.has-photo .dish__btn:hover { color: var(--accent); }
 .dish__n { font-size: 0.64rem; color: var(--fg-faint); letter-spacing: 0.1em; padding-top: 0.25em; }
 .dish__name { font-size: 0.95rem; line-height: 1.45; }
 :lang(th) .dish__name { font-size: 1rem; }
-/* A dot marks the dishes the restaurant has a photograph of. */
-.dish__dot {
-  width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
-  opacity: 0.5; align-self: center;
-  transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
-}
-.dish.has-photo .dish__btn:hover .dish__dot { opacity: 1; transform: scale(1.5); }
-
-/* Touch: the photograph opens under the dish instead. */
-.dish__shot { padding: 0.5rem 0 0.9rem; }
-/* Never taller than what shows under the header and the course bar (about
-   9rem with the bar and the picture's margins), so a phone held sideways, or a
-   tablet, sees the whole picture. */
-.dish__shot .dish__shotimg { max-height: min(62svh, calc(100svh - var(--hdr-h, 64px) - 9rem)); object-fit: cover; }
-.dish__shotimg {
-  width: 100%; height: auto; border-radius: 2px; display: block;
-  animation: menuFade var(--t-ui) var(--ease) both;
-}
-@keyframes menuFade { from { opacity: 0; } to { opacity: 1; } }
-
-/* Phones: the middle of the screen rests on one dish at a time, as a pointer
-   would (Courses.tsx, "The spotlight"). That dish is lit as a pointer lights
-   it, and its photograph slides open beneath it — the picture's true height is
-   known before it loads, so the slide is the whole height from the start. */
-.dish.is-lit .dish__btn { color: var(--fg); }
-.dish.is-lit.has-photo .dish__btn { color: var(--accent); }
-.dish.is-lit .dish__dot { opacity: 1; transform: scale(1.5); }
-/* The slide itself: its height is set in pixels by Courses.tsx (so it can be
-   frozen part-way on an iPhone), and it only ever animates that height. */
-.dish__drop { height: 0; overflow: hidden; transition: height 300ms var(--ease); }
-.dish__drop > .dish__shot { padding: 0; display: flow-root; }   /* keeps the picture's margins inside, so the slide's height includes them */
-.dish__drop .dish__shotimg {
-  margin: 0.5rem 0 0.9rem;
-  animation: none; opacity: 0; transition: opacity 300ms var(--ease);
-}
-.dish.is-shown > .dish__drop .dish__shotimg { opacity: 1; }
-/* On an iPhone a photograph above the middle can't slide shut mid-fling (see
-   Courses.tsx): it fades out at once and keeps its place until the page rests. */
-.dish.is-leaving > .dish__drop .dish__shotimg { opacity: 0; }
-@media (prefers-reduced-motion: reduce) { .dish__drop, .dish__drop .dish__shotimg { transition: none; } }
 
 
 .course__acts {

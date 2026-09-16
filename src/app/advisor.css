@@ -113,9 +113,6 @@
 .compare { margin-top: clamp(2.4rem, 6vh, 4rem); display: grid; gap: 1rem; scroll-margin-top: calc(var(--hdr-h, 64px) + 1.5rem); }
 .compare__h { margin: 0; font-size: clamp(1.6rem, 3.4vw, 2.4rem); line-height: 1.1; text-wrap: balance; }
 
-/* The desktop photo stage, when a course has no photograph of its own dishes:
-   an empty frame reads as broken, so it keeps its place and stays unseen. */
-.menu__frame:empty { visibility: hidden; }
 .compare__pick { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.6rem; }
 .compare__pick .u-label { margin-right: 0.3rem; }
 .compare__chip {
@@ -193,6 +190,6 @@
   --accent: var(--amber);
 }
 
-/* A course's own photograph on its page, where one shows its dishes. */
+/* The course's picture at the top of its own page — the same one the menu
+   shows, sized by .course__img in sections.css. */
 .cdetail__photo { margin: 0; display: grid; gap: 0.5rem; max-width: 52rem; }
-.cdetail__img { width: 100%; height: auto; display: block; border-radius: 2px; aspect-ratio: 4 / 3; object-fit: cover; }

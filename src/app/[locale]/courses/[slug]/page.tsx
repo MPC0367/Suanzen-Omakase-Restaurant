@@ -72,7 +72,7 @@ export default async function CoursePage({ params }: Params) {
     <>
       <Chrome locale={locale} />
       <main id="main">
-        <section className="section coursepage" id="course" data-section-world="day">
+        <section className="section coursepage" id="course">
           <div className="shell">
             <CourseDetail id={k.id} locale={locale} />
           </div>

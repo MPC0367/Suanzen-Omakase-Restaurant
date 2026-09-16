@@ -7,7 +7,7 @@ export default function Footer({ locale }: { locale: Locale }) {
   const r = restaurant;
 
   return (
-    <footer className="foot" data-section-world="night">
+    <footer className="foot">
       <div className="shell foot__in">
         <div className="foot__brand">
           <Mark size={40} />

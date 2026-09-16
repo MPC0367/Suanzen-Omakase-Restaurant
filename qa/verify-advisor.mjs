@@ -207,9 +207,12 @@ pass("the comparison is a real table, with row and column headers",
      (await d.locator(".compare__table th[scope=col]").count()) === 5 && (await d.locator(".compare__table th[scope=row]").count()) === 4);
 
 await d.locator(".menu__jump .jump", { hasText: "Zen Kids" }).click(); await d.waitForTimeout(800);
-pass("Zen Kids shows no photograph that isn't one of its own dishes", (await d.locator(".menu__img").count()) === 0);
+pass("Zen Kids, with no picture of its own yet, shows none", (await d.locator("#course-zen-kids .course__photo").count()) === 0);
 
 await d.locator(".menu__jump .jump", { hasText: "Zen Ni" }).click(); await d.waitForTimeout(800);
+pass("Zen Ni shows the one picture the restaurant sent for it, and it loads",
+     await d.evaluate(() => { const i = document.querySelector("#course-zen-ni .course__photo img"); return !!i && i.complete && i.naturalWidth > 0; }));
+pass("the dish list is type alone — no photograph in it", (await d.locator(".dishes img").count()) === 0);
 await d.locator("#course-zen-ni .course__acts .btn").click(); await d.waitForTimeout(700);
 const msg = await d.locator(".res.is-open .res__msg").textContent().catch(() => null);
 pass("on a desktop, Reserve opens the drawer with that course's message to copy", !!msg && msg.startsWith("Hello, I'd like to book Zen Ni."), (msg || "no drawer").split("\n")[0]);

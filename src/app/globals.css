@@ -56,23 +56,24 @@
   --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in:   cubic-bezier(0.7, 0, 0.84, 0);
 
+  /* The browser's own furniture — scrollbars, the text caret, the inside of a
+     form control — is painted by the browser, not by anything here. Told the
+     page is dark, it paints them dark too; left unsaid, they stay light on a
+     night page. */
+  color-scheme: dark;
+
   /* Measure & rhythm */
   --gutter: clamp(1.25rem, 4.2vw, 4.5rem);
   --maxw: 1560px;
   --section-y: clamp(5.5rem, 13vh, 11rem);
 }
 
-/* Day world — the counter in daylight. */
-[data-world="day"] {
-  --bg:          var(--paper);
-  --bg-raise:    var(--paper-warm);
-  --fg:          #17170f;
-  --fg-quiet:    #5d564a;
-  --fg-faint:    #6b6458;   /* 4.9:1 on paper — was 2.9:1 */
-  --rule:        rgba(23, 23, 15, 0.14);
-  --rule-strong: rgba(23, 23, 15, 0.3);
-  --accent:      var(--amber-deep);
-}
+/* The garden after dark, throughout. The page used to cross into a second set
+   of tokens — the counter in daylight, rice paper and deep amber — as each
+   section came up. The restaurant asked for one world, the dark one, so the
+   night tokens above are now the whole site. The daylight colours stay in the
+   palette: they are the room's own, and the page still borrows them for the
+   few things that are lit rather than dark (the QR's paper, for one). */
 
 /* ── RESET ────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }

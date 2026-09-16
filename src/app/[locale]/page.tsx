@@ -33,7 +33,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       <main id="main">
         {/* ── 01 · FIND YOUR COURSE, AND THE MENU ───────────────────────────── */}
-        <section className="section courses-sec courses-sec--top" id="courses" data-section-world="day">
+        <section className="section courses-sec courses-sec--top" id="courses">
           <div className="shell">
             {/* Not a .reveal: the menu is the page, so nothing in it waits for
                 the scripts before it can be seen. */}
@@ -63,7 +63,7 @@ function Visit({ locale }: { locale: Locale }) {
   const g = r.geo.value;
 
   return (
-    <section className="section visit" id="visit" data-section-world="night">
+    <section className="section visit" id="visit">
       <div className="shell">
         <header className="secthead reveal">
           <span className="u-label">{t.visit.label}</span>

@@ -1,12 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { asset } from "@/lib/asset";
 import { activeCourses, courseById, formatBaht, allDishes, type Course, type Dish } from "@/content/courses";
 import { adviceFor, advisorCopy, fill } from "@/content/advisor";
-import { photoRatio } from "@/content/photo-sizes";
 import { getDict, type Locale } from "@/content/dictionary";
 import { reserveLink } from "@/lib/line";
 import { COURSE_EVENT, hasPointer, openReserve } from "@/lib/events";
@@ -41,335 +40,21 @@ const now = (move: () => void) => {
   html.style.scrollBehavior = was;
 };
 
-/* How far down the screen the fixed header, and the pinned course bar under
-   it, reach. Measured live: the header compacts and the bar pins as the page moves. */
-const cover = () => Math.max(
-  0,
-  document.querySelector(".hdr")?.getBoundingClientRect().bottom ?? 0,
-  document.querySelector(".menu__jump")?.getBoundingClientRect().bottom ?? 0,
-);
-
-/* Whether the guest is moving the page by hand: a drag or a wheel since the
-   last tap. A tapped link or course-bar shortcut carries the page past many
-   dishes at once, and none of them should open a photograph on the way (each
-   would also push the place it is heading for further down). Counted rather
-   than timed, so only the order matters. One set of listeners for every dish. */
-const hand = { n: 0, drag: 0, tap: 0, on: false };
-const byHand = () => hand.drag > hand.tap;
-/* Whether a finger is on the glass, kept once for every dish: a photograph
-   that opened by itself in the middle of a drag has to know the finger was
-   already down when it opened. */
-const finger = { down: false };
-const watchHand = () => {
-  if (hand.on) return;
-  hand.on = true;
-  const drag = () => { hand.drag = ++hand.n; };
-  const tap = () => { hand.tap = ++hand.n; };
-  const lift = (e: Event) => { finger.down = ((e as TouchEvent).touches?.length ?? 0) > 0; };
-  window.addEventListener("touchmove", drag, { passive: true });
-  window.addEventListener("wheel", drag, { passive: true });
-  window.addEventListener("click", tap, { capture: true });
-  window.addEventListener("hashchange", tap);
-  window.addEventListener("popstate", tap);
-  // Captured, so the finger's state is known before any dish's own touch handler runs.
-  window.addEventListener("touchstart", () => { finger.down = true; }, { passive: true, capture: true });
-  window.addEventListener("touchend", lift, { passive: true, capture: true });
-  window.addEventListener("touchcancel", lift, { passive: true, capture: true });
-};
-
-/* Photographs folding away above the screen give their height back together.
-   Rows whose timers run out together fold in one render, and may sit in
-   several dish lists: each list's loss is counted once, and the page is put
-   back by the sum, from where it was before any of them folded. */
-const giveBack = { y: 0, lists: new Map<HTMLElement, number>(), open: false };
-
-/* ── The spotlight (phones) ─────────────────────────────────────────────────
-   On a phone the middle of the screen works like a pointer resting on the
-   menu. The dish under it is lit, as a pointer lights it on a desktop, and a
-   dish the restaurant has a photograph of slides it open beneath its name.
-   When the middle moves on to another dish, the one before closes: only one
-   is ever open.
-
-   What must not happen is the dish at the middle moving while this goes on.
-   A photograph opening beneath the lit dish only pushes down what comes after
-   it, as any dropdown does. One closing above the middle would pull everything
-   below it up by its height, so the page scrolls up by exactly what it takes
-   away, frame by frame as it slides shut (hold). That is measured from the
-   closing rows themselves, so the guest's own scrolling is never touched; the
-   browser's scroll anchoring is switched off only while it does this (see
-   hold), and is back on for everything else, a late font among them.
-   On an iPhone a scroll set by the page stops a fling dead (stopsFlings), so
-   there a photograph above the middle fades out at once and keeps its space,
-   frozen, until the page comes to rest (linger); then it shuts in one step,
-   in a single correction. Only ever one waits: a second would double what the
-   page has to give back. The page counts as at rest only once it has also not
-   moved for three frames running, so it never corrects into a creeping glide.
-   A photograph a fling has already carried above the middle opens in one step
-   too, corrected in that frame rather than chased through a slide.
-
-   The lit dish changes only once the middle is a few pixels past its edge, so
-   a resting thumb doesn't make two dishes flicker. While a tapped link or
-   shortcut carries the page nothing lights or opens on the way (byHand), and
-   anything still sliding is finished at once when the tap lands, so the glide
-   aims at where things will be. A tablet's two-column lists keep tap-to-open:
-   there an opening photograph re-balances the columns. */
-const ONE_COLUMN = "(max-width: 47.99rem)";   // sections.css: .dishes go to two columns at 48rem
-const LINE = 0.45;                            // where the pointer rests, down the visible area
-const SLACK = 6;                              // px past the lit dish's edge before the middle moves on
-const lineY = () => { const top = cover(); return top + (window.innerHeight - top) * LINE; };
-
-const spot = {
-  on: false,                            // running: a touch screen with one column of dishes
-  lit: null as string | null,           // the dish at the middle
-  open: null as string | null,          // the dish whose photograph is open
-  dismissed: null as string | null,     // closed by a tap: stays shut until the middle moves on
-  linger: new Set<string>(),            // closed, but held (faded, frozen) until the page rests
-  snap: new Set<string>(),              // shutting now, in one step rather than a slide
-};
-const spotListeners = new Set<() => void>();
-const spotEmit = () => spotListeners.forEach((l) => l());
-const spotSubscribe = (l: () => void) => { spotListeners.add(l); return () => { spotListeners.delete(l); }; };
-let spotRun: ((rested: boolean) => void) | null = null;
-const rowOf = (uid: string) => document.querySelector<HTMLElement>(`li.dish[data-uid="${uid}"]`);
-
-/* A scroll set by the page stops a fling on WebKit — every iPhone and iPad
-   browser — which is also the one engine without scroll anchoring, so that
-   tells it apart (as does a test turning anchoring off on body to stand in). */
-const stopsFlings = () =>
-  !CSS.supports("overflow-anchor", "auto") || getComputedStyle(document.body).overflowAnchor === "none";
-
-/* hold: while rows other than the lit one change height, scroll the page by
-   whatever the ones above the middle gain or lose, each frame before it is
-   drawn (transitions have already advanced when animation frames run). */
-const moving = new Map<HTMLElement, number>();   // a row changing height → its height last frame
-let holdUntil = 0, holdFrame = 0, carry = 0, lastY = 0, lastMax = 0, quiet = 0;
-const maxScroll = () => document.documentElement.scrollHeight - window.innerHeight;
-const holdEnd = () => {
-  moving.clear();
-  carry = 0;
-  document.documentElement.style.overflowAnchor = "";   // the browser's own anchoring is back for fonts and the like
-};
-const holdStep = () => {
-  holdFrame = 0;
-  const line = lineY();
-  let changed = false;
-  moving.forEach((last, li) => {
-    const r = li.getBoundingClientRect();
-    // Still moving: keep correcting for as long as it takes. A slide through a
-    // fling's dropped frames can outlast the time the loop was set to run for,
-    // and its tail would go uncorrected.
-    if (Math.abs(r.height - last) > 0.01) { changed = true; holdUntil = Math.max(holdUntil, performance.now() + 200); }
-    if (r.top + Math.min(last, r.height) <= line) carry += r.height - last;   // wholly above the middle
-    moving.set(li, r.height);
-  });
-  // At the end of the page the browser pulls the page up itself when what is
-  // above shrinks (a page can't stay scrolled past its end), and there the
-  // guest cannot be scrolling further down — so a move the page did not make is
-  // that pull. Give it back once, not twice.
-  const max = maxScroll();
-  if (carry < 0 && window.scrollY >= max - 2) carry += Math.max(0, Math.min(lastY - window.scrollY, -carry));
-  // Only whole pixels: a browser rounds a scroll to its own grid, and a scroll
-  // that moves nothing still stops a glide a tap has just started. Ask for it
-  // all, see how far the page really moved, and keep the rest for later.
-  if (Math.abs(carry) >= 1) {
-    const y0 = window.scrollY;
-    now(() => window.scrollBy(0, carry));
-    carry -= window.scrollY - y0;
-  }
-  lastY = window.scrollY;
-  lastMax = max;
-  quiet = changed ? 0 : quiet + 1;
-  if (performance.now() < holdUntil && quiet < 4) holdFrame = window.requestAnimationFrame(holdStep);
-  else holdEnd();
-};
-const hold = (li: HTMLElement) => {
-  if (!moving.has(li)) moving.set(li, li.getBoundingClientRect().height);
-  holdUntil = performance.now() + 420;
-  quiet = 0;
-  if (!holdFrame) {
-    // While the page corrects for these rows itself, the browser's anchoring
-    // stays out of it: it would anchor on the first box that fits the screen,
-    // often a list holding the closing photograph, and correct wrongly.
-    document.documentElement.style.overflowAnchor = "none";
-    lastY = window.scrollY;
-    lastMax = maxScroll();
-    holdFrame = window.requestAnimationFrame(holdStep);
-  }
-};
-const holdNow = () => {
-  if (holdFrame) window.cancelAnimationFrame(holdFrame);
-  holdStep();
-};
-
-/* Finish at once everything still sliding or waiting — the lit dish's own
-   opening too — holding the middle as it goes: when a tap lands (so a glide it
-   starts aims at the final layout), and when a finger lands on an iPhone
-   mid-slide (so its drag isn't fought). */
-const settleNow = () => {
-  const done: HTMLElement[] = [];
-  document.querySelectorAll<HTMLElement>(".dish__drop").forEach((drop) => {
-    const li = drop.parentElement as HTMLElement;
-    const uid = li.dataset.uid ?? "";
-    const waiting = spot.linger.has(uid);
-    const sliding = drop.dataset.to === "open" ? drop.style.height !== "auto" : drop.getBoundingClientRect().height > 0.5;
-    if (!waiting && !sliding) return;
-    hold(li);
-    if (waiting) { spot.linger.delete(uid); drop.dataset.to = "0"; }
-    delete drop.dataset.frozen;
-    drop.style.transition = "none";
-    drop.style.height = drop.dataset.to === "open" ? "auto" : "0px";
-    done.push(drop);
-  });
-  if (!done.length) return;
-  holdNow();
-  window.requestAnimationFrame(() => done.forEach((d) => { d.style.transition = ""; }));
-  spotEmit();
-};
-
-/* A tap on a dish: an open one closes; any other glides to the middle, where
-   it lights and opens once the page rests. */
-const tapSpot = (uid: string, li: HTMLElement | null) => {
-  if (!li) return;
-  if (spot.open === uid || spot.linger.has(uid)) {
-    spot.dismissed = uid;
-    if (spot.open === uid) spot.open = null;
-    spot.linger.delete(uid);
-    spotEmit();
-    return;
-  }
-  if (spot.dismissed === uid) spot.dismissed = null;
-  const b = li.querySelector(".dish__btn")?.getBoundingClientRect();
-  if (!b) return;
-  const by = (b.top + b.bottom) / 2 - lineY();
-  if (Math.abs(by) < 3) spotRun?.(true);
-  else window.scrollTo({ top: window.scrollY + by, behavior: still() ? "auto" : "smooth" });
-};
-
-/* Runs the spotlight for a page: the menu, or a course's own page. */
-function useSpotlight(touch: boolean) {
-  useEffect(() => {
-    if (!touch) return;
-    watchHand();
-    hand.tap = ++hand.n;       // a page just opened (or Back is restoring the place): not scrolled by hand yet
-    const html = document.documentElement;
-    const mq = window.matchMedia(ONE_COLUMN);
-    let frame = 0, rest = 0, scrolling = false;
-    const clear = () => { spot.lit = spot.open = spot.dismissed = null; spot.linger.clear(); spot.snap.clear(); };
-    const run = (rested: boolean) => {
-      if (!spot.on) return;
-      const settled = rested && !scrolling && !finger.down;
-      if (!settled && !byHand()) return;        // a tapped link is carrying the page: wait until it lands
-      const line = lineY();
-      // The lit dish stays lit until the middle is SLACK px past its edge.
-      const cur = spot.lit ? rowOf(spot.lit) : null;
-      const cb = cur?.getBoundingClientRect();
-      const li = cur && cb && cb.height && line >= cb.top - SLACK && line <= cb.bottom + SLACK ? cur
-        : document.elementFromPoint(window.innerWidth / 2, line)?.closest<HTMLElement>("li.dish[data-uid]") ?? null;
-      const uid = li?.dataset.uid ?? null;
-      let changed = false;
-      if (uid !== spot.lit) {
-        spot.lit = uid;
-        if (spot.dismissed !== uid) spot.dismissed = null;
-        changed = true;
-      }
-      let want = li && uid && li.classList.contains("has-photo") && uid !== spot.dismissed ? uid : null;
-      // Only one photograph ever waits. A second would double what the page has
-      // to give back when they shut, and every pixel of that is a scroll the page
-      // sets itself — which on an iPhone stops a fling dead. So while one waits
-      // and the page is still moving, dishes light but no new photograph opens.
-      if (!settled && spot.linger.size && want !== spot.open) want = spot.open;
-      if (want !== spot.open) {
-        const prev = spot.open;
-        spot.open = want;
-        if (want) spot.linger.delete(want);
-        if (prev && !settled && stopsFlings()) {
-          const r = rowOf(prev)?.getBoundingClientRect();
-          if (r && r.height && r.bottom <= line) spot.linger.add(prev);   // above the middle, mid-scroll: wait for rest
-        }
-        changed = true;
-      }
-      if (settled && spot.linger.size) {
-        spot.linger.forEach((u) => spot.snap.add(u));   // they shut at once now, in a single correction
-        spot.linger.clear();
-        changed = true;
-      }
-      if (changed) spotEmit();
-    };
-    /* A glide can still be creeping when the scroll events stop, and a scroll the
-       page set itself then would cancel it. So the page counts as at rest only
-       once it has not moved for three frames running. */
-    let restId = 0;
-    const atRest = () => {
-      const mine = ++restId;
-      let y = window.scrollY, still = 0;
-      const check = () => {
-        if (mine !== restId) return;
-        if (window.scrollY !== y) { y = window.scrollY; still = 0; } else still++;
-        if (still < 3) return void window.requestAnimationFrame(check);
-        scrolling = false;
-        run(true);
-      };
-      window.requestAnimationFrame(check);
-    };
-    const onScroll = () => {
-      scrolling = true;
-      restId++;
-      window.clearTimeout(rest);
-      rest = window.setTimeout(atRest, 160);
-      if (!frame) frame = window.requestAnimationFrame(() => { frame = 0; run(false); });
-    };
-    const onLift = () => { window.setTimeout(() => run(true), 0); };
-    const onDown = () => { if (stopsFlings() && moving.size) settleNow(); };
-    const apply = () => {
-      // Only where the page scrolls itself. Inside a frame stretched to the
-      // whole page — how an iPhone often treats one — it never scrolls, so the
-      // page can neither tell what is on screen nor hold it still: tap to open.
-      spot.on = mq.matches && document.documentElement.scrollHeight > window.innerHeight + 4;
-      html.toggleAttribute("data-spot", spot.on);
-      clear();
-      spotEmit();
-      if (spot.on) run(true);
-    };
-    spotRun = run;
-    apply();
-    mq.addEventListener("change", apply);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("touchstart", onDown, { passive: true });
-    window.addEventListener("touchend", onLift, { passive: true });
-    window.addEventListener("touchcancel", onLift, { passive: true });
-    window.addEventListener("click", settleNow, { capture: true });
-    return () => {
-      mq.removeEventListener("change", apply);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("touchstart", onDown);
-      window.removeEventListener("touchend", onLift);
-      window.removeEventListener("touchcancel", onLift);
-      window.removeEventListener("click", settleNow, { capture: true });
-      window.clearTimeout(rest);
-      window.cancelAnimationFrame(frame);
-      spotRun = null;
-      spot.on = false;
-      html.removeAttribute("data-spot");
-      clear();
-      spotEmit();
-    };
-  }, [touch]);
-}
-
 /**
- * The menu. Each course opens to its full list of dishes; pointing at a dish
- * shows the restaurant's photograph of it, where one exists. Dishes with no
- * photograph fall back to a picture from the same course rather than an empty
- * frame, and nothing is ever shown against the wrong dish.
+ * The menu. Each course opens to what it is, who it is for, the one photograph
+ * the restaurant has sent of it, and its full list of dishes.
+ *
+ * The list itself is type: names, prices and the order they are served in.
+ * Dish photographs used to open under each name as the guest scrolled — the
+ * restaurant is sending better pictures, so that is gone, and with it the
+ * machinery that held the page still while a picture opened or closed. One
+ * picture stands for the whole course instead.
  *
  * On a phone the menu reads straight down: every course is already open, and
  * the pinned course bar spotlights whichever course is under it as the guest
  * scrolls. They are open from the first paint (sections.css shows them before
  * this script runs), because a course opening late, or above the one being
- * read, would shove the page and throw a #visit link off its mark. The middle
- * of the screen then works like a pointer resting on the menu: the dish under
- * it is lit, and its photograph, where there is one, slides open beneath it
- * until the middle moves on (see "The spotlight").
+ * read, would shove the page and throw a #visit link off its mark.
  *
  * Every course says who it is for before it is opened, and what sets it apart
  * once it is; its Reserve opens LINE with that course already in the message.
@@ -377,8 +62,6 @@ function useSpotlight(touch: boolean) {
 export default function Courses({ locale }: { locale: Locale }) {
   const t = getDict(locale);
   const [open, setOpen] = useState<string[]>(activeCourses[0] ? [activeCourses[0].id] : []);
-  const [preview, setPreview] = useState<{ src: string; label: string } | null>(null);
-  const [touch, setTouch] = useState(false);
   const [phone, setPhone] = useState(false);
   const [live, setLive] = useState(false);
   const [spot, setSpot] = useState<string | null>(activeCourses[0]?.id ?? null);
@@ -391,11 +74,6 @@ export default function Courses({ locale }: { locale: Locale }) {
 
   useEffect(() => { openRef.current = open; }, [open]);
   useEffect(() => { spotRef.current = spot; }, [spot]);
-
-  useEffect(() => {
-    setTouch(!hasPointer());
-  }, []);
-  useSpotlight(touch);
 
   /* A phone opens every course; a desktop keeps one. Crossing between the two
      (a rotated tablet, a resized window) keeps the course being read: it stays
@@ -490,22 +168,6 @@ export default function Courses({ locale }: { locale: Locale }) {
     bar.scrollTo({ left: Math.max(0, left), behavior: still() ? "auto" : "smooth" });
   }, [phone, spot]);
 
-  const openCourse = useMemo(
-    () => activeCourses.find((c) => c.id === open[open.length - 1]) ?? null,
-    [open],
-  );
-
-  // When a course opens, the stage shows that course until a dish is pointed
-  // at — or nothing, when no photograph shows a dish from it.
-  useEffect(() => {
-    const first = openCourse?.photos[0];
-    if (!openCourse || !first) return setPreview(null);
-    setPreview({
-      src: first,
-      label: locale === "th" ? openCourse.nameTh : openCourse.nameEn,
-    });
-  }, [openCourse, locale]);
-
   // On a desktop one course is open at a time; on a phone each keeps its own state.
   const toggle = useCallback((id: string) => {
     setOpen((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : phone ? [...cur, id] : [id]));
@@ -567,28 +229,9 @@ export default function Courses({ locale }: { locale: Locale }) {
             locale={locale}
             isOpen={open.includes(c.id)}
             onToggle={() => toggle(c.id)}
-            onPreview={setPreview}
-            touch={touch}
           />
         ))}
       </ul>
-
-      {/* Desktop stage — follows whatever is being pointed at. */}
-      <aside className="menu__stage" aria-hidden="true">
-        <div className="menu__frame">
-          {preview ? (
-            <Image
-              key={preview.src}
-              src={asset(preview.src)}
-              alt=""
-              fill
-              sizes="(max-width: 75rem) 0px, 30vw"
-              className="menu__img"
-            />
-          ) : null}
-        </div>
-        {preview && <p className="menu__caption">{preview.label}</p>}
-      </aside>
 
       <p className="menu__foot">{t.coursesSection.footnote}</p>
     </div>
@@ -614,6 +257,26 @@ function ReserveCourse({ course, locale }: { course: Course; locale: Locale }) {
     >
       {fill(c.course.reserve, { course: name })} <Arrow />
     </a>
+  );
+}
+
+/* ── The picture the restaurant sends for a course ─────────────────────────
+   One photograph stands for the whole course, on the menu and on the course's
+   own page. A course without one shows none: nothing is borrowed from another
+   course, and no frame is left standing empty. */
+function CoursePhoto({ course, className }: { course: Course; className: string }) {
+  if (!course.sample) return null;
+  return (
+    <figure className={className}>
+      <Image
+        src={asset(course.sample.src)}
+        alt=""
+        width={course.sample.w}
+        height={course.sample.h}
+        sizes="(min-width: 64rem) 46rem, 100vw"
+        className="course__img"
+      />
+    </figure>
   );
 }
 
@@ -652,14 +315,12 @@ function AdviceBlock({ id, locale, full }: { id: string; locale: Locale; full?: 
 
 /* ── One course ───────────────────────────────────────────────────────────── */
 function CourseRow({
-  course, locale, isOpen, onToggle, onPreview, touch,
+  course, locale, isOpen, onToggle,
 }: {
   course: Course;
   locale: Locale;
   isOpen: boolean;
   onToggle: () => void;
-  onPreview: (p: { src: string; label: string } | null) => void;
-  touch: boolean;
 }) {
   const t = getDict(locale);
   const c = advisorCopy[locale];
@@ -671,15 +332,6 @@ function CourseRow({
   const listLabel = th ? course.listLabelTh : course.listLabelEn;
   const desc = th ? course.descTh : course.descEn;
   const forWho = th ? course.forTh : course.forEn;
-
-  // A dish without its own photograph borrows one from its course, so the
-  // stage never goes blank — but it is never captioned as that dish.
-  const fallback = course.photos[0];
-  const show = (d: Dish) => {
-    const src = d.photo ?? fallback;
-    if (!src) return;
-    onPreview({ src, label: d.photo ? (d.nameTh ?? d.nameEn) : name });
-  };
 
   const groups = course.menus
     ? course.menus.map((m) => ({ label: th ? m.labelTh : m.labelEn, dishes: m.dishes }))
@@ -706,6 +358,7 @@ function CourseRow({
       <div className="course__panel" id={panelId} role="region" hidden={!isOpen}>
         <div className="course__inner">
           <p className="course__desc">{desc}</p>
+          <CoursePhoto course={course} className="course__photo" />
           {/* The age is on the heading and "Best for" says the rest, so the
               old one-line tagline would only repeat them. */}
           {forWho && !adv && <p className="course__for">{forWho}</p>}
@@ -718,7 +371,7 @@ function CourseRow({
             )}
           </div>
 
-          <DishGroups cid={course.id} groups={groups} locale={locale} touch={touch} onShow={show} />
+          <DishGroups groups={groups} locale={locale} />
 
           <div className="course__acts">
             <ReserveCourse course={course} locale={locale} />
@@ -735,14 +388,12 @@ function CourseRow({
   );
 }
 
+/* ── The dishes, in the order they are served ─────────────────────────────── */
 function DishGroups({
-  cid, groups, locale, touch, onShow,
+  groups, locale,
 }: {
-  cid: string;
   groups: { label: string; dishes: Dish[] }[];
   locale: Locale;
-  touch: boolean;
-  onShow: (d: Dish) => void;
 }) {
   return (
     <>
@@ -751,15 +402,10 @@ function DishGroups({
           {g.label && <p className="course__grouph u-label">{g.label}</p>}
           <ol className="dishes" start={1}>
             {g.dishes.map((d, i) => (
-              <DishRow
-                key={`${gi}-${i}`}
-                uid={`${cid}-${gi}-${i}`}
-                dish={d}
-                n={i + 1}
-                locale={locale}
-                touch={touch}
-                onShow={() => onShow(d)}
-              />
+              <li className="dish" key={`${gi}-${i}`}>
+                <span className="dish__n u-numeral">{String(i + 1).padStart(2, "0")}</span>
+                <span className="dish__name">{locale === "th" ? (d.nameTh ?? d.nameEn) : d.nameEn}</span>
+              </li>
             ))}
           </ol>
         </div>
@@ -772,9 +418,6 @@ function DishGroups({
    The link a member of staff sends to answer "which course for my
    thirteen-year-old?": the course, who it is for, every dish, and Reserve. */
 export function CourseDetail({ id, locale }: { id: string; locale: Locale }) {
-  const [touch, setTouch] = useState(false);
-  useEffect(() => { setTouch(!hasPointer()); }, []);
-  useSpotlight(touch);
   const course = courseById(id);
   if (!course) return null;
   const c = advisorCopy[locale];
@@ -795,262 +438,17 @@ export function CourseDetail({ id, locale }: { id: string; locale: Locale }) {
           {course.count} {unit} · {formatBaht(course.price)}<i>++</i>
         </p>
       </header>
-      {course.photos[0] && (
-        <figure className="cdetail__photo">
-          <Image
-            src={asset(course.photos[0])}
-            alt=""
-            width={1200}
-            height={900}
-            sizes="(max-width: 52rem) 100vw, 52rem"
-            className="cdetail__img"
-            priority
-          />
-        </figure>
-      )}
+      <CoursePhoto course={course} className="cdetail__photo" />
       <p className="u-lede cdetail__desc">{th ? course.descTh : course.descEn}</p>
       <AdviceBlock id={id} locale={locale} full />
       <div className="cdetail__list">
         <span className="u-label">{th ? course.listLabelTh : course.listLabelEn}</span>
-        <DishGroups cid={course.id} groups={groups} locale={locale} touch={touch} onShow={() => {}} />
+        <DishGroups groups={groups} locale={locale} />
       </div>
       <div className="course__acts">
         <ReserveCourse course={course} locale={locale} />
         <Link className="link-arrow" href={`/${locale}/#courses`}>{c.course.all} <Arrow /></Link>
       </div>
     </article>
-  );
-}
-
-/* ── One dish ─────────────────────────────────────────────────────────────── */
-function DishRow({
-  dish, n, uid, locale, touch, onShow,
-}: {
-  dish: Dish;
-  n: number;
-  uid: string;
-  locale: Locale;
-  touch: boolean;
-  onShow: () => void;
-}) {
-  const [shown, setShown] = useState(false);
-  const ref = useRef<HTMLLIElement>(null);
-  const name = locale === "th" ? (dish.nameTh ?? dish.nameEn) : dish.nameEn;
-  /* Only a dish's own photograph opens under its name. Falling back to the
-     course's picture here put a photograph of a different dish directly under
-     this one's name on phones. The desktop stage still borrows the course
-     picture, but captions it with the course, never the dish. */
-  const src = dish.photo;
-  const ratio = src ? photoRatio(src) : 0.75;   // its height ÷ width, known before the picture loads
-  // Just before a photograph above the screen folds: its list's height and the page's position.
-  const folding = useRef<{ h: number; y: number } | null>(null);
-
-  // On a phone the spotlight decides what is lit and open (useSpotlight); on a tablet, a tap.
-  const spotting = useSyncExternalStore(spotSubscribe, () => spot.on, () => false) && touch;
-  const lit = useSyncExternalStore(spotSubscribe, () => spot.lit === uid, () => false);
-  const opened = useSyncExternalStore(spotSubscribe, () => spot.open === uid || spot.linger.has(uid), () => false);
-  const leaving = useSyncExternalStore(spotSubscribe, () => spot.linger.has(uid), () => false);
-  const open = spotting ? opened : shown;
-  // Fetched the first time it is wanted, then kept, so it opens at once after that.
-  const [wanted, setWanted] = useState(false);
-  useEffect(() => { if (open) setWanted(true); }, [open]);
-  // A tablet's tapped-open photo doesn't come back after a turn through phone width.
-  useEffect(() => { if (spotting) setShown(false); }, [spotting]);
-  // On a tablet, opening or closing a photo re-balances the two columns and can
-  // lift the tapped dish 40–80px: the page follows it, so it stays under the finger.
-  const tapAt = useRef<number | null>(null);
-  useLayoutEffect(() => {
-    const t = tapAt.current;
-    tapAt.current = null;
-    const b = ref.current?.querySelector(".dish__btn")?.getBoundingClientRect();
-    if (t === null || !b) return;
-    if (Math.abs(b.top - t) > 0.5) now(() => window.scrollBy(0, b.top - t));
-  }, [shown]);
-
-  /* The phone's photograph slides open and shut at its true height. Heights
-     are set here, in pixels, so a slide can be frozen part-way (a photo that
-     loses the middle on an iPhone mid-fling keeps exactly the space it has)
-     and so every slide interpolates. A row that isn't the lit one tells hold()
-     before it changes, so the dish at the middle stays where it is. */
-  const dropRef = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    const drop = dropRef.current, li = ref.current;
-    if (!spotting || !drop || !li) return;
-    if (leaving) {
-      const h = drop.getBoundingClientRect().height;   // read first: stopping the slide jumps it to its end
-      drop.dataset.frozen = "1";
-      drop.style.transition = "none";
-      drop.style.height = `${h}px`;
-      return;
-    }
-    const to = open ? "open" : "0";
-    if (drop.dataset.to === to && !drop.dataset.frozen) return;
-    delete drop.dataset.frozen;
-    drop.dataset.to = to;
-    let snapped = spot.snap.delete(uid);   // it waited: now it shuts in one step, not a slide
-    // Above the middle already (a fling carried it past): open in one step too,
-    // so the page corrects for it in that one frame instead of chasing a slide.
-    if (open && li.getBoundingClientRect().bottom <= lineY()) snapped = true;
-    // Every change is watched, lit or not: hold() corrects only what is above
-    // the middle at the time, and a fling can carry this dish above the middle
-    // before its photograph has finished opening.
-    hold(li);
-    const from = drop.getBoundingClientRect().height;
-    const target = open ? (drop.firstElementChild as HTMLElement).scrollHeight : 0;
-    drop.style.transition = "none";
-    drop.style.height = `${from}px`;
-    void drop.offsetHeight;
-    drop.style.transition = "";
-    drop.style.height = `${target}px`;
-    // In one step: a photograph that waited, and reduced motion (which shortens
-    // every transition to next to nothing). The page corrects for it at once.
-    if (snapped || Math.max(...getComputedStyle(drop).transitionDuration.split(",").map(parseFloat)) < 0.05) {
-      drop.style.transition = "none";
-      drop.style.height = open ? "auto" : "0px";
-      void drop.offsetHeight;
-      drop.style.transition = "";
-      holdNow();
-    }
-  }, [open, leaving, spotting, uid]);
-  // Once fully open, its height follows the picture (a turned phone, a font arriving).
-  useEffect(() => {
-    const drop = dropRef.current;
-    if (!drop) return;
-    const end = (e: TransitionEvent) => {
-      if (e.target === drop && e.propertyName === "height" && drop.dataset.to === "open" && !drop.dataset.frozen) drop.style.height = "auto";
-    };
-    drop.addEventListener("transitionend", end);
-    return () => drop.removeEventListener("transitionend", end);
-  }, [spotting]);
-
-  /* An opened photograph folds itself away once the guest has scrolled past
-     it, either way, so the menu stays tidy.
-     - Wholly below the screen, it folds at once: nothing in sight moves.
-     - Wholly above it, under the fixed header and the pinned course bar, it
-       waits until the page has been still for a moment with no finger on the
-       glass, so it never interrupts a fling or a drag. Then it folds and puts
-       the page back by exactly the height the page lost, so what the guest is
-       reading stays where it is (iPhones have no scroll anchoring to do it).
-     - While any of it is on screen, it stays open.
-     In a two-column dish list (tablets, a phone on its side) folding one photo
-     re-balances the columns, so there it waits until the whole list is out of
-     sight. Everything is measured live on each scroll: the header compacts and
-     the course bar pins itself as the page moves. */
-  useEffect(() => {
-    const li = ref.current;
-    const list = li?.closest<HTMLElement>(".dishes");
-    if (!touch || spotting || !shown || !li || !list) return;
-    watchHand();
-    const watched = () => {
-      const cols = getComputedStyle(list).columnCount;
-      return cols !== "auto" && Number(cols) > 1 ? list : li;
-    };
-    let idle = 0, frame = 0, waiting = false;
-    const fold = () => {
-      waiting = false;
-      if (!li.getBoundingClientRect().height) return setShown(false);   // its course was closed: nothing to give back
-      folding.current = { h: list.getBoundingClientRect().height, y: window.scrollY };
-      document.documentElement.style.overflowAnchor = "none";            // the only correction is ours
-      setShown(false);
-    };
-    const arm = () => {
-      waiting = true;
-      window.clearTimeout(idle);
-      idle = window.setTimeout(() => {
-        if (finger.down) return;                                          // a resting finger is not "still"
-        if (watched().getBoundingClientRect().bottom > cover()) { waiting = false; return; }
-        fold();
-      }, 180);
-    };
-    const check = () => {
-      frame = 0;
-      if (!li.getBoundingClientRect().height) return setShown(false);
-      const w = watched().getBoundingClientRect();
-      if (w.top >= window.innerHeight) return setShown(false);            // wholly below the screen
-      if (w.bottom <= cover()) return arm();                              // wholly above, out of sight
-      waiting = false;
-      window.clearTimeout(idle);
-    };
-    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(check); };
-    const up = () => { if (waiting) arm(); };   // the finger lifted: start the wait again
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("touchend", up, { passive: true });
-    window.addEventListener("touchcancel", up, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("touchend", up);
-      window.removeEventListener("touchcancel", up);
-      window.clearTimeout(idle);
-      window.cancelAnimationFrame(frame);
-    };
-  }, [touch, shown, spotting]);
-
-  // Put the page back by exactly the height it lost, so nothing on screen moves.
-  // The target is absolute, so a page shortened at its very bottom (where the
-  // browser clamps the scroll position itself) is not corrected twice.
-  useLayoutEffect(() => {
-    const f = folding.current;
-    if (shown || !f) return;
-    folding.current = null;
-    if (!giveBack.open) {
-      giveBack.open = true;
-      giveBack.y = f.y;
-      giveBack.lists.clear();
-      window.requestAnimationFrame(() => {
-        giveBack.open = false;
-        document.documentElement.style.overflowAnchor = "";
-      });
-    }
-    const list = ref.current?.closest<HTMLElement>(".dishes");
-    if (list) giveBack.lists.set(list, Math.max(0, f.h - list.getBoundingClientRect().height));
-    let gone = 0;
-    giveBack.lists.forEach((g) => { gone += g; });
-    if (gone > 0.5) now(() => window.scrollTo(0, giveBack.y - gone));
-  }, [shown]);
-
-  return (
-    <li
-      ref={ref}
-      data-uid={uid}
-      className={`dish ${src ? "has-photo" : ""} ${open ? "is-shown" : ""} ${spotting && lit ? "is-lit" : ""} ${spotting && leaving ? "is-leaving" : ""}`}
-      onMouseEnter={touch ? undefined : onShow}
-      onFocus={onShow}
-    >
-      <button
-        className="dish__btn"
-        onClick={() => {
-          onShow();
-          if (!touch) return;
-          if (spotting) tapSpot(uid, ref.current);
-          else if (src) {
-            tapAt.current = ref.current?.querySelector(".dish__btn")?.getBoundingClientRect().top ?? null;
-            setShown((v) => !v);
-          }
-        }}
-        aria-expanded={touch && src ? open : undefined}
-      >
-        <span className="dish__n u-numeral">{String(n).padStart(2, "0")}</span>
-        <span className="dish__name">{name}</span>
-        {src && <span className="dish__dot" aria-hidden="true" />}
-      </button>
-
-      {/* On touch the picture opens under the dish, since there is no hover. On
-          a phone it slides open and shut (sections.css, .dish__drop); on a
-          tablet it appears on a tap. */}
-      {touch && src && spotting && (
-        <div className="dish__drop" aria-hidden={!open} ref={dropRef}>
-          <div className="dish__shot">
-            {(open || wanted) && (
-              <Image src={asset(src)} alt="" width={640} height={Math.round(640 * ratio)} className="dish__shotimg" sizes="90vw" loading="eager" />
-            )}
-          </div>
-        </div>
-      )}
-      {touch && src && !spotting && shown && (
-        <div className="dish__shot">
-          <Image src={asset(src)} alt="" width={640} height={Math.round(640 * ratio)} className="dish__shotimg" sizes="90vw" />
-        </div>
-      )}
-    </li>
   );
 }

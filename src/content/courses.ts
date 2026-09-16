@@ -56,6 +56,11 @@ export type Course = {
   listLabelTh: string;
   /** True when the published list is a selection, not the whole course. */
   listIsPartial: boolean;
+  /** The one picture the restaurant has sent for this course, with the size it
+      was measured at, so it takes its own height before it loads. Shown when
+      the course is opened in the menu and at the top of its own page. A course
+      without one shows no picture: none is borrowed from another course. */
+  sample?: { src: string; w: number; h: number };
   photos: string[];
   dishes?: Dish[];
   /** Zen Sweet is three fixed menus rather than one sequence. */
@@ -154,6 +159,7 @@ export const courses: Course[] = [
     listLabelEn: "ALL SIXTEEN, IN ORDER",
     listLabelTh: "ครบทั้ง 16 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
+    sample: { src: "/photos/249c7c8c7528.jpg", w: 870, h: 885 },
     photos: [
       "/photos/ee3160d17d48.jpg",
       "/photos/17dd4959b0e0.jpg",
@@ -200,6 +206,7 @@ export const courses: Course[] = [
     listLabelEn: "ALL SEVENTEEN, IN ORDER",
     listLabelTh: "ครบทั้ง 17 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
+    sample: { src: "/photos/4ec2522c1b09.jpg", w: 870, h: 886 },
     photos: [
       "/photos/1f365022e967.jpg",
       "/photos/42a586ebc854.jpg",
@@ -246,6 +253,7 @@ export const courses: Course[] = [
     listLabelEn: "ALL TWELVE, IN ORDER",
     listLabelTh: "ครบทั้ง 12 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
+    sample: { src: "/photos/9b85c5c783c4.jpg", w: 862, h: 876 },
     photos: [
       "/photos/765a5e444077.jpg",
       "/photos/09722e03bfec.jpg",
@@ -287,6 +295,7 @@ export const courses: Course[] = [
     listLabelEn: "ALL THIRTEEN, IN ORDER",
     listLabelTh: "ครบทั้ง 13 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
+    sample: { src: "/photos/6b3b52b1c63e.jpg", w: 856, h: 892 },
     photos: [
       "/photos/2ff8db8e9a7f.jpg",
       "/photos/66f4b170541c.jpg",
@@ -330,6 +339,7 @@ export const courses: Course[] = [
     listLabelEn: "THREE MENUS",
     listLabelTh: "สามเมนู",
     listIsPartial: false,
+    sample: { src: "/photos/33ebaf5cab43.jpg", w: 870, h: 878 },
     photos: [
       "/photos/b691eb59a482.jpg",
       "/photos/9306a6431f10.jpg",

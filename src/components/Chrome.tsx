@@ -12,7 +12,7 @@ import { getDict, type Locale } from "@/content/dictionary";
 import { qrPath } from "@/lib/qr";
 import { reserveMessage } from "@/lib/line";
 import { RESERVE_EVENT } from "@/lib/events";
-import { useReveal, useWorld } from "@/lib/motion";
+import { useReveal } from "@/lib/motion";
 
 const Arrow = () => (
   <svg width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true">
@@ -31,7 +31,6 @@ export default function Chrome({ locale }: { locale: Locale }) {
   const [resCourse, setResCourse] = useState<string | null>(null);
 
   useReveal();
-  useWorld();
 
   // In-page links glide from now on; the first scroll to a #fragment on load doesn't (globals.css).
   useEffect(() => { document.documentElement.setAttribute("data-smooth", ""); }, []);

@@ -60,22 +60,12 @@ try {
     await m.locator(".finder__a", { hasText: "A child" }).tap(); await m.waitForTimeout(500);
     pass("the finder answers", (await m.locator(".finder__name").textContent())?.trim() === "Zen Kids");
 
-    // A photo opening by itself mid-screen as it is scrolled there by hand.
-    await m.evaluate(() => {
-      const li = document.querySelectorAll(".course")[1].querySelector(".dish.has-photo");
-      const r = li.querySelector(".dish__btn").getBoundingClientRect();
-      scrollTo({ top: scrollY + r.top - innerHeight + 40, behavior: "instant" });
-      li.dataset.auto = "1";
-    });
-    await m.waitForTimeout(400); await m.mouse.move(180, 600);
-    let open = false;
-    for (let k = 0; k < 60 && !open; k++) {
-      await m.mouse.wheel(0, 30); await m.waitForTimeout(80);
-      open = (await m.locator('[data-auto="1"].is-shown').count()) === 1;
-    }
+    // The picture the restaurant sent for a course, in the menu.
+    await m.evaluate(() => document.querySelector("#course-zen-ni")?.scrollIntoView({ block: "start" }));
     await m.waitForTimeout(900);
-    pass("a dish photo opens by itself as it is scrolled to the middle, and shows", open &&
-      await m.evaluate(() => { const i = document.querySelector('[data-auto="1"] .dish__shot img'); return !!i && i.complete && i.naturalWidth > 0; }));
+    pass("a course's own picture shows in the menu",
+      await m.evaluate(() => { const i = document.querySelector("#course-zen-ni .course__photo img"); return !!i && i.complete && i.naturalWidth > 0; }));
+    pass("the dish list is type alone — nothing opens in it", (await m.locator(".dishes img").count()) === 0);
 
     // The phone menu's #visit link: lands on Visit, and the menu closes.
     await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(300);
