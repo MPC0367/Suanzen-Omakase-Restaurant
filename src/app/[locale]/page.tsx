@@ -4,6 +4,7 @@ import CourseAdvisor from "@/components/CourseAdvisor";
 import CourseCompare from "@/components/CourseCompare";
 import ALaCarte from "@/components/ALaCarte";
 import Footer from "@/components/Footer";
+import MapFrame from "@/components/MapFrame";
 import { restaurant } from "@/content/restaurant";
 import { getDict, locales, type Locale } from "@/content/dictionary";
 import { notFound } from "next/navigation";
@@ -128,14 +129,20 @@ function Visit({ locale }: { locale: Locale }) {
           <figure className="visit__map reveal" style={{ ["--d" as string]: "140ms" }}>
             <div className="visit__canvas">
               <InkMap />
-              <iframe
-                className="visit__frame"
-                src={mapEmbedUrl(locale)}
-                title={t.visit.mapAria}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                allowFullScreen
+              {/* Beneath the embed. Google's map is an embedded page, and some
+                  browsers refuse those — an in-app browser, a content blocker,
+                  the preview link the studio sends. There the ink plan is all
+                  that is left, so it is made the link itself: one tap opens the
+                  restaurant on Google Maps. Where the embed does load it covers
+                  this and takes the taps, so the map still pans and zooms. */}
+              <a
+                className="visit__fallback"
+                href={r.maps.directions.value}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t.visit.mapHint}
               />
+              <MapFrame src={mapEmbedUrl(locale)} title={t.visit.mapAria} />
             </div>
             <figcaption className="visit__pinlabel">
               <span className="u-numeral">{g.lat.toFixed(4)}, {g.lng.toFixed(4)}</span>

@@ -89,6 +89,26 @@ pass("the map at the bottom is Google's own, and takes the guest's finger",
      map.there && /maps\.google\.com|google\.com\/maps/.test(map.src) && map.takesThePointer && map.wash === "none",
      map.there ? `${map.size}, centre hits ${map.takesThePointer ? "the map" : "something over it"}` : "no map");
 
+// And where a browser refuses embedded pages — an in-app browser, a content
+// blocker, a preview that serves only the page's own files — the plan beneath
+// becomes the link, so the guest still reaches Google Maps in one tap.
+{
+  const bl = await (await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })).newPage();
+  await bl.route(/google|gstatic/, (r) => r.abort());
+  await bl.goto(B + "/en/", { waitUntil: "domcontentloaded" }); await ready(bl);
+  await bl.locator(".visit__canvas").scrollIntoViewIfNeeded();
+  await bl.evaluate(() => window.scrollBy(0, -60));     // the whole plan on screen, so its middle is a real point
+  await bl.waitForTimeout(11000);                      // the frame watches for the map for 8s before standing aside
+  const fall = await bl.evaluate(() => {
+    const c = document.querySelector(".visit__canvas").getBoundingClientRect();
+    const el = document.elementFromPoint(Math.round(c.left + c.width / 2), Math.round(c.top + c.height / 2));
+    return { tag: el?.tagName ?? "nothing", href: el?.closest("a")?.getAttribute("href") ?? "none" };
+  });
+  pass("where the map cannot load, tapping it still opens Google Maps",
+       /maps\.google|google\.[a-z.]+\/maps/.test(fall.href), `${fall.tag} → ${fall.href.slice(0, 52)}`);
+  await bl.context().close();
+}
+
 await d.goto(B + "/th/", { waitUntil: "domcontentloaded" }); await ready(d);
 const thNav = await d.$$eval(".hdr__nav a", (as) => as.map((a) => a.textContent.trim()));
 pass("Thai: header leads with the menu", thNav[0] === "เมนู", thNav.join(" · "));
