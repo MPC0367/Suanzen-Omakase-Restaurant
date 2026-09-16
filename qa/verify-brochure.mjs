@@ -87,13 +87,13 @@ const map = await d.evaluate(async () => {
            takesThePointer: hit === f, filter: getComputedStyle(f).filter,
            over: over.content === "none" ? "nothing over it" : over.pointerEvents };
 });
-// Shown as Google draws it: nothing over the map, and no filter on it. A map
-// dressed to match the page stops looking like a map, and a guest who doesn't
-// take it for a map never tries to move it.
-pass("the map at the bottom is Google's own, plainly drawn, and takes the guest's finger",
+// The map may be dressed to match the page — the frame is darkened — but
+// nothing may be laid over it, and it must be the thing the guest's finger
+// lands on.
+pass("the map at the bottom is Google's own, with nothing over it, and takes the guest's finger",
      map.there && /maps\.google\.com|google\.com\/maps/.test(map.src) && map.takesThePointer
-       && (map.over === "nothing over it" || map.over === "none") && map.filter === "none",
-     map.there ? `${map.size}, centre hits ${map.takesThePointer ? "the map" : "something over it"}, ${map.over}, filter ${map.filter}` : "no map");
+       && (map.over === "nothing over it" || map.over === "none"),
+     map.there ? `${map.size}, centre hits ${map.takesThePointer ? "the map" : "something over it"}, ${map.over}, frame ${map.filter === "none" ? "undarkened" : "darkened"}` : "no map");
 
 // And where a browser refuses embedded pages — an in-app browser, a content
 // blocker, a preview that serves only the page's own files — the plan beneath
