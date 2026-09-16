@@ -142,7 +142,7 @@ const mchips = m.locator(".menu__jump .jump");
 const nChips = await mchips.count();
 const lit = () => m.$$eval(".menu__jump .jump", (cs) => cs.findIndex((c) => c.classList.contains("is-on")));
 const openCount = await m.locator(".course.is-open").count();
-pass("on a phone every course is already open", openCount === nChips, `${openCount} of ${nChips} open`);
+pass("one course is open at a time, and the rest are folded away", openCount === 1, `${openCount} of ${nChips} open`);
 
 // Scroll by hand (instantly, so nothing is measured mid-scroll) until a course
 // sits just under the pinned bar.
@@ -152,16 +152,31 @@ const underBar = (i) => m.evaluate((i) => {
   const c = document.querySelectorAll(".course")[i];
   scrollTo({ top: scrollY + c.getBoundingClientRect().top - under - 8, behavior: "instant" });
 }, i);
+/* The bar lights the course that is open, on every screen. It used to follow
+   the page's scroll instead, because a phone held every course open at once
+   and so "open" said nothing; one course at a time is its own answer, and the
+   page's scroll is left to the guest. */
+await mchips.nth(3).tap(); await m.waitForTimeout(1200);
+pass("the bar lights the course that is open", (await lit()) === 3, `lit: ${await lit()}`);
+const opened = await m.evaluate(() => [...document.querySelectorAll(".course.is-open")].map((c) => c.id));
+pass("…and opening it closed the one before", opened.length === 1, opened.join(", ") || "none open");
 await underBar(3); await m.waitForTimeout(500);
-pass("scrolling down spotlights the course being read", (await lit()) === 3, `spotlit: ${await lit()}`);
+pass("scrolling past it does not change which course is lit", (await lit()) === 3, `lit: ${await lit()}`);
 const inBar = await m.evaluate(() => {
   const bar = document.querySelector(".menu__jump").getBoundingClientRect();
   const on = document.querySelector(".menu__jump .jump.is-on")?.getBoundingClientRect();
   return !!on && on.left >= bar.left - 1 && on.right <= bar.right + 1;
 });
 pass("the bar slides to keep the spotlit course in view", inBar);
+/* Scrolling never changes what is lit — the open course does. Back at the top
+   of the menu the bar still points at the course the guest left open, and
+   tapping the first course is what lights the first chip. */
 await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(500);
-pass("back at the top, the first course is spotlit", (await lit()) === 0, `spotlit: ${await lit()}`);
+pass("back at the top, the bar still points at the course left open", (await lit()) === 3, `lit: ${await lit()}`);
+await mchips.nth(0).tap(); await m.waitForTimeout(1200);
+const first = await m.evaluate(() => [...document.querySelectorAll(".course.is-open")].map((c) => c.id));
+pass("opening the first course lights it, and closes the one before",
+     (await lit()) === 0 && first.join() === "course-zen-kids", `lit: ${await lit()}; open: ${first.join(", ") || "none"}`);
 
 // Tap a course from the top and watch the spotlight all the way there.
 const mwant = (await mchips.nth(5).locator(".jump__name").textContent()).trim();
@@ -200,18 +215,31 @@ pass("every dish in the menu is a name and its number, and nothing else",
      listing.dishes > 60 && listing.imagesInLists === 0 && listing.buttonsInLists === 0 && listing.named && listing.numbered,
      `${listing.dishes} dishes · ${listing.imagesInLists} pictures · ${listing.buttonsInLists} buttons in the lists`);
 
-const pics = await m.evaluate(() => [...document.querySelectorAll(".menu__list .course")].map((c) => ({
-  id: c.id.replace("course-", ""),
-  pictures: c.querySelectorAll(".course__photo img").length,
-  loaded: [...c.querySelectorAll(".course__photo img")].every((i) => i.complete && i.naturalWidth > 0),
-})));
-const withPic = pics.filter((p) => p.pictures);
-pass("a course with a picture shows exactly one, and it loads",
-     withPic.length >= 5 && withPic.every((p) => p.pictures === 1 && p.loaded),
-     withPic.map((p) => p.id).join(", ") || "none");
-pass("a course the restaurant hasn't sent a picture for shows none, not another course's",
-     pics.filter((p) => !p.pictures).every((p) => p.pictures === 0),
-     pics.filter((p) => !p.pictures).map((p) => p.id).join(", ") || "every course has one");
+/* Every course shows the restaurant's own pictures of it: the five it has sent
+   named photographs for show a rail of their dishes, each captioned with the
+   dish's name; the other two show the single picture they have. One or the
+   other, never both, and never a picture borrowed from another course. */
+const pics = await m.evaluate(async () => {
+  const out = [];
+  for (const c of document.querySelectorAll(".menu__list .course")) {
+    const id = c.id.replace("course-", "");
+    document.querySelector(`.menu__jump [data-course="${id}"]`)?.click();
+    await new Promise((r) => setTimeout(r, 450));
+    const rail = [...c.querySelectorAll(".cgal__item:not([aria-hidden]) img")];
+    const single = [...c.querySelectorAll(".course__photo img")];
+    out.push({ id, rail: rail.length, single: single.length,
+      captioned: [...c.querySelectorAll(".cgal__item:not([aria-hidden]) .cgal__cap")].every((s) => (s.textContent || "").trim().length > 3),
+      loaded: [...rail, ...single].every((i) => i.complete && i.naturalWidth > 0) });
+  }
+  return out;
+});
+const railed = pics.filter((p) => p.rail);
+pass("a course whose dishes were photographed shows them all, each named, and they load",
+     railed.length === 5 && railed.every((p) => p.rail >= 3 && p.captioned && p.loaded && p.single === 0),
+     railed.map((p) => `${p.id} ${p.rail}`).join(", ") || "none");
+pass("a course without dish photographs still shows its own single picture",
+     pics.filter((p) => !p.rail).every((p) => p.single === 1 && p.loaded),
+     pics.filter((p) => !p.rail).map((p) => p.id).join(", ") || "every course has a rail");
 
 // Scrolling the whole menu by hand: nothing opens, closes or moves by itself.
 await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(400);
@@ -242,7 +270,11 @@ pass("the browser is told the page is dark, so its own scrollbars and carets fol
      (await m.evaluate(() => getComputedStyle(document.documentElement).colorScheme)) === "dark");
 
 // Back from a course page lands where the guest left the menu.
+/* A course's own page is reached from inside the course, so the course has to
+   be open first — with one open at a time, everything in a folded course is
+   out of reach until the guest opens it, which is the point of the fold. */
 await m.evaluate(() => scrollTo({ top: 0, behavior: "instant" })); await m.waitForTimeout(300);
+await m.locator('.menu__jump [data-course="zen-ichi"]').tap(); await m.waitForTimeout(1200);
 await m.locator("#course-zen-ichi .course__acts a.link-arrow").scrollIntoViewIfNeeded(); await m.waitForTimeout(300);
 const leftAt = await m.evaluate(() => Math.round(scrollY));
 await m.locator("#course-zen-ichi .course__acts a.link-arrow").tap(); await m.waitForTimeout(1800);
@@ -299,8 +331,11 @@ pass("a link to #visit lands on Visit", Math.abs(visit.top) <= visit.hdr + 10, `
 
 // Turning a tablet, or widening the window, past the desktop width keeps the
 // course being read open and in view.
+/* Opened, not merely scrolled to: with one course open at a time, scrolling
+   past a course opens nothing, so the course being read is the one the guest
+   opened. */
 await m.goto(B + "/en/", { waitUntil: "domcontentloaded" }); await ready(m);
-await underBar(4); await m.waitForTimeout(500);
+await m.locator(".menu__jump .jump").nth(4).tap(); await m.waitForTimeout(1200);
 await m.setViewportSize({ width: 1440, height: 900 }); await m.waitForTimeout(1000);
 const wide = await m.evaluate(() => {
   const cs = [...document.querySelectorAll(".course")];
@@ -310,11 +345,13 @@ const wide = await m.evaluate(() => {
 pass("widening to a desktop keeps the course being read, in view", wide.open.join() === "4" && wide.top >= 0 && wide.top < 450,
      `open: ${wide.open.join(", ")}; that course at ${wide.top}px`);
 
-// Before the script runs (a slow phone, a slow network), a phone must already
-// show every course, so nothing opens late above the guest; a desktop, one.
-// globals.css hides [hidden] with !important, which once made this rule inert
-// while the #visit check above still passed on timing alone.
-for (const [w, h, want] of [[390, 844, 7], [1440, 900, 1]]) {
+/* Before the script runs (a slow phone, a slow network), the page must already
+   show what the script will settle on: one course open, the same one, on every
+   width. When the two disagree, a course opens or folds late — above the guest
+   if they have started reading — and a link straight to #visit lands somewhere
+   else. globals.css hides [hidden] with !important, which once made the phone
+   rule inert while the #visit check above still passed on timing alone. */
+for (const [w, h, want] of [[390, 844, 1], [1440, 900, 1]]) {
   const pc = await b.newContext({ viewport: { width: w, height: h }, isMobile: w < 1024, hasTouch: w < 1024 });
   const pp = await pc.newPage();
   await pp.route("**/_next/static/**/*.js", (r) => r.abort());
@@ -329,12 +366,17 @@ await d.goto(B + "/en/", { waitUntil: "domcontentloaded" }); await ready(d);
 await d.locator(".menu__jump .jump").nth(2).click(); await d.waitForTimeout(900);
 const dOpen = await d.locator(".course.is-open").count();
 pass("a desktop keeps one course open at a time", dOpen === 1, `${dOpen} open`);
+/* The open course carries the restaurant's pictures of it — a rail of its
+   dishes where they were photographed, its single picture otherwise — and
+   nothing stands in a column beside the menu, as a photograph stage once did. */
 const dPics = await d.evaluate(() => ({
-  inOpen: document.querySelectorAll(".course.is-open .course__photo img").length,
+  rail: document.querySelectorAll(".course.is-open .cgal__item:not([aria-hidden]) img").length,
+  single: document.querySelectorAll(".course.is-open .course__photo img").length,
   beside: document.querySelectorAll(".menu__stage, .menu__frame, .menu__img").length,
 }));
-pass("on a desktop the open course shows its picture, and nothing stands beside the menu",
-     dPics.inOpen <= 1 && dPics.beside === 0, `${dPics.inOpen} picture in the open course`);
+pass("on a desktop the open course shows its own pictures, and nothing stands beside the menu",
+     (dPics.rail > 0) !== (dPics.single > 0) && dPics.beside === 0,
+     `${dPics.rail} in the rail, ${dPics.single} single`);
 
 console.log(errs.length ? "  JS errors:\n    " + errs.join("\n    ") : "  no JS errors");
 await b.close();

@@ -289,6 +289,81 @@
 .course__group { display: grid; gap: 0.5rem; }
 .course__grouph { color: var(--accent); }
 
+/* ── the course's photographs ─────────────────────────────────────────────
+   A rail of the course's own dishes that drifts sideways on its own
+   (CourseGallery.tsx), so a guest sees there is more than the first picture
+   without being told. It moves its own scroll, never the page's. */
+/* min-width: 0 — the panel is a grid, and a grid item is free to grow to its
+   content unless told otherwise. Left alone, a rail of pictures widens its own
+   column to the width of every picture laid end to end, which stretches the
+   page sideways instead of scrolling inside it. */
+.cgal { margin-block: 0.2rem 0.4rem; min-width: 0; }
+.cgal__track {
+  display: flex; gap: clamp(0.6rem, 1.6vw, 1rem);
+  list-style: none; margin: 0; padding: 0 0 0.3rem;
+  max-width: 100%;
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scrollbar-width: none; -ms-overflow-style: none;
+  /* No scroll-snap: it fights a drift that moves by a fraction of a pixel a
+     frame, dragging the rail back to the nearest picture every time. */
+}
+.cgal__track::-webkit-scrollbar { display: none; }
+.cgal__item { flex: 0 0 auto; }
+.cgal__btn {
+  display: grid; gap: 0.45rem; padding: 0; border: 0; background: none;
+  color: inherit; font: inherit; text-align: start; cursor: zoom-in;
+}
+.cgal__img {
+  display: block; width: auto; height: clamp(8.5rem, 30vw, 13rem);
+  max-width: 78vw; object-fit: cover; border-radius: 2px;
+  transition: filter var(--t-ui) var(--ease);
+  /* The browser's own image drag would otherwise cancel a pan mid-gesture. */
+  -webkit-user-drag: none; user-drag: none;
+}
+.cgal__btn:hover .cgal__img, .cgal__btn:focus-visible .cgal__img { filter: brightness(1.08); }
+.cgal__cap {
+  display: block; max-width: 22ch;
+  font-size: 0.78rem; line-height: 1.4; color: var(--fg-quiet);
+}
+:lang(th) .cgal__cap { font-size: 0.86rem; }
+.cgal__n { font-style: normal; color: var(--fg-faint); margin-inline-end: 0.5em; letter-spacing: 0.08em; }
+@media (min-width: 64rem) { .cgal__img { height: clamp(11rem, 16vw, 15rem); max-width: 34rem; } }
+
+/* ── one picture, large ───────────────────────────────────────────────────
+   Over the page, the dish named beneath it. The page behind is held still
+   while it is open (CourseGallery.tsx), so nothing moves underneath. */
+.cshow { position: fixed; inset: 0; z-index: 95; display: grid; place-items: center;
+         animation: cshowIn var(--t-ui) var(--ease) both; }
+@keyframes cshowIn { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .cshow { animation: none; } }
+.cshow__scrim { position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer;
+                background: rgba(4, 4, 3, 0.94); }
+.cshow__panel {
+  position: relative; display: grid; gap: 0.9rem; justify-items: center;
+  width: min(96vw, 66rem); max-height: 94svh; padding: clamp(0.8rem, 3vh, 2rem) 0 0;
+}
+.cshow__stage { display: grid; place-items: center; min-height: 0; }
+.cshow__img {
+  width: auto; height: auto; max-width: min(92vw, 62rem); max-height: 74svh;
+  object-fit: contain; border-radius: 2px;
+}
+.cshow__bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap; width: min(92vw, 62rem);
+  padding-bottom: max(0.9rem, env(safe-area-inset-bottom));
+}
+.cshow__cap { margin: 0; font-size: 0.95rem; color: #f0ebe0; }
+:lang(th) .cshow__cap { font-size: 1rem; }
+.cshow__cap .cshow__n { color: #8b8275; margin-inline-end: 0.6em; }
+.cshow__nav { display: flex; align-items: center; gap: 0.3rem; }
+.cshow__n { font-style: normal; font-size: 0.8rem; letter-spacing: 0.1em; color: #a29b8c; padding-inline: 0.4rem; }
+.cshow__ctl {
+  width: 48px; height: 48px; display: grid; place-content: center;
+  background: none; border: 0; color: #f0ebe0; cursor: pointer;
+  transition: color var(--t-ui) var(--ease);
+}
+.cshow__ctl:hover { color: var(--amber); }
+
 /* ── the dish list ───────────────────────────────────────────────────────── */
 .dishes {
   list-style: none; margin: 0; padding: 0;
@@ -530,13 +605,10 @@
     border-bottom: 1px solid var(--rule);
   }
   .course { scroll-margin-top: calc(var(--hdr-h, 64px) + 4.4rem); }
-  /* Every course shows from the first paint, before Courses.tsx takes over
-     and opens them all itself (letting a guest fold one away). The page is
-     its full length at once: a #visit link lands on Visit, and nothing opens
-     late above the guest. !important because globals.css hides [hidden]
-     with !important; this outranks it only until .is-live is set. */
-  .menu:not(.is-live) .course__panel[hidden] { display: block !important; }
-  .menu:not(.is-live) .course .cx { transform: rotate(180deg); color: var(--accent); }
+  /* A phone used to show every course from the first paint, so the page stood
+     at its full length before the script ran. One course is open at a time
+     now, on every screen, so the first paint shows what the script will keep
+     showing — the first course — and nothing has to fold away once it runs. */
   /* The pinned bar already draws the line above the courses; the list's own
      top border would stack a second one just under it. */
   .menu__list { border-top: 0; }

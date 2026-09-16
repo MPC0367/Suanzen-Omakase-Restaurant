@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import Image from "next/image";
 import Link from "next/link";
 import { asset } from "@/lib/asset";
+import CourseGallery from "@/components/CourseGallery";
 import { activeCourses, courseById, formatBaht, allDishes, type Course, type Dish } from "@/content/courses";
 import { adviceFor, advisorCopy, fill } from "@/content/advisor";
 import { getDict, type Locale } from "@/content/dictionary";
@@ -64,34 +65,25 @@ export default function Courses({ locale }: { locale: Locale }) {
   const [open, setOpen] = useState<string[]>(activeCourses[0] ? [activeCourses[0].id] : []);
   const [phone, setPhone] = useState(false);
   const [live, setLive] = useState(false);
-  const [spot, setSpot] = useState<string | null>(activeCourses[0]?.id ?? null);
   const barRef = useRef<HTMLElement>(null);
-  const jumping = useRef(false);
-  const settle = useRef<number | undefined>(undefined);
   const openRef = useRef(open);
-  const spotRef = useRef(spot);
   const anchor = useRef<string | null>(null);
 
   useEffect(() => { openRef.current = open; }, [open]);
-  useEffect(() => { spotRef.current = spot; }, [spot]);
 
-  /* A phone opens every course; a desktop keeps one. Crossing between the two
-     (a rotated tablet, a resized window) keeps the course being read: it stays
-     open and is brought back into view, rather than the menu snapping shut
-     around the first course and leaving the guest somewhere past it. */
+  /* Which layout this is — the phone's pinned bar, or the desktop's. One course
+     is open at a time on both, so crossing between them (a rotated tablet, a
+     resized window) opens and closes nothing: the course being read stays open,
+     and is brought back into view because the columns around it change width.
+     Nothing is written to the open state on the first run: the client's first
+     render has to match what the server sent, or the menu shifts under a guest
+     who followed a link straight to #visit. */
   useEffect(() => {
     const mq = window.matchMedia(PHONE);
     const apply = (first: boolean) => {
-      const cur = openRef.current;
-      const reading = mq.matches ? (cur[0] ?? null) : spotRef.current;
-      if (!first) anchor.current = reading;
+      if (!first) anchor.current = openRef.current[0] ?? null;
       setPhone(mq.matches);
       setLive(true);
-      setOpen(
-        mq.matches ? activeCourses.map((c) => c.id)
-        : !first && reading ? [reading]
-        : cur.slice(0, 1),
-      );
     };
     apply(true);
     const onChange = () => apply(false);
@@ -107,82 +99,43 @@ export default function Courses({ locale }: { locale: Locale }) {
     if (el) now(() => el.scrollIntoView({ block: "start" }));
   }, [open, phone]);
 
-  /* The spotlight: the last course whose heading has reached a line just
-     below the pinned bar. Above the first course, the first is spotlit. */
-  const measure = useCallback(() => {
-    const bar = barRef.current;
-    if (!bar) return;
-    const line = bar.getBoundingClientRect().bottom + 24;
-    let id = activeCourses[0]?.id ?? null;
-    for (const c of activeCourses) {
-      const el = document.getElementById(`course-${c.id}`);
-      if (el && el.getBoundingClientRect().top <= line) id = c.id;
-      else break;
-    }
-    setSpot(id);
-  }, []);
+  /* The bar slides sideways to keep the open course in view. It scrolls the
+     bar itself, never the page — the page's scroll belongs to the guest.
 
-  /* While a tapped shortcut is scrolling the page, the spotlight stays on the
-     tapped course instead of passing over every course in between. It lets go
-     once the page has been still for a moment, or the guest takes over. */
-  const hold = useCallback((ms: number) => {
-    jumping.current = true;
-    window.clearTimeout(settle.current);
-    settle.current = window.setTimeout(() => { jumping.current = false; measure(); }, ms);
-  }, [measure]);
-
-  useEffect(() => {
-    if (!phone) return;
-    let frame = 0;
-    const onScroll = () => {
-      if (jumping.current) return hold(160);
-      if (!frame) frame = window.requestAnimationFrame(() => { frame = 0; measure(); });
-    };
-    // A finger, a wheel or a key means the guest is scrolling by hand now.
-    const release = () => {
-      if (!jumping.current) return;
-      jumping.current = false;
-      window.clearTimeout(settle.current);
-      measure();
-    };
-    const input = ["touchstart", "wheel", "keydown"] as const;
-    window.addEventListener("scroll", onScroll, { passive: true });
-    input.forEach((e) => window.addEventListener(e, release, { passive: true }));
-    measure();
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      input.forEach((e) => window.removeEventListener(e, release));
-      window.cancelAnimationFrame(frame);
-      window.clearTimeout(settle.current);
-      jumping.current = false;
-    };
-  }, [phone, measure, hold]);
-
-  // The bar slides sideways to keep the spotlit course in view.
+     There used to be a second answer to "which course is the guest reading",
+     worked out from the page's scroll position on every frame, because a phone
+     held every course open at once and so "open" told you nothing. One course
+     at a time is its own answer, and that machinery is gone: with it went the
+     last path by which this menu could set the page's scroll behind the
+     guest's back. */
   useEffect(() => {
     const bar = barRef.current;
-    if (!phone || !spot || !bar) return;
-    const chip = bar.querySelector<HTMLElement>(`[data-course="${spot}"]`);
+    const id = open[0];
+    if (!phone || !id || !bar) return;
+    const chip = bar.querySelector<HTMLElement>(`[data-course="${id}"]`);
     if (!chip) return;
     const left = chip.offsetLeft - (bar.clientWidth - chip.offsetWidth) / 2;
     bar.scrollTo({ left: Math.max(0, left), behavior: still() ? "auto" : "smooth" });
-  }, [phone, spot]);
+  }, [phone, open]);
 
-  // On a desktop one course is open at a time; on a phone each keeps its own state.
+  // One course at a time: opening one closes the one before it. Tapping the
+  // open course's own heading folds it away, leaving the menu closed.
   const toggle = useCallback((id: string) => {
-    setOpen((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : phone ? [...cur, id] : [id]));
-  }, [phone]);
+    setOpen((cur) => (cur.includes(id) ? [] : [id]));
+  }, []);
 
   /* The shortcuts: every course with its price, one tap from the top of the
      menu. Choosing a course here always opens it, never closes it, and brings
      its heading into view under the header. */
   const jumpTo = useCallback((id: string) => {
-    setOpen((cur) => (phone ? (cur.includes(id) ? cur : [...cur, id]) : [id]));
-    if (phone) { setSpot(id); hold(500); }
-    window.requestAnimationFrame(() => {
-      document.getElementById(`course-${id}`)?.scrollIntoView({ behavior: still() ? "auto" : "smooth", block: "start" });
-    });
-  }, [phone, hold]);
+    setOpen([id]);
+    /* Placed, not glided. Opening a course closes the one before it, and when
+       that one sat above, everything below shifts in the same frame — a smooth
+       scroll toward a target that is still moving lands somewhere else. The
+       layout effect above puts the heading under the bar once the panels have
+       changed, in the frame they change. */
+    anchor.current = id;
+  }, []);
 
   // The advisor above, and the comparison below, ask for a course by id.
   useEffect(() => {
@@ -198,8 +151,13 @@ export default function Courses({ locale }: { locale: Locale }) {
     return () => window.removeEventListener(COURSE_EVENT, onCourse);
   }, [jumpTo]);
 
-  // On a phone the bar spotlights the course being read; on a desktop, the open one.
-  const lit = phone ? spot : (open[0] ?? null);
+  /* The bar lights the open course, on every screen. It used to work out what
+     was being read from the page's scroll position, because on a phone every
+     course was open at once and "open" said nothing. One course at a time is
+     its own answer, and the page's scroll is left alone — which is the safer
+     of the two, since a scroll the page sets itself kills a fling on an
+     iPhone. */
+  const lit = open[0] ?? null;
 
   return (
     <div className={`menu ${live ? "is-live" : ""}`}>
@@ -358,7 +316,12 @@ function CourseRow({
       <div className="course__panel" id={panelId} role="region" hidden={!isOpen}>
         <div className="course__inner">
           <p className="course__desc">{desc}</p>
-          <CoursePhoto course={course} className="course__photo" />
+          {/* The course's own photographs, in the order they are served. A
+              course the restaurant has not sent named pictures for shows its
+              one sample here instead, rather than nothing. */}
+          {course.gallery?.length
+            ? <CourseGallery course={course} locale={locale} />
+            : <CoursePhoto course={course} className="course__photo" />}
           {/* The age is on the heading and "Best for" says the rest, so the
               old one-line tagline would only repeat them. */}
           {forWho && !adv && <p className="course__for">{forWho}</p>}

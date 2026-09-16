@@ -207,12 +207,16 @@ pass("the comparison is a real table, with row and column headers",
      (await d.locator(".compare__table th[scope=col]").count()) === 5 && (await d.locator(".compare__table th[scope=row]").count()) === 4);
 
 await d.locator(".menu__jump .jump", { hasText: "Zen Kids" }).click(); await d.waitForTimeout(800);
-pass("Zen Kids shows its own picture, and it loads",
-     await d.evaluate(() => { const i = document.querySelector("#course-zen-kids .course__photo img"); return !!i && i.complete && i.naturalWidth > 0; }));
+pass("Zen Kids shows its own dishes, and they load",
+     await d.evaluate(() => { const pics = [...document.querySelectorAll("#course-zen-kids .cgal__item:not([aria-hidden]) img")];
+       return pics.length > 0 && pics.every((i) => i.complete && i.naturalWidth > 0); }));
 
 await d.locator(".menu__jump .jump", { hasText: "Zen Ni" }).click(); await d.waitForTimeout(800);
-pass("Zen Ni shows the one picture the restaurant sent for it, and it loads",
-     await d.evaluate(() => { const i = document.querySelector("#course-zen-ni .course__photo img"); return !!i && i.complete && i.naturalWidth > 0; }));
+pass("Zen Ni shows the pictures the restaurant sent for it, each named for its dish",
+     await d.evaluate(() => { const pics = [...document.querySelectorAll("#course-zen-ni .cgal__item:not([aria-hidden])")];
+       return pics.length > 0
+         && pics.every((li) => { const i = li.querySelector("img"); return !!i && i.complete && i.naturalWidth > 0; })
+         && pics.every((li) => (li.querySelector(".cgal__cap")?.textContent || "").trim().length > 3); }));
 pass("the dish list is type alone — no photograph in it", (await d.locator(".dishes img").count()) === 0);
 await d.locator("#course-zen-ni .course__acts .btn").click(); await d.waitForTimeout(700);
 const msg = await d.locator(".res.is-open .res__msg").textContent().catch(() => null);

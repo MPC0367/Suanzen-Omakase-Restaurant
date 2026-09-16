@@ -46,7 +46,7 @@ try {
 
     await m.goto(`${B}/${page0}`, { waitUntil: "load" }); await m.waitForTimeout(2500);
     pass("the page comes to life (the menu's script has run)", (await m.locator(".menu.is-live").count()) === 1);
-    pass("every course is open on a phone", (await m.locator(".course.is-open").count()) === 7);
+    pass("one course is open, the rest folded away", (await m.locator(".course.is-open").count()) === 1);
     const fontsOk = await m.evaluate(async () => {
       await document.fonts.ready;
       const loaded = [...document.fonts].filter((f) => f.status === "loaded").map((f) => f.family.replace(/"/g, ""));
@@ -60,11 +60,16 @@ try {
     await m.locator(".finder__a", { hasText: "A child" }).tap(); await m.waitForTimeout(500);
     pass("the finder answers", (await m.locator(".finder__name").textContent())?.trim() === "Zen Kids");
 
-    // The picture the restaurant sent for a course, in the menu.
-    await m.evaluate(() => document.querySelector("#course-zen-ni")?.scrollIntoView({ block: "start" }));
-    await m.waitForTimeout(900);
-    pass("a course's own picture shows in the menu",
-      await m.evaluate(() => { const i = document.querySelector("#course-zen-ni .course__photo img"); return !!i && i.complete && i.naturalWidth > 0; }));
+    // The course's own dishes, in the menu: a rail of photographs, each named.
+    await m.locator('.menu__jump [data-course="zen-ni"]').tap();
+    await m.waitForTimeout(1200);
+    pass("a course's own dishes show in the menu, each named, and they load",
+      await m.evaluate(() => {
+        const items = [...document.querySelectorAll("#course-zen-ni .cgal__item:not([aria-hidden])")];
+        return items.length > 0
+          && items.every((li) => { const i = li.querySelector("img"); return !!i && i.complete && i.naturalWidth > 0; })
+          && items.every((li) => (li.querySelector(".cgal__cap")?.textContent || "").trim().length > 3);
+      }));
     pass("the dish list is type alone — nothing opens in it", (await m.locator(".dishes img").count()) === 0);
 
     // The phone menu's #visit link: lands on Visit, and the menu closes.
@@ -79,7 +84,10 @@ try {
     pass("the phone menu's Visit link lands on Visit, on the same page, and closes the menu",
       Math.abs(visit.top) < 140 && !visit.sheet && visit.url === page0, `Visit at ${visit.top}px; ${visit.url}`);
 
-    // A course page, and back.
+    // A course page, and back. The link lives inside the course, so the course
+    // has to be opened first: one is open at a time, and the rest are folded.
+    await m.locator('.menu__jump [data-course="zen-ichi"]').tap();
+    await m.waitForTimeout(1200);
     await m.evaluate(() => document.querySelector('a[href="/en/courses/zen-ichi/"]').scrollIntoView({ block: "center" }));
     await m.waitForTimeout(300);
     await m.locator('a[href="/en/courses/zen-ichi/"]').first().tap(); await m.waitForTimeout(2500);

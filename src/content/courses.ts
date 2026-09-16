@@ -61,6 +61,12 @@ export type Course = {
       the course is opened in the menu and at the top of its own page. A course
       without one shows no picture: none is borrowed from another course. */
   sample?: { src: string; w: number; h: number };
+  /** The restaurant's photographs of this course's own dishes, in the order
+      they are served. `n` is the dish's place on the list; `caption` is the
+      restaurant's own name for the dish, taken from the file it sent. Shown as
+      a gallery under the course in the menu. A course with none shows its
+      `sample` there instead. */
+  gallery?: { src: string; w: number; h: number; caption: string; n?: number }[];
   photos: string[];
   dishes?: Dish[];
   /** Zen Sweet is three fixed menus rather than one sequence. */
@@ -91,6 +97,11 @@ export const courses: Course[] = [
     listLabelTh: "ครบทั้ง 9 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
     sample: { src: "/photos/4cb2edf859a5.jpg", w: 954, h: 802 },
+    gallery: [
+      { src: "/photos/156452580769.jpg", w: 1400, h: 933, caption: "Yawarakai Tamago with Foie Gras", n: 2 },
+      { src: "/photos/94676661bd34.jpg", w: 1400, h: 933, caption: "Gunkan Maki", n: 5 },
+      { src: "/photos/bf42da43fec5.jpg", w: 1400, h: 933, caption: "Ebi Tempura", n: 7 },
+    ],
     photos: [],
     dishes: [
       { nameEn: "Yuzu juice" },
@@ -124,6 +135,11 @@ export const courses: Course[] = [
     listLabelTh: "ครบทั้ง 14 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
     sample: { src: "/photos/3d4a8203a842.jpg", w: 1170, h: 1171 },
+    gallery: [
+      { src: "/photos/aec0bdeb54b6.jpg", w: 1400, h: 933, caption: "Suan Zen Sashimi(2 kinds of fish)" },
+      { src: "/photos/8d06e9f82552.jpg", w: 1400, h: 932, caption: "Inaniwa Kani Miso", n: 9 },
+      { src: "/photos/5a127c51695b.jpg", w: 933, h: 1400, caption: "Tempura Temaki", n: 10 },
+    ],
     photos: ["/photos/b6e6bff9bdd4.jpg", "/photos/b63e98c7df99.jpg"],
     dishes: [
       { nameEn: "Yuzu juice" },
@@ -162,6 +178,11 @@ export const courses: Course[] = [
     listLabelTh: "ครบทั้ง 16 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
     sample: { src: "/photos/249c7c8c7528.jpg", w: 870, h: 885 },
+    gallery: [
+      { src: "/photos/183e0d616253.jpg", w: 933, h: 1400, caption: "Zuwai Kani", n: 10 },
+      { src: "/photos/ba0752b68e45.jpg", w: 1400, h: 933, caption: "Fine Dine Taraba", n: 13 },
+      { src: "/photos/1e4f3ccfe38d.jpg", w: 1400, h: 933, caption: "Wagyu Special", n: 14 },
+    ],
     photos: [
       "/photos/ee3160d17d48.jpg",
       "/photos/17dd4959b0e0.jpg",
@@ -209,6 +230,12 @@ export const courses: Course[] = [
     listLabelTh: "ครบทั้ง 17 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
     sample: { src: "/photos/4ec2522c1b09.jpg", w: 870, h: 886 },
+    gallery: [
+      { src: "/photos/ab5c9f7939ed.jpg", w: 933, h: 1400, caption: "Botan Ebi Sushi", n: 6 },
+      { src: "/photos/3eb0559a8b3d.jpg", w: 1400, h: 933, caption: "Otoro Sushi with Binchotan", n: 9 },
+      { src: "/photos/626b8dae4d32.jpg", w: 1400, h: 933, caption: "Wagyu Sushi", n: 10 },
+      { src: "/photos/ca803f4f866f.jpg", w: 1400, h: 933, caption: "Fine Dine Amadai", n: 12 },
+    ],
     photos: [
       "/photos/1f365022e967.jpg",
       "/photos/42a586ebc854.jpg",
@@ -298,6 +325,11 @@ export const courses: Course[] = [
     listLabelTh: "ครบทั้ง 13 คำ ตามลำดับเสิร์ฟ",
     listIsPartial: false,
     sample: { src: "/photos/6b3b52b1c63e.jpg", w: 856, h: 892 },
+    gallery: [
+      { src: "/photos/b8f1789449eb.jpg", w: 1400, h: 933, caption: "Wagyu Takaki", n: 2 },
+      { src: "/photos/1a26a64e97b2.jpg", w: 1400, h: 933, caption: "Wagyu Roll", n: 4 },
+      { src: "/photos/0d21f8c49dee.jpg", w: 1400, h: 933, caption: "Wagyu Katsu with Black Truffle", n: 8 },
+    ],
     photos: [
       "/photos/2ff8db8e9a7f.jpg",
       "/photos/66f4b170541c.jpg",
