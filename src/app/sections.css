@@ -338,10 +338,15 @@
 @media (prefers-reduced-motion: reduce) { .cshow { animation: none; } }
 .cshow__scrim { position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer;
                 background: rgba(4, 4, 3, 0.94); }
+/* The panel covers the dark, so a tap meant for "close" would land on the panel
+   and do nothing. Taps fall through it, and only the picture and the controls
+   take them back — which is what restores tap-the-dark-to-close. */
 .cshow__panel {
   position: relative; display: grid; gap: 0.9rem; justify-items: center;
   width: min(96vw, 66rem); max-height: 94svh; padding: clamp(0.8rem, 3vh, 2rem) 0 0;
+  pointer-events: none;
 }
+.cshow__img, .cshow__bar { pointer-events: auto; }
 .cshow__stage { display: grid; place-items: center; min-height: 0; }
 .cshow__img {
   width: auto; height: auto; max-width: min(92vw, 62rem); max-height: 74svh;

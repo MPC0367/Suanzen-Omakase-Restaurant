@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { asset } from "@/lib/asset";
 import { getDict, type Locale } from "@/content/dictionary";
@@ -155,14 +156,21 @@ export default function CourseGallery({ course, locale }: { course: Course; loca
         )}
       </ul>
 
-      {open !== null && (
+      {/* Hung on the body, not here. A picture opened in place is a child of
+          the course panel, and that panel animates its transform as it opens —
+          an ancestor with a transform becomes the frame that "fixed" is fixed
+          to, so the picture would be laid out against the panel rather than the
+          screen and come out somewhere off the top of it, out of reach of every
+          tap. That is a page which looks frozen. */}
+      {open !== null && createPortal(
         <Expanded
           pictures={pictures}
           at={open}
           locale={locale}
           onMove={show}
           onClose={() => setOpen(null)}
-        />
+        />,
+        document.body,
       )}
     </div>
   );
@@ -190,7 +198,11 @@ function Expanded({
     const was = document.activeElement as HTMLElement | null;
     const body = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    panel.current?.querySelector<HTMLElement>("button")?.focus();
+    // preventScroll: focusing a control inside a fixed panel otherwise scrolls
+    // the page underneath it to bring that control into view — a scroll the
+    // guest did not ask for, set by the page, which is the one thing this menu
+    // must never do.
+    panel.current?.querySelector<HTMLElement>("button")?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") return onClose();
       if (e.key === "ArrowRight") return onMove(at + 1);

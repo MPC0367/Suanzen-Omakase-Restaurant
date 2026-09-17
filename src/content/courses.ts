@@ -180,7 +180,7 @@ export const courses: Course[] = [
     sample: { src: "/photos/249c7c8c7528.jpg", w: 870, h: 885 },
     gallery: [
       { src: "/photos/183e0d616253.jpg", w: 933, h: 1400, caption: "Zuwai Kani", n: 10 },
-      { src: "/photos/ba0752b68e45.jpg", w: 1400, h: 933, caption: "Fine Dine Taraba", n: 13 },
+      { src: "/photos/fcd81e5d4a73.jpg", w: 933, h: 1400, caption: "Fine Dine Taraba", n: 13 },
       { src: "/photos/1e4f3ccfe38d.jpg", w: 1400, h: 933, caption: "Wagyu Special", n: 14 },
     ],
     photos: [
