@@ -13,17 +13,21 @@ available at Suan Zen Omakase", 2024-09-06.
 
 **Ages**
 - Zen Ichi for ages 12–14 comes from the studio brief (2026-09-11). The
-  restaurant's 2024 post calls Ichi a first step into omakase and gives no age.
+  restaurant's post (6 July 2026) says "older children or those with smaller
+  appetites" and gives no age; the site gives both.
 - Zen Kids, 7–11: a recommendation or a rule? Can children under 7 come?
-- Zen Kids' dessert is "Zen of Choc melted lava / Panna Cotta raspberry /
-  Panna Cotta passion fruit" in the restaurant's post: one of the three, the
-  guest's pick? The site gives them with "or" and does not say who chooses.
+- Zen Kids' and Zen Ichi's dessert is "Zen of Choc melted lava / Panna Cotta
+  raspberry / Panna Cotta passion fruit" in the restaurant's posts: one of the
+  three, the guest's pick? The site gives them with "or" and does not say who
+  chooses.
 - "Adults" from what age, given Zen Yon opens with sake? Where do guests aged
   15–19 fit? (The finder currently asks them to message on LINE.)
 
 **Courses and dishes**
-- Which dish lists are current for Zen Ni, Zen San and Zen Yon: the site's, or
-  the 2024 post's? They differ in about six dishes each.
+- Which dish lists are current for Zen Ni, Zen San, Zen Boss and Zen Yon? The
+  new season began on 13 July 2026, and Zen Kids, Zen Ichi and Zen Sweet now
+  follow the restaurant's posts for it; the other four still come from the
+  2024 post and the earlier builds, which differ in about six dishes each.
 - Is there one course the restaurant recommends for seafood lovers? (Zen Yon is
   confirmed as the meat lovers' course.)
 - Is the "or" in the Ni, San and Yon desserts the guest's pick?
@@ -33,8 +37,9 @@ available at Suan Zen Omakase", 2024-09-06.
   five pieces each, 1,890++, and booking two days ahead, and the site now
   follows it. Still open: does the guest choose the menu when booking, or at
   the table?
-- Are the prices still current? (Kids, Ichi, Ni, San, Yon are from 2024; Boss
-  and Sweet only from the earlier builds.)
+- Are the prices still current? (Kids, Ichi and Sweet are confirmed by the
+  restaurant's 2026 posts; Ni, San and Yon are from 2024; Boss only from the
+  earlier builds.)
 
 **Words and pictures**
 - Thai names for the dishes. Every dish is English only.
@@ -57,8 +62,12 @@ Chinese page says only what the English does; these are the places where the
 English itself is unclear, so the Chinese had to choose a reading.
 - Hotaru tempura: is it firefly squid (萤火鱿)? The Chinese keeps "Hotaru".
 - Inaniwa ponzu and Inaniwa kani miso: are these Inaniwa udon? 稻庭 alone will
-  puzzle some Chinese readers. The "Inaniwa Kani Miso" photo caption also sits
-  at the place in Zen Ichi where the menu has kisu tempura.
+  puzzle some Chinese readers. (The "Inaniwa Kani Miso" photo now sits at its
+  own place in Zen Ichi, ninth: the list follows the restaurant's post of
+  6 July 2026.)
+- Zen Ichi's "Hotaru ika with Goma-ae": the Chinese reads it as firefly squid
+  with a sesame-dressed side (萤火鱿配芝麻拌菜). Is the sesame dressing on the
+  squid itself?
 - Zen Kids' salmon: served raw? The Chinese says 生三文鱼, from "namazakana",
   and parents will read it.
 - "Wagyu special" and "Foie gras designed by Suan Zen": what each dish is.

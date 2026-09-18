@@ -7,12 +7,17 @@
  *  - The restaurant's own Facebook post on Zen Kids (6 July, shown to the
  *    studio on 2026-09-19): its current nine bites, ages 7–11 and 1,290++.
  *    It replaces the 2024 post's Kids list below.
+ *  - The restaurant's own Facebook post on Zen Ichi (6 July, shown to the
+ *    studio on 2026-09-19): its current fourteen bites, in order, for "older
+ *    children or those with smaller appetites", 2,000++. It replaces the 2024
+ *    post's Ichi list below. The same day's post opens the new season from
+ *    13 July 2026.
  *  - The restaurant's own post on Zen Sweet (shown to the studio on
  *    2026-09-19): three menus, Zen Sweet A, B and C, of five pieces each, in
  *    the order listed here; 1,890++; booking two days ahead.
  *  - The restaurant's own Facebook post "5 Courses available at Suan Zen
  *    Omakase" (facebook.com/omakase.suanzen, 2024-09-06): the price, item count
- *    and full dish list of Zen Ichi, Ni, San and Yon; Kids for ages 7–11;
+ *    and full dish list of Ni, San and Yon; Kids for ages 7–11;
  *    Yon "specifically for meat lovers", Kagoshima and Saga wagyu.
  *  - The studio brief (2026-09-11): Zen Ichi recommended for ages 12–14, and
  *    Ni, San, Boss and Yon as adult courses.
@@ -151,9 +156,9 @@ export const courses: Course[] = [
     count: 14,
     unit: { en: "bites", th: "คำ", zh: "品" },
     desc: {
-      en: "Recommended for diners aged 12–14: the step between Zen Kids and the adult courses. Fourteen bites, mostly sushi and seafood — madai, shima-aji, ama-ebi, akami, chūtoro, uni, kisu tempura, kani meshi — with one wagyu sushi.",
-      th: "แนะนำสำหรับอายุ 12–14 ปี เป็นก้าวต่อจาก เซน คิดส์ ก่อนถึงคอร์สของผู้ใหญ่ มีทั้งหมด 14 คำ ส่วนใหญ่เป็นซูชิและอาหารทะเล เช่น มาได ชิมาอาจิ อามาเอบิ อากามิ ชูโทโร่ อูนิ คิสุเทมปุระ และข้าวปู มีวากิวซูชิหนึ่งคำ",
-      zh: "建议12–14岁的客人享用，是 Zen Kids 与成人套餐之间的过渡。共 14 品，以寿司和海鲜为主——真鲷、缟鲹、甜虾、赤身、中腹、海胆、沙钻鱼天妇罗、蟹肉饭——另有 1 品和牛寿司。",
+      en: "Recommended for diners aged 12–14, as the step between Zen Kids and the adult courses, and for anyone with a smaller appetite. Fourteen bites, mostly fish and seafood — madai, salmon, kampachi and chūtoro sushi, hotate yaki, kisu tempura, hotaru ika — with one wagyu sushi, and chocolate lava or panna cotta to finish.",
+      th: "แนะนำสำหรับอายุ 12–14 ปี เป็นก้าวต่อจาก เซน คิดส์ ก่อนถึงคอร์สของผู้ใหญ่ และยังเหมาะกับผู้ที่ทานได้ไม่เยอะ มีทั้งหมด 14 คำ ส่วนใหญ่เป็นปลาและอาหารทะเล เช่น ซูชิมาได แซลมอน คัมปาจิ ชูโทโร่ โฮตาเตะย่าง คิสุเทมปุระ และโฮตารุอิกะ มีวากิวซูชิหนึ่งคำ และปิดท้ายด้วยช็อกโกแลตลาวาหรือพานาคอตต้า",
+      zh: "建议12–14岁的客人享用，是 Zen Kids 与成人套餐之间的过渡，也适合食量较小的客人。共 14 品，以鱼类和海鲜为主——真鲷、三文鱼、间八与中腹寿司，以及烤帆立贝、沙钻鱼天妇罗和萤火鱿——另有 1 品和牛寿司，最后以流心巧克力熔岩蛋糕或意式奶冻收尾。",
     },
     forWho: { en: "RECOMMENDED FOR AGES 12–14", th: "แนะนำสำหรับอายุ 12–14 ปี", zh: "建议12–14岁享用" },
     listLabel: { en: "ALL FOURTEEN, IN ORDER", th: "ครบทั้ง 14 คำ ตามลำดับเสิร์ฟ", zh: "全部 14 品，依上菜顺序" },
@@ -165,6 +170,7 @@ export const courses: Course[] = [
         w: 1400,
         h: 933,
         caption: { en: "Suan Zen Sashimi(2 kinds of fish)", zh: "Suan Zen 刺身（2 种鱼）" },
+        n: 2,
       },
       {
         src: "/photos/8d06e9f82552.jpg",
@@ -183,20 +189,20 @@ export const courses: Course[] = [
     ],
     photos: ["/photos/b6e6bff9bdd4.jpg", "/photos/b63e98c7df99.jpg"],
     dishes: [
-      { name: { en: "Yuzu juice", zh: "日本柚子汁" } },
-      { name: { en: "Suan Zen sashimi", zh: "Suan Zen 刺身" }, photo: "/photos/b6e6bff9bdd4.jpg" },
+      { name: { en: "Mozuku junsai", zh: "海蕴与莼菜" } },
+      { name: { en: "Suan Zen sashimi (2 kinds of fish)", zh: "Suan Zen 刺身（2 种鱼）" }, photo: "/photos/b6e6bff9bdd4.jpg" },
       { name: { en: "Madai sushi", zh: "真鲷寿司 (madai)" } },
-      { name: { en: "Shima-aji sushi", zh: "缟鲹寿司 (shima-aji)" } },
-      { name: { en: "Ama-ebi sushi", zh: "甜虾寿司" } },
+      { name: { en: "Sake (salmon sushi)", zh: "三文鱼寿司" } },
+      { name: { en: "Kampachi sushi", zh: "间八寿司 (kampachi)" } },
       { name: { en: "Hotate yaki", zh: "烤帆立贝" } },
-      { name: { en: "Akami sushi", zh: "赤身寿司 (akami)" } },
       { name: { en: "Chūtoro sushi", zh: "中腹寿司 (chūtoro)" } },
       { name: { en: "Kisu tempura", zh: "沙钻鱼天妇罗 (kisu)" } },
-      { name: { en: "Uni sushi", zh: "海胆寿司" } },
-      { name: { en: "Kani meshi", zh: "蟹肉饭 (kani meshi)" } },
+      { name: { en: "Inaniwa kani miso", zh: "稻庭蟹味噌" } },
+      { name: { en: "Tempura temaki", zh: "天妇罗手卷" } },
+      { name: { en: "Hotaru ika with goma-ae", zh: "萤火鱿配芝麻拌菜 (goma-ae)" } },
       { name: { en: "Wagyu sushi", zh: "和牛寿司" } },
-      { name: { en: "Miso soup", zh: "味噌汤" } },
-      { name: { en: "Chocolate melted lava", zh: "流心巧克力熔岩蛋糕" } },
+      { name: { en: "Kani miso soup", zh: "蟹味噌汤" } },
+      { name: { en: "Zen of Choc melted lava / panna cotta raspberry / panna cotta passion fruit", zh: "Zen of Choc 流心巧克力熔岩蛋糕／覆盆子意式奶冻／百香果意式奶冻" } },
     ],
   },
   {

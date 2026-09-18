@@ -22,6 +22,8 @@ import type { L10n } from "./dictionary";
 export type Source =
   /** The restaurant's own Facebook post "5 Courses available…", 2024-09-06. */
   | "restaurant-2024"
+  /** The restaurant's own Facebook posts for the season from 13 July 2026. */
+  | "restaurant-2026"
   /** The studio brief of 2026-09-11, from the restaurant. */
   | "studio-brief"
   /** Counted from the course's own bite list on this site. */
@@ -78,11 +80,17 @@ export const advice: Advice[] = [
         zh: "12–14岁的青少年",
         source: "studio-brief",
       },
+      {
+        en: "Anyone with a smaller appetite",
+        th: "คนที่ทานได้ไม่เยอะ",
+        zh: "食量较小的客人",
+        source: "restaurant-2026",
+      },
     ],
     who: {
-      en: "Recommended for diners aged 12–14, as the step between Zen Kids and the adult courses. Fourteen bites, counting the yuzu juice.",
-      th: "แนะนำสำหรับอายุ 12–14 ปี เป็นก้าวต่อจาก เซน คิดส์ ก่อนถึงคอร์สของผู้ใหญ่ มี 14 คำ นับรวมน้ำยูซุด้วย",
-      zh: "建议年龄12–14岁，是 Zen Kids 与成人套餐之间的过渡。共 14 品（含日本柚子汁）。",
+      en: "Recommended for diners aged 12–14, as the step between Zen Kids and the adult courses, and for anyone with a smaller appetite. Fourteen bites, mostly fish and seafood, with one wagyu sushi.",
+      th: "แนะนำสำหรับอายุ 12–14 ปี เป็นก้าวต่อจาก เซน คิดส์ ก่อนถึงคอร์สของผู้ใหญ่ และยังเหมาะกับผู้ที่ทานได้ไม่เยอะ มี 14 คำ ส่วนใหญ่เป็นปลาและอาหารทะเล มีวากิวซูชิหนึ่งคำ",
+      zh: "建议12–14岁的客人享用，是 Zen Kids 与成人套餐之间的过渡，也适合食量较小的客人。共 14 品，以鱼类和海鲜为主，另有 1 品和牛寿司。",
     },
   },
   {
