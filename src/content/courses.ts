@@ -4,9 +4,12 @@
  * ─────────────────────────────────────────────────────────────────────────────
  *  Where this comes from, most authoritative first:
  *
+ *  - The restaurant's own Facebook post on Zen Kids (6 July, shown to the
+ *    studio on 2026-09-19): its current nine bites, ages 7–11 and 1,290++.
+ *    It replaces the 2024 post's Kids list below.
  *  - The restaurant's own Facebook post "5 Courses available at Suan Zen
  *    Omakase" (facebook.com/omakase.suanzen, 2024-09-06): the price, item count
- *    and full dish list of Zen Kids, Ichi, Ni, San and Yon; Kids for ages 7–11;
+ *    and full dish list of Zen Ichi, Ni, San and Yon; Kids for ages 7–11;
  *    Yon "specifically for meat lovers", Kagoshima and Saga wagyu.
  *  - The studio brief (2026-09-11): Zen Ichi recommended for ages 12–14, and
  *    Ni, San, Boss and Yon as adult courses.
@@ -90,9 +93,9 @@ export const courses: Course[] = [
     count: 9,
     unit: { en: "bites", th: "คำ", zh: "品" },
     desc: {
-      en: "Suan Zen's course for younger diners, recommended for ages 7–11. Nine bites: yuzu juice, tamago, salmon, hamachi and chūtoro sushi, ebi tempura, salmon don, udon carbonara and chocolate lava.",
-      th: "คอร์สของสวน เซน สำหรับน้อง ๆ แนะนำสำหรับอายุ 7–11 ปี มีทั้งหมด 9 คำ ตั้งแต่น้ำยูซุ ทามาโกะ แซลมอน ซูชิฮามาจิ และชูโทโร่ ไปจนถึงกุ้งเทมปุระ ข้าวหน้าแซลมอน อุด้งคาโบนาร่า และช็อกโกแลตลาวา",
-      zh: "Suan Zen 为小朋友准备的套餐，建议7–11岁享用。共 9 品：日本柚子汁、玉子烧、三文鱼、油甘鱼和中腹寿司、炸虾天妇罗、三文鱼盖饭、卡邦尼乌冬面，以及巧克力熔岩蛋糕。",
+      en: "Suan Zen's course for younger diners, recommended for ages 7–11. Nine bites: fresh yuzu juice, tamago with foie gras, salmon, madai sushi, gunkan maki, Suan Zen somen, ebi tempura, osuimono soup, and chocolate lava or panna cotta to finish.",
+      th: "คอร์สของสวน เซน สำหรับน้อง ๆ แนะนำสำหรับอายุ 7–11 ปี มีทั้งหมด 9 คำ ตั้งแต่น้ำยูซุคั้นสด ทามาโกะกับฟัวกราส์ แซลมอน ซูชิมาได และกุนกันมากิ ไปจนถึงโซเมนของสวน เซน กุ้งเทมปุระ ซุปโอสุยโมโนะ และปิดท้ายด้วยช็อกโกแลตลาวาหรือพานาคอตต้า",
+      zh: "Suan Zen 为小朋友准备的套餐，建议7–11岁享用。共 9 品：鲜榨日本柚子汁、嫩滑蛋羹配鹅肝、三文鱼、真鲷寿司、军舰寿司、Suan Zen 日式素面、炸虾天妇罗、日式清汤，最后以流心巧克力熔岩蛋糕或意式奶冻收尾。",
     },
     forWho: { en: "FOR YOUNGER DINERS · AGES 7–11", th: "สำหรับน้อง ๆ อายุ 7–11 ปี", zh: "儿童套餐 · 适合7–11岁" },
     listLabel: { en: "ALL NINE, IN ORDER", th: "ครบทั้ง 9 คำ ตามลำดับเสิร์ฟ", zh: "全部 9 品，依上菜顺序" },
@@ -103,7 +106,7 @@ export const courses: Course[] = [
         src: "/photos/156452580769.jpg",
         w: 1400,
         h: 933,
-        caption: { en: "Yawarakai Tamago with Foie Gras", zh: "嫩滑玉子烧配鹅肝" },
+        caption: { en: "Yawarakai Tamago with Foie Gras", zh: "嫩滑蛋羹配鹅肝" },
         n: 2,
       },
       {
@@ -123,15 +126,15 @@ export const courses: Course[] = [
     ],
     photos: [],
     dishes: [
-      { name: { en: "Yuzu juice", zh: "日本柚子汁" } },
-      { name: { en: "Tamago", zh: "玉子烧" } },
+      { name: { en: "Fresh yuzu juice", zh: "鲜榨日本柚子汁" } },
+      { name: { en: "Yawarakai tamago with foie gras", zh: "嫩滑蛋羹配鹅肝" } },
       { name: { en: "Namazakana (salmon)", zh: "生三文鱼 (namazakana)" } },
-      { name: { en: "Hamachi sushi", zh: "油甘鱼寿司 (hamachi)" } },
-      { name: { en: "Chūtoro sushi", zh: "中腹寿司 (chūtoro)" } },
+      { name: { en: "Madai sushi", zh: "真鲷寿司 (madai)" } },
+      { name: { en: "Gunkan maki", zh: "军舰寿司" } },
+      { name: { en: "Suan Zen somen", zh: "Suan Zen 素面 (somen)" } },
       { name: { en: "Ebi tempura", zh: "炸虾天妇罗" } },
-      { name: { en: "Salmon don", zh: "三文鱼盖饭" } },
-      { name: { en: "Udon carbonara", zh: "卡邦尼乌冬面" } },
-      { name: { en: "Chocolate lava", zh: "巧克力熔岩蛋糕" } },
+      { name: { en: "Osuimono soup", zh: "日式清汤 (osuimono)" } },
+      { name: { en: "Zen of Choc melted lava / panna cotta raspberry / panna cotta passion fruit", zh: "Zen of Choc 流心巧克力熔岩蛋糕／覆盆子意式奶冻／百香果意式奶冻" } },
     ],
   },
   {

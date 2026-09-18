@@ -15,6 +15,9 @@ available at Suan Zen Omakase", 2024-09-06.
 - Zen Ichi for ages 12–14 comes from the studio brief (2026-09-11). The
   restaurant's 2024 post calls Ichi a first step into omakase and gives no age.
 - Zen Kids, 7–11: a recommendation or a rule? Can children under 7 come?
+- Zen Kids' dessert is "Zen of Choc melted lava / Panna Cotta raspberry /
+  Panna Cotta passion fruit" in the restaurant's post: one of the three, the
+  guest's pick? The site gives them with "or" and does not say who chooses.
 - "Adults" from what age, given Zen Yon opens with sake? Where do guests aged
   15–19 fit? (The finder currently asks them to message on LINE.)
 
@@ -57,8 +60,9 @@ English itself is unclear, so the Chinese had to choose a reading.
 - Zen Kids' salmon: served raw? The Chinese says 生三文鱼, from "namazakana",
   and parents will read it.
 - "Wagyu special" and "Foie gras designed by Suan Zen": what each dish is.
-- Photo captions: "Wagyu Takaki" is read as tataki (和牛炙烧); "Gunkan Maki"
-  sits where Zen Kids' menu has chūtoro sushi. Which is right?
+- Photo caption "Wagyu Takaki" is read as tataki (和牛炙烧). Is that right?
+  (Zen Kids' "Gunkan Maki" caption now matches its menu: the list was updated
+  to the restaurant's current post on 2026-09-19.)
 - King crab is 帝王蟹, the menu's "fine-dine taraba"; confirm the restaurant
   would not rather say 鳕场蟹.
 - Zen San is the course the restaurant calls "fine"; Chinese readers will take
