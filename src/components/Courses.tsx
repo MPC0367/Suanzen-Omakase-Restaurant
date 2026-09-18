@@ -5,11 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { asset } from "@/lib/asset";
 import CourseGallery from "@/components/CourseGallery";
-import { activeCourses, courseById, formatBaht, allDishes, type Course, type Dish } from "@/content/courses";
+import { activeCourses, courseById, formatBaht, allDishes, type Course, type Dish, named } from "@/content/courses";
 import { adviceFor, advisorCopy, fill } from "@/content/advisor";
-import { getDict, type Locale } from "@/content/dictionary";
+import { getDict, type Locale, pick } from "@/content/dictionary";
 import { reserveLink } from "@/lib/line";
 import { COURSE_EVENT, hasPointer, openReserve } from "@/lib/events";
+import { placeFor } from "@/lib/place";
 
 const Arrow = () => (
   <svg width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true">
@@ -70,6 +71,14 @@ export default function Courses({ locale }: { locale: Locale }) {
   const anchor = useRef<string | null>(null);
 
   useEffect(() => { openRef.current = open; }, [open]);
+
+  /* Arriving from the same page in another language: the course the guest had
+     open is open here too. Before the first paint, so the header's return to
+     their place (Chrome) measures the page as it will stay. */
+  useLayoutEffect(() => {
+    const kept = placeFor(locale);
+    if (kept) setOpen(kept.open.filter((id) => courseById(id)).slice(0, 1));
+  }, [locale]);
 
   /* Which layout this is — the phone's pinned bar, or the desktop's. One course
      is open at a time on both, so crossing between them (a rotated tablet, a
@@ -172,7 +181,7 @@ export default function Courses({ locale }: { locale: Locale }) {
             aria-current={lit === c.id ? "true" : undefined}
             data-course={c.id}
           >
-            <span className="jump__name">{locale === "th" ? c.nameTh : c.nameEn}</span>
+            <span className="jump__name">{pick(c.name, locale)}</span>
             <span className="jump__price u-numeral">{formatBaht(c.price)}</span>
           </button>
         ))}
@@ -202,7 +211,7 @@ export default function Courses({ locale }: { locale: Locale }) {
    message to copy. Without the script, the link still opens LINE. */
 function ReserveCourse({ course, locale }: { course: Course; locale: Locale }) {
   const c = advisorCopy[locale];
-  const name = locale === "th" ? course.nameTh : course.nameEn;
+  const name = pick(course.name, locale);
   return (
     <a
       className="btn"
@@ -244,7 +253,7 @@ function AdviceBlock({ id, locale, full }: { id: string; locale: Locale; full?: 
   const k = courseById(id);
   if (!adv || !k) return null;
   const c = advisorCopy[locale];
-  const name = locale === "th" ? k.nameTh : k.nameEn;
+  const name = pick(k.name, locale);
   return (
     <dl className="advice">
       <div className="advice__row">
@@ -282,17 +291,16 @@ function CourseRow({
 }) {
   const t = getDict(locale);
   const c = advisorCopy[locale];
-  const th = locale === "th";
   const adv = adviceFor(course.id);
   const panelId = `course-panel-${course.key}`;
-  const name = th ? course.nameTh : course.nameEn;
-  const unit = th ? course.unitTh : course.unitEn;
-  const listLabel = th ? course.listLabelTh : course.listLabelEn;
-  const desc = th ? course.descTh : course.descEn;
-  const forWho = th ? course.forTh : course.forEn;
+  const name = pick(course.name, locale);
+  const unit = pick(course.unit, locale);
+  const listLabel = pick(course.listLabel, locale);
+  const desc = pick(course.desc, locale);
+  const forWho = pick(course.forWho, locale);
 
   const groups = course.menus
-    ? course.menus.map((m) => ({ label: th ? m.labelTh : m.labelEn, dishes: m.dishes }))
+    ? course.menus.map((m) => ({ label: pick(m.label, locale), dishes: m.dishes }))
     : [{ label: "", dishes: course.dishes ?? [] }];
 
   const total = course.menus ? course.menus.length : allDishes(course).length;
@@ -367,7 +375,7 @@ function DishGroups({
             {g.dishes.map((d, i) => (
               <li className="dish" key={`${gi}-${i}`}>
                 <span className="dish__n u-numeral">{String(i + 1).padStart(2, "0")}</span>
-                <span className="dish__name">{locale === "th" ? (d.nameTh ?? d.nameEn) : d.nameEn}</span>
+                <span className="dish__name">{named(d.name, locale)}</span>
               </li>
             ))}
           </ol>
@@ -384,12 +392,11 @@ export function CourseDetail({ id, locale }: { id: string; locale: Locale }) {
   const course = courseById(id);
   if (!course) return null;
   const c = advisorCopy[locale];
-  const th = locale === "th";
   const adv = adviceFor(id);
-  const name = th ? course.nameTh : course.nameEn;
-  const unit = th ? course.unitTh : course.unitEn;
+  const name = pick(course.name, locale);
+  const unit = pick(course.unit, locale);
   const groups = course.menus
-    ? course.menus.map((m) => ({ label: th ? m.labelTh : m.labelEn, dishes: m.dishes }))
+    ? course.menus.map((m) => ({ label: pick(m.label, locale), dishes: m.dishes }))
     : [{ label: "", dishes: course.dishes ?? [] }];
 
   return (
@@ -402,10 +409,10 @@ export function CourseDetail({ id, locale }: { id: string; locale: Locale }) {
         </p>
       </header>
       <CoursePhoto course={course} className="cdetail__photo" />
-      <p className="u-lede cdetail__desc">{th ? course.descTh : course.descEn}</p>
+      <p className="u-lede cdetail__desc">{pick(course.desc, locale)}</p>
       <AdviceBlock id={id} locale={locale} full />
       <div className="cdetail__list">
-        <span className="u-label">{th ? course.listLabelTh : course.listLabelEn}</span>
+        <span className="u-label">{pick(course.listLabel, locale)}</span>
         <DishGroups groups={groups} locale={locale} />
       </div>
       <div className="course__acts">

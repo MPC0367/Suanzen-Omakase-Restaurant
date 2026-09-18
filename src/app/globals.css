@@ -36,7 +36,10 @@
   --bg-raise:      var(--charcoal);
   --fg:            #f0ebe0;
   --fg-quiet:      #a29b8c;
-  --fg-faint:      #8b8275;   /* 5.4:1 on ink — was 3.4:1 */
+  /* 6.4:1 on ink. It was #8b8275 (5.4:1), but the smallest print also runs
+     over the room photograph at the top and bottom of the screen, and there
+     #8b8275 fell to 4:1; this holds 4.5:1 over the brightest of it. */
+  --fg-faint:      #9a9283;
   --rule:          rgba(240, 235, 224, 0.14);
   --rule-strong:   rgba(240, 235, 224, 0.28);
   --accent:        var(--amber);
@@ -88,8 +91,13 @@ html { -webkit-text-size-adjust: 100%; }
 html[data-smooth] { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html[data-smooth] { scroll-behavior: auto; } }
 
+/* The ground is on html, not body: the room photograph (.backdrop, below) sits
+   behind the page at z-index -1, and a body background would be painted over
+   it. html's colour is also what shows before the photograph arrives, or if
+   it never does. */
+html { background: var(--bg); }
 body {
-  background: var(--bg);
+  background: transparent;
   color: var(--fg);
   font-family: var(--sans);
   font-size: clamp(1rem, 0.94rem + 0.28vw, 1.14rem);
@@ -107,6 +115,53 @@ button, input, select, textarea { font: inherit; color: inherit; }
 a { color: inherit; text-decoration: none; }
 [hidden] { display: none !important; }
 
+/* ── THE ROOM BEHIND THE PAGE ─────────────────────────────────────────────────
+   One photograph, fixed to the screen: the page scrolls over it and it never
+   moves. Not background-attachment: fixed, which iOS ignores and which
+   repaints the whole page on every frame elsewhere. Sized to the largest the
+   screen gets (lvh), so a phone's toolbar sliding away does not rescale it.
+   The wash lets the room through at 30%, 20% and 10% down the top third of
+   the screen, none at all through the middle third where the reading
+   happens, and 10%, 20% and 30% down the bottom third — ten even steps,
+   as the studio set them (2026-09-18). */
+.backdrop {
+  position: fixed; inset: 0; z-index: -1;
+  height: 100vh; height: 100lvh;
+  background: var(--ink);
+  pointer-events: none; user-select: none; -webkit-user-select: none;
+  overflow: hidden;
+}
+.backdrop picture { display: contents; }
+.backdrop__img {
+  width: 100%; height: 100%; max-width: none;
+  object-fit: cover; object-position: 50% 50%;
+}
+/* The olive tree. Upright, the screen shows the full height of the picture and
+   a slice of its width, centred a little right of middle on the trunk. On a
+   wider screen it shows the full width and a slice of its height, set so the
+   lit canopy fills the top of the screen and the trunk and planter its foot. */
+.backdrop--olive .backdrop__img { object-position: 65% 50%; }
+@media (orientation: landscape) {
+  .backdrop--olive .backdrop__img { object-position: 50% 45%; }
+}
+/* The counter kept for wide screens (WIDE in Backdrop.tsx): a phone held
+   upright still gets the olive tree (the same query as there). */
+@media (max-width: 63.99rem) and (orientation: portrait) {
+  .backdrop--split .backdrop__img { object-position: 65% 50%; }
+}
+.backdrop::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to bottom,
+    rgb(10 10 10 / 0.70) 0%, rgb(10 10 10 / 0.80) 11.11%, rgb(10 10 10 / 0.90) 22.22%,
+    rgb(10 10 10 / 1) 33.33%, rgb(10 10 10 / 1) 66.67%,
+    rgb(10 10 10 / 0.90) 77.78%, rgb(10 10 10 / 0.80) 88.89%, rgb(10 10 10 / 0.70) 100%);
+}
+@media print { .backdrop { display: none; } }
+/* High-contrast modes drop background images, the wash with them, and would
+   leave the bare photograph behind every line of text. There the page keeps
+   the ground the reader's own colours give it. */
+@media (forced-colors: active) { .backdrop { display: none; } }
+
 /* ── THAI TYPOGRAPHY ──────────────────────────────────────────────────────────
    Thai stacks vowels above and tone marks above those, and descenders below.
    Tight leading clips them. Everything Thai gets more room, and headings get
@@ -115,6 +170,77 @@ a { color: inherit; text-decoration: none; }
 :lang(th) h1, :lang(th) h2, :lang(th) h3, :lang(th) .display { line-height: 1.42; }
 :lang(th) .u-label { letter-spacing: 0.06em; line-height: 1.7; }
 :lang(th) .display--hero { line-height: 1.32; }
+
+/* ── CHINESE TYPOGRAPHY ───────────────────────────────────────────────────────
+   Simplified Chinese on the /zh/ pages. Every character fills its square, so
+   it needs less leading than Thai and more than Latin; it has no capitals, so
+   the uppercase labels are set as they are written; and letterspacing that
+   airs out small Latin capitals only pulls Chinese apart, so it is all but
+   removed. The labels, set small for Latin capitals, come up a step: a
+   Chinese character at 11px is a smudge of strokes.
+
+   The faces: Noto Serif SC for display and Noto Sans SC for text (layout.tsx).
+   The serif comes first, before the Japanese Shippori Mincho: that face has
+   Japanese forms of the characters the two languages share, and would set
+   half of a Chinese heading in Japanese shapes. The sans keeps Plex first —
+   it has Latin and Thai but no Chinese, so its Latin matches the English page
+   and every Chinese character falls through to Noto Sans SC. The system's own
+   Chinese faces follow, for a slice that has not arrived yet.
+   Nothing is ever emboldened or slanted by the browser (font-synthesis).    */
+:lang(zh-CN) {
+  --serif: var(--font-display-zh), "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC",
+           var(--font-display), var(--font-display-th), Georgia, serif;
+  --sans:  var(--font-body), var(--font-body-zh), "PingFang SC", "Hiragino Sans GB",
+           "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  line-height: 1.72;
+  line-break: strict;
+  word-break: normal;
+  overflow-wrap: break-word;
+  font-synthesis: none;
+}
+:lang(zh-CN) h1, :lang(zh-CN) h2, :lang(zh-CN) h3, :lang(zh-CN) .display {
+  line-height: 1.32; letter-spacing: 0.02em;
+}
+:lang(zh-CN) .display--hero { line-height: 1.25; }
+:lang(zh-CN) .u-lede { line-height: 1.75; }
+
+/* Set as written, near-level, and a step up in size where Latin was small caps. */
+:lang(zh-CN) .u-label,
+:lang(zh-CN) .hdr__nav a,
+:lang(zh-CN) .btn,
+:lang(zh-CN) .link-arrow,
+:lang(zh-CN) .family__who,
+:lang(zh-CN) .course__tag,
+:lang(zh-CN) .compare__table .compare__corner,
+:lang(zh-CN) .compare__table tbody th,
+:lang(zh-CN) .cap,
+:lang(zh-CN) .course__for,
+:lang(zh-CN) .rail__cap,
+:lang(zh-CN) .cal__dow,
+:lang(zh-CN) .fld__req,
+:lang(zh-CN) .fld__opt,
+:lang(zh-CN) .bk__edit,
+:lang(zh-CN) .live__more { text-transform: none; letter-spacing: 0.04em; }
+:lang(zh-CN) .lang__btn,
+:lang(zh-CN) .visit__pinlabel,
+:lang(zh-CN) .course__count,
+:lang(zh-CN) .course__total,
+:lang(zh-CN) .cshow__n,
+:lang(zh-CN) .cal__closed,
+:lang(zh-CN) .seat__off,
+:lang(zh-CN) .fld__l { letter-spacing: 0.02em; }
+
+:lang(zh-CN) .u-label { font-size: clamp(0.76rem, 0.72rem + 0.13vw, 0.84rem); line-height: 1.6; }
+:lang(zh-CN) .hdr__nav a { font-size: 0.92rem; }
+:lang(zh-CN) .btn,
+:lang(zh-CN) .link-arrow { font-size: 0.94rem; }
+:lang(zh-CN) .family__who,
+:lang(zh-CN) .course__for,
+:lang(zh-CN) .cap { font-size: 0.88rem; }
+:lang(zh-CN) .course__tag,
+:lang(zh-CN) .rail__cap,
+:lang(zh-CN) .compare__table .compare__corner,
+:lang(zh-CN) .compare__table tbody th { font-size: 0.84rem; }
 
 /* ── TYPE SCALE ───────────────────────────────────────────────────────────── */
 .display {

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { courseById, formatBaht } from "@/content/courses";
 import { adultIds, adviceFor, advisorCopy, finder, fill, type Answer } from "@/content/advisor";
-import type { Locale } from "@/content/dictionary";
+import { pick, type Locale } from "@/content/dictionary";
 import { reserveLink } from "@/lib/line";
 import { hasPointer, openReserve, showCourse } from "@/lib/events";
 
@@ -21,14 +21,13 @@ const Arrow = () => (
  */
 export default function CourseAdvisor({ locale }: { locale: Locale }) {
   const c = advisorCopy[locale];
-  const th = locale === "th";
   const name = (id: string) => {
     const k = courseById(id);
-    return k ? (th ? k.nameTh : k.nameEn) : id;
+    return k ? (pick(k.name, locale)) : id;
   };
   const size = (id: string) => {
     const k = courseById(id);
-    return k ? `${k.count} ${th ? k.unitTh : k.unitEn}` : "";
+    return k ? `${k.count} ${pick(k.unit, locale)}` : "";
   };
 
   // Links still work without the script; with it, the menu opens the course.

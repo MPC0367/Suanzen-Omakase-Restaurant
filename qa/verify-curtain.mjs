@@ -35,9 +35,10 @@ pass("navigation clickable while the curtain is up", navOk);
 // 3 · on the change of language — a single page now, so arriving and
 // switching language are the two times the curtain rises
 await p.waitForTimeout(1800);
-await p.locator(".lang").click();
+await p.locator(".lang__btn").click();
+await p.locator('.lang__opt[hreflang="th"]').click();
 await p.waitForTimeout(120);
-pass("raised when switching Thai / English", (await p.locator(".curtain").count()) === 1);
+pass("raised when switching language", (await p.locator(".curtain").count()) === 1);
 await p.waitForTimeout(1600);
 pass("lands on the Thai page", p.url().includes("/th/"), p.url().split("Restaurant")[1]);
 await b.close();

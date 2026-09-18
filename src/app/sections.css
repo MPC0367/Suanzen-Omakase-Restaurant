@@ -131,7 +131,7 @@
   transform: translateX(-100%); animation: scrollHint 2.6s var(--ease) infinite;
 }
 @keyframes scrollHint { 0% { transform: translateX(-100%); } 55%,100% { transform: translateX(100%); } }
-.hero__hours { font-size: 0.82rem; color: #8b8275; letter-spacing: 0.04em; }
+.hero__hours { font-size: 0.82rem; color: #9a9283; letter-spacing: 0.04em; }
 
 @media (min-width: 64rem) {
   .hero { align-items: center; }
@@ -489,7 +489,7 @@
 .lb__cap { font-size: 0.86rem; color: #a29b8c; flex: 1 1 auto; text-align: center; }
 .lb__nav { display: flex; align-items: center; gap: 0.4rem; }
 .lb__n { font-size: 0.8rem; letter-spacing: 0.1em; min-width: 6.5em; text-align: center; }
-.lb__n i { color: #8b8275; font-style: normal; }
+.lb__n i { color: #9a9283; font-style: normal; }
 
 /* ═══ 08 SOCIAL ═════════════════════════════════════════════════════════════ */
 .social__text { grid-column: 1 / -1; display: grid; gap: 1.1rem; align-content: center; }
@@ -567,16 +567,20 @@
 .resv__note { font-size: 0.88rem; color: var(--fg-faint); max-width: 40ch; }
 
 /* ═══ FOOTER ════════════════════════════════════════════════════════════════ */
-.foot { background: var(--ink-deep); color: #cdc5b6; padding-top: clamp(3rem, 8vh, 5.5rem); }
+/* Clear, so the room shows through the bottom of the screen at the end of the
+   page as it does everywhere else; the rule above the base still closes it. */
+.foot { background: transparent; color: #cdc5b6; padding-top: clamp(3rem, 8vh, 5.5rem); }
 .foot__in {
   display: grid; gap: clamp(1.8rem, 4vw, 3rem);
   grid-template-columns: 1fr; padding-bottom: clamp(2.4rem, 6vh, 4rem);
 }
 .foot__brand { display: grid; gap: 0.6rem; justify-items: start; }
 .foot__name { font-family: var(--serif); font-size: 1.3rem; color: #f0ebe0; letter-spacing: 0.06em; }
-.foot__tag { font-size: 0.86rem; color: #8b8275; }
+.foot__tag { font-size: 0.86rem; color: #9a9283; }
 .foot__col { display: grid; gap: 0.5rem; align-content: start; }
 .foot__addr { font-style: normal; font-size: 0.92rem; line-height: 1.7; max-width: 26ch; }
+/* The romanised address under the Chinese one: smaller and quieter, a line of its own. */
+.addr__latin { display: block; margin-top: 0.3rem; font-size: 0.86em; line-height: 1.55; color: var(--fg-faint); }
 .foot__link { font-size: 0.92rem; color: #cdc5b6; width: fit-content; padding-block: 0.15rem;
               border-bottom: 1px solid transparent; transition: color var(--t-ui) var(--ease), border-color var(--t-ui) var(--ease); }
 .foot__link:hover { color: var(--amber); border-bottom-color: var(--amber); }
@@ -586,10 +590,23 @@
   display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
   border-top: 1px solid rgba(240,235,224,0.1);
   padding-block: 1.35rem max(1.35rem, env(safe-area-inset-bottom));
-  font-size: 0.78rem; color: #8b8275;
+  font-size: 0.78rem; color: #9a9283;
 }
 .foot__top { border-bottom: 1px solid rgba(240,235,224,0.2); padding-bottom: 2px; }
 .foot__top:hover { color: var(--amber); border-color: var(--amber); }
+/* The studio credit (O2Credit.tsx), between the rights line and the way back up:
+   the label voice (.u-label's size and tracking) at the base line's colour, and
+   amber on hover like every other link down here. The text sits on the O's
+   baseline so the 2 hangs below it, as in the studio's logo. */
+.o2-credit {
+  display: inline-flex; align-items: center; min-height: 44px;
+  font-family: var(--sans); font-size: clamp(0.66rem, 0.62rem + 0.13vw, 0.76rem);
+  line-height: 1; letter-spacing: 0.19em; text-transform: uppercase; color: inherit;
+  transition: color var(--t-ui) var(--ease);
+}
+.o2-credit:hover { color: var(--amber); }
+.o2-credit__lockup { white-space: nowrap; }
+.o2-credit__mark { display: inline-block; width: 1.95em; height: 1.6em; margin-right: 0.5em; vertical-align: -0.366em; }
 
 
 /* ═══ THE MENU OPENS THE PAGE ═══════════════════════════════════════════════
@@ -606,7 +623,10 @@
 @media (max-width: 63.99rem) {
   .menu__jump {
     position: sticky; top: var(--hdr-h, 64px); z-index: 30;
-    background: var(--bg); padding-block: 0.6rem;
+    /* The header's own glass, so the two read as one bar over the room. */
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.1); backdrop-filter: blur(14px) saturate(1.1);
+    padding-block: 0.6rem;
     border-bottom: 1px solid var(--rule);
   }
   .course { scroll-margin-top: calc(var(--hdr-h, 64px) + 4.4rem); }

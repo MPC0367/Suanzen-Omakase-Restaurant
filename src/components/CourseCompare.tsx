@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { courseById, formatBaht } from "@/content/courses";
 import { adultIds, adviceFor, advisorCopy } from "@/content/advisor";
-import type { Locale } from "@/content/dictionary";
+import { pick, type Locale } from "@/content/dictionary";
 import { showCourse } from "@/lib/events";
 
 /**
@@ -13,7 +13,6 @@ import { showCourse } from "@/lib/events";
  */
 export default function CourseCompare({ locale }: { locale: Locale }) {
   const c = advisorCopy[locale].compare;
-  const th = locale === "th";
   const [picked, setPicked] = useState<string[]>(adultIds.slice(0, 2));
 
   // Up to two at a time: a third drops the one chosen longest ago.
@@ -37,7 +36,7 @@ export default function CourseCompare({ locale }: { locale: Locale }) {
             aria-pressed={picked.includes(id)}
             onClick={() => toggle(id)}
           >
-            {th ? k.nameTh : k.nameEn}
+            {pick(k.name, locale)}
           </button>
         ))}
       </div>
@@ -54,7 +53,7 @@ export default function CourseCompare({ locale }: { locale: Locale }) {
                     href={`#course-${id}`}
                     onClick={(e) => { e.preventDefault(); showCourse(id); }}
                   >
-                    {th ? k.nameTh : k.nameEn}
+                    {pick(k.name, locale)}
                   </a>
                 </th>
               ))}

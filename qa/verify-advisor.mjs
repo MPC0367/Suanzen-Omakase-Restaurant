@@ -22,7 +22,7 @@ const ogOf = (html) => (html.match(/<meta (?:property|name)="(?:og|twitter):[^>]
 
 /* ── Every page: there, unlisted, nothing internal, no stale LINE ID ─────── */
 console.log("every page");
-const paths = ["/en/", "/th/", ...SLUGS.flatMap((s) => [`/en/courses/${s}/`, `/th/courses/${s}/`])];
+const paths = ["/en/", "/th/", "/zh/", ...SLUGS.flatMap((s) => [`/en/courses/${s}/`, `/th/courses/${s}/`, `/zh/courses/${s}/`])];
 const bad = [];
 for (const p of paths) {
   const r = await fetch(B + p);
@@ -52,7 +52,7 @@ for (const src of scripts) {
 pass(`none of the ${scripts.size} scripts the pages load carries an internal note`, scripts.size > 0 && inJs.length === 0, inJs.join(", "));
 
 const leaks = [];
-for (const s of SLUGS) for (const l of ["en", "th"]) {
+for (const s of SLUGS) for (const l of ["en", "th", "zh"]) {
   const og = ogOf(await (await fetch(`${B}/${l}/courses/${s}/`)).text());
   if (/฿|\b\d,\d{3}\b/.test(og)) leaks.push(`${l}/${s}`);
   if (!/\/og\/suan-zen\.jpg/.test(og)) leaks.push(`${l}/${s} image`);
@@ -72,8 +72,8 @@ pass("/courses/zen-ichi/ — the link staff can send — is unlisted and preview
 const m = await (await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })).newPage();
 m.on("pageerror", (e) => errs.push("phone: " + String(e).slice(0, 140)));
 await m.goto(`${B}/courses/zen-ichi/`, { waitUntil: "domcontentloaded" });
-await m.waitForURL(/\/(en|th)\/courses\/zen-ichi\/$/, { timeout: 8000 }).catch(() => {});
-pass("…and forwards the guest to that course", /\/(en|th)\/courses\/zen-ichi\/$/.test(new URL(m.url()).pathname), new URL(m.url()).pathname);
+await m.waitForURL(/\/(en|th|zh)\/courses\/zen-ichi\/$/, { timeout: 8000 }).catch(() => {});
+pass("…and forwards the guest to that course", /\/(en|th|zh)\/courses\/zen-ichi\/$/.test(new URL(m.url()).pathname), new URL(m.url()).pathname);
 
 await m.goto(`${B}/en/`, { waitUntil: "domcontentloaded" }); await ready(m);
 console.log("phone");
@@ -177,7 +177,8 @@ const page = await m.evaluate(() => ({
 pass("Zen Ichi's own page: its name, its age, all 14 bites, and Reserve",
      page.h1 === "Zen Ichi" && page.tag === "Ages 12–14" && page.dishes === 14 && page.reserve.includes("oaMessage"),
      `${page.h1} · ${page.tag} · ${page.dishes} bites`);
-await m.locator(".lang").tap();
+await m.locator(".lang__btn").tap();
+await m.locator('.lang__opt[hreflang="th"]').tap();
 await m.waitForURL(/\/th\/courses\/zen-ichi\//, { timeout: 8000 }).catch(() => {});
 pass("switching to Thai keeps the guest on the course", /\/th\/courses\/zen-ichi\/$/.test(new URL(m.url()).pathname), new URL(m.url()).pathname);
 
@@ -190,6 +191,17 @@ await m.locator(".finder__a", { hasText: "น้อง" }).tap(); await m.waitFo
 pass("Thai: the finder answers a child with เซน คิดส์", (await m.locator(".finder__name").textContent()).trim() === "เซน คิดส์");
 const thReserve = await m.locator("#course-zen-ni .course__acts .btn").getAttribute("href");
 pass("Thai: Reserve writes the message in Thai", decodeURIComponent(thReserve.split("?")[1] || "").startsWith("ขอจองคอร์ส เซน นิ (Zen Ni)"));
+
+/* ── Simplified Chinese ─────────────────────────────────────────────────── */
+console.log("chinese");
+await m.goto(`${B}/zh/`, { waitUntil: "domcontentloaded" }); await ready(m);
+pass("Chinese: the page is marked zh-CN", (await m.evaluate(() => document.documentElement.lang)) === "zh-CN");
+pass("Chinese: the page asks the question in Chinese", /[\u4e00-\u9fff]/.test((await m.locator("h1").textContent()) || ""),
+     (await m.locator("h1").textContent())?.trim());
+const zhReserve = await m.locator("#course-zen-ni .course__acts .btn").getAttribute("href");
+pass("Chinese: Reserve writes the message in Chinese",
+     decodeURIComponent(zhReserve.split("?")[1] || "") === "您好，我想预约 Zen Ni 套餐。\n日期：\n用餐时段：\n人数：\n过敏食物或忌口：",
+     JSON.stringify(decodeURIComponent(zhReserve.split("?")[1] || "")).slice(0, 80));
 
 /* ── Desktop ─────────────────────────────────────────────────────────────── */
 console.log("desktop");
@@ -211,7 +223,12 @@ pass("Zen Kids shows its own dishes, and they load",
      await d.evaluate(() => { const pics = [...document.querySelectorAll("#course-zen-kids .cgal__item:not([aria-hidden]) img")];
        return pics.length > 0 && pics.every((i) => i.complete && i.naturalWidth > 0); }));
 
-await d.locator(".menu__jump .jump", { hasText: "Zen Ni" }).click(); await d.waitForTimeout(800);
+/* Opened AND brought into view: the pictures are fetched lazily, so a rail
+   still parked below the fold holds nothing through no fault of the page. */
+await d.locator(".menu__jump .jump", { hasText: "Zen Ni" }).click(); await d.waitForTimeout(400);
+await d.locator("#course-zen-ni").scrollIntoViewIfNeeded();
+await d.waitForFunction(() => { const pics = [...document.querySelectorAll("#course-zen-ni .cgal__item:not([aria-hidden]) img")];
+  return pics.length > 0 && pics.every((i) => i.complete && i.naturalWidth > 0); }, null, { timeout: 15000 }).catch(() => {});
 pass("Zen Ni shows the pictures the restaurant sent for it, each named for its dish",
      await d.evaluate(() => { const pics = [...document.querySelectorAll("#course-zen-ni .cgal__item:not([aria-hidden])")];
        return pics.length > 0

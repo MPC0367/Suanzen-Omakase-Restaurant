@@ -26,6 +26,8 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import type { L10n } from "./dictionary";
+
 export type Verified<T> = { value: T; verified: boolean; note?: string };
 
 const v = <T,>(value: T, verified = true, note?: string): Verified<T> => ({
@@ -35,17 +37,21 @@ const v = <T,>(value: T, verified = true, note?: string): Verified<T> => ({
 });
 
 export const restaurant = {
-  name: { en: "Suan Zen Omakase", th: "สวน เซน โอมากาเสะ" },
-  shortName: { en: "Suan Zen", th: "สวน เซน" },
+  /* The brand stays in Latin letters on the Chinese page: it is the name on
+     the sign, the LINE account and the map, and there is no Chinese name the
+     restaurant uses. */
+  name: { en: "Suan Zen Omakase", th: "สวน เซน โอมากาเสะ", zh: "Suan Zen Omakase" } satisfies L10n,
+  shortName: { en: "Suan Zen", th: "สวน เซน", zh: "Suan Zen" } satisfies L10n,
 
   /** สวน (suan) = "garden". The brand name literally reads "Zen Garden". */
   nameMeaning: {
     en: "In Thai, suan means garden.",
     th: "“สวน” คือคำที่อยู่ในชื่อร้านตั้งแต่ต้น",
-  },
+    zh: "在泰语中，suan 的意思是“花园”。",
+  } satisfies L10n,
 
-  category: { en: "Omakase", th: "โอมากาเสะ" },
-  city: { en: "Nonthaburi", th: "นนทบุรี" },
+  category: { en: "Omakase", th: "โอมากาเสะ", zh: "Omakase" } satisfies L10n,
+  city: { en: "Nonthaburi", th: "นนทบุรี", zh: "暖武里府" } satisfies L10n,
 
   address: {
     street: v("35/2 Soi Nonthaburi 48"),
@@ -58,8 +64,16 @@ export const restaurant = {
     provinceTh: v("นนทบุรี"),
     postalCode: v("11000"),
     country: v("TH"),
-    oneLineEn: v("35/2 Soi Nonthaburi 48, Tha Sai, Mueang Nonthaburi, Nonthaburi 11000"),
-    oneLineTh: v("35/2 ซอยนนทบุรี 48 ท่าทราย อำเภอเมืองนนทบุรี นนทบุรี 11000"),
+    /* The Chinese keeps the district, sub-district and soi in Latin letters:
+       those are what a taxi, Grab or a map search will match, and they have no
+       settled Chinese forms. The page shows the English line under it. */
+    oneLine: v<L10n>({
+      en: "35/2 Soi Nonthaburi 48, Tha Sai, Mueang Nonthaburi, Nonthaburi 11000",
+      th: "35/2 ซอยนนทบุรี 48 ท่าทราย อำเภอเมืองนนทบุรี นนทบุรี 11000",
+      zh: "泰国暖武里府 Mueang Nonthaburi 县 Tha Sai 区 Soi Nonthaburi 48，35/2 号，邮编 11000",
+    }),
+    /** Which pages also print the English address under their own. */
+    romanisedBelow: { en: false, th: false, zh: true } satisfies L10n<boolean>,
   },
 
   geo: v({ lat: 13.8732794, lng: 100.5083385 }),
@@ -109,8 +123,7 @@ export const restaurant = {
 
   izakaya: {
     active: v(true),
-    days: v("Thursday – Saturday"),
-    daysTh: v("พฤหัสบดี – เสาร์"),
+    days: v<L10n>({ en: "Thursday – Saturday", th: "พฤหัสบดี – เสาร์", zh: "周四至周六" }),
     hours: v("20.30 – 24.00"),
   },
 
@@ -138,11 +151,13 @@ export const restaurant = {
     leadTimeNote: {
       en: "Seatings are limited. We recommend booking a few days ahead.",
       th: "ที่นั่งต่อรอบมีจำกัด แนะนำให้จองล่วงหน้า",
-    },
+      zh: "座位有限，建议提前几天预约。",
+    } satisfies L10n,
     dietaryNote: {
       en: "Tell us about allergies or anything you don't eat when you book — the chef will adjust the course.",
       th: "แจ้งอาหารที่แพ้หรือไม่ทานตอนจอง เชฟปรับคอร์สให้ได้",
-    },
+      zh: "预约时请告知过敏食物或忌口，主厨会为您调整套餐。",
+    } satisfies L10n,
   },
 } as const;
 

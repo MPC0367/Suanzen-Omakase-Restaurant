@@ -1,7 +1,7 @@
 import { chromium } from "playwright";
 
 const BASE = (process.argv[2] || "http://localhost:4321").replace(/\/$/, "");
-const pages = ["/en/", "/th/", "/en/courses/zen-ichi/", "/th/courses/zen-ichi/"];
+const pages = ["/en/", "/th/", "/zh/", "/en/courses/zen-ichi/", "/th/courses/zen-ichi/", "/zh/courses/zen-ichi/"];
 
 const browser = await chromium.launch({ channel: "chrome" }).catch(() => chromium.launch());
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -66,7 +66,9 @@ for (const path of pages) {
           if (c && c !== "rgba(0, 0, 0, 0)" && c !== "transparent") return c;
           node = node.parentElement;
         }
-        return getComputedStyle(document.body).backgroundColor;
+        // The ground is html's (body is clear over the room photograph; the
+        // photograph itself is checked in verify-zh.mjs).
+        return getComputedStyle(document.documentElement).backgroundColor;
       })(el);
       const parse = (c) => c.match(/\d+/g).slice(0, 3).map(Number);
       return { sel, fg: parse(cs.color), bg: parse(bg), size: cs.fontSize };

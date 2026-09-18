@@ -7,7 +7,8 @@
  *   node scripts/export.mjs --base "" && node scripts/artifact-from-export.mjs
  *
  * writes .artifact/ (gitignored): the pages on one level — index.html is /en/,
- * th.html is /th/, en-zen-ichi.html is /en/courses/zen-ichi/ … — the scripts,
+ * th.html is /th/, zh.html is /zh/, en-zen-ichi.html is /en/courses/zen-ichi/
+ * … — the scripts,
  * styles, fonts and photographs they use, and files.json, the map to publish
  * them with (index.html is the page itself; files.json lists the rest).
  *
@@ -19,13 +20,15 @@
  *   alone.
  * - Links between the pages are root addresses too, and Next.js would fetch
  *   them in the background to navigate. A small script in each page takes
- *   those clicks and opens the flattened page instead; the links' own handlers
- *   (closing the phone menu) still run.
+ *   those clicks and opens the flattened page instead, with the query and the
+ *   #section; the links' own handlers (closing the phone menu, keeping the
+ *   guest's place for a change of language) still run.
  * - The Japanese display face comes in 244 slices of characters, of which the
- *   page uses Latin and a few kanji. Only the font slices holding a character
- *   the pages use are kept, and the page stops preloading the rest: otherwise
- *   the package is over an artifact's 255-file limit, and a phone asks for
- *   hundreds of files that are not there.
+ *   page uses Latin and a few kanji, and the two Chinese faces in about a
+ *   hundred each. Only the font slices holding a character the pages use are
+ *   kept, and the page stops preloading the rest: otherwise the package is
+ *   over an artifact's 255-file limit, and a phone asks for hundreds of files
+ *   that are not there.
  * - Route folders named [locale] and [slug] become locale and slug, and
  *   _next/ becomes next/: an artifact reserves top-level names beginning "_".
  */
@@ -59,10 +62,11 @@ const unbracket = (s) => s.replace(/%5B(\w+)%5D/g, "$1");           // the same,
 
 /* ── The pages, on one level ─────────────────────────────────────────────── */
 const slugs = fs.readdirSync(`${SRC}/en/courses`).filter((s) => fs.existsSync(`${SRC}/en/courses/${s}/index.html`));
-const pages = { "/en/": "index.html", "/th/": "th.html" };
-for (const s of slugs) for (const l of ["en", "th"]) pages[`/${l}/courses/${s}/`] = `${l}-${s}.html`;
-const sourceOf = (route) => `${route.slice(1)}index.html`;
-const otherLang = (route) => route.replace(/^\/(en|th)\//, (_, l) => `/${l === "en" ? "th" : "en"}/`);
+const LOCALES = ["en", "th", "zh"];
+const pages = { "/en/": "index.html", "/th/": "th.html", "/zh/": "zh.html" };
+for (const s of slugs) for (const l of LOCALES) pages[`/${l}/courses/${s}/`] = `${l}-${s}.html`;
+for (const r of Object.keys(pages)) if (!fs.existsSync(path.join(SRC, sourceOf(r)))) fail(`The export has no ${sourceOf(r)}.`);
+function sourceOf(route) { return `${route.slice(1)}index.html`; }
 
 /* ── Fonts: only the slices that hold a character the pages use ──────────────
    Client components carry their words in the scripts, so those count too. */
@@ -72,11 +76,24 @@ const decode = (s) => s.replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCha
 for (const f of [...Object.keys(pages).map(sourceOf), ...chunks.filter((c) => c.endsWith(".js"))]) {
   for (const ch of decode(read(f))) used.add(ch.codePointAt(0));
 }
-const covers = (range) => range.split(",").some((part) => {
+/* Chinese characters are only drawn by the Chinese faces. The /zh/ pages set
+   Noto Serif SC and Noto Sans SC ahead of the Japanese display face, so the
+   Japanese face never draws a Chinese page's characters — but they sit in the
+   same Unicode block as its kanji, and counted against it they would keep
+   nearly all of its 244 slices. For every other face, a CJK character counts
+   only if an English or Thai page shows it (the course names' kanji). */
+const CHINESE_FACES = new Set(["Noto Sans SC", "Noto Serif SC"]);
+const cjk = (cp) => (cp >= 0x2e80 && cp <= 0x9fff) || (cp >= 0xf900 && cp <= 0xfaff) || (cp >= 0xfe30 && cp <= 0xfe4f)
+  || (cp >= 0xff00 && cp <= 0xffef) || cp >= 0x20000;
+const usedElsewhere = new Set([...used].filter((cp) => !cjk(cp)));
+for (const route of Object.keys(pages).filter((r) => !r.startsWith("/zh/"))) {
+  for (const ch of decode(read(sourceOf(route)))) if (cjk(ch.codePointAt(0))) usedElsewhere.add(ch.codePointAt(0));
+}
+const covers = (range, family) => range.split(",").some((part) => {
   let [lo, hi] = part.trim().replace(/^u\+/i, "").split("-");
   if (lo.includes("?")) { hi = lo.replace(/\?/g, "f"); lo = lo.replace(/\?/g, "0"); }
   const a = parseInt(lo, 16), b = parseInt(hi ?? lo, 16);
-  for (const cp of used) if (cp >= a && cp <= b) return true;
+  for (const cp of CHINESE_FACES.has(family) ? used : usedElsewhere) if (cp >= a && cp <= b) return true;
   return false;
 });
 
@@ -88,7 +105,8 @@ for (const f of walk(`${SRC}/_next/static/css`).map((x) => path.relative(SRC, x)
     .replace(/@font-face\{[^}]*\}/g, (face) => {
       faces++;
       const range = face.match(/unicode-range:([^;}]+)/);
-      if (range && !covers(range[1])) return "";
+      const family = (face.match(/font-family:([^;}]+)/)?.[1] ?? "").replace(/["']/g, "").trim();
+      if (range && !covers(range[1], family)) return "";
       kept++;
       return face;
     })
@@ -99,7 +117,8 @@ for (const f of walk(`${SRC}/_next/static/css`).map((x) => path.relative(SRC, x)
 for (const file of media) copy(`_next/static/media/${file}`);
 
 /* ── Addresses to the site's own files, made relative ────────────────────── */
-const relAssets = (s) => s.replace(/(?<=["'(])\/((?:photos|brand|og)\/[\w.-]+)/g, (_, p) => { assets.add(p); return p; });
+// After a quote or bracket, or after ", " inside a srcset list.
+const relAssets = (s) => s.replace(/(?<=["'(]|, )\/((?:photos|brand|og)\/[\w.-]+)/g, (_, p) => { assets.add(p); return p; });
 
 let publicPath = 0;
 for (const f of chunks) {
@@ -115,7 +134,7 @@ for (const f of chunks) {
 if (publicPath < 2) fail(`Expected to find Next.js's script path in two places, found ${publicPath}. The export changed; check this script.`);
 
 /* ── The pages ───────────────────────────────────────────────────────────── */
-function nav(pages, here, other) {
+function nav(pages, here) {
   // Next.js fetches linked pages ahead of time to navigate to them quickly.
   // Here the flattened pages are opened instead, so those fetches get an
   // answer at once rather than failing against the artifact's server: an
@@ -130,28 +149,23 @@ function nav(pages, here, other) {
   var slash = function (p) { return /\/$/.test(p) ? p : p + "/"; };
   var route = function (href) {
     if (!href || href.charAt(0) !== "/" || href.charAt(1) === "/") return null;
-    var hash = "", i = href.indexOf("#");
+    var hash = "", query = "", i = href.indexOf("#");
     if (i >= 0) { hash = href.slice(i); href = href.slice(0, i); }
     var q = href.indexOf("?");
-    if (q >= 0) href = href.slice(0, q);
+    if (q >= 0) { query = href.slice(q); href = href.slice(0, q); }
     var p = slash(href);
-    return pages[p] ? { file: pages[p], hash: hash === "#" ? "" : hash, same: p === here } : null;
+    return pages[p] ? { file: pages[p], query: query, hash: hash === "#" ? "" : hash, same: p === here } : null;
   };
   window.addEventListener("click", function (e) {
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !e.target.closest) return;
-    if (e.target.closest("button.lang")) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      try { sessionStorage.setItem("sz-y", String(window.scrollY)); } catch (_) {}
-      location.href = pages[other];
-      return;
-    }
     var a = e.target.closest("a[href]");
     if (!a || a.target === "_blank") return;
     var r = route(a.getAttribute("href"));
     if (!r) return;
+    // The language already shown: the selector closes itself, as on the site.
+    if (r.same && a.closest(".lang__opt")) return;
     e.preventDefault();   // Next.js leaves a link alone once its click is prevented
-    if (!r.same) { location.href = r.file + r.hash; return; }
+    if (!r.same) { location.href = r.file + r.query + r.hash; return; }
     setTimeout(function () {   // after the link's own handlers, as a normal link would
       if (!r.hash) return window.scrollTo({ top: 0, behavior: "smooth" });
       var el = document.getElementById(r.hash.slice(1));
@@ -159,13 +173,8 @@ function nav(pages, here, other) {
       else if (el) el.scrollIntoView({ block: "start", behavior: "smooth" });
     }, 0);
   }, true);
-  try {
-    var y = sessionStorage.getItem("sz-y");
-    if (y) {
-      sessionStorage.removeItem("sz-y");
-      window.addEventListener("load", function () { setTimeout(function () { window.scrollTo(0, +y); }, 80); });
-    }
-  } catch (_) {}
+  // A change of language keeps the guest's place itself (src/lib/place.ts),
+  // through sessionStorage, which a whole page load here does not clear.
 }
 
 for (const [route, file] of Object.entries(pages)) {
@@ -182,7 +191,7 @@ for (const [route, file] of Object.entries(pages)) {
     .replace(/(?<=["'(])\/_next\//g, "next/")
     .replace(/(?<=["'(])\/(?=(?:icon|apple-icon)\.png)/g, "");
   h = unbracket(relAssets(h));
-  h = h.replace("</head>", `<script>(${nav.toString()})(${JSON.stringify(pages)},${JSON.stringify(route)},${JSON.stringify(otherLang(route))})</script></head>`);
+  h = h.replace("</head>", `<script>(${nav.toString()})(${JSON.stringify(pages)},${JSON.stringify(route)})</script></head>`);
   fs.writeFileSync(path.join(DEST, file), h);
 }
 for (const p of assets) if (fs.existsSync(path.join(SRC, p))) copy(p);

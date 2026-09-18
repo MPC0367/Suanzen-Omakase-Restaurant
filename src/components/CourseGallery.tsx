@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { asset } from "@/lib/asset";
 import { getDict, type Locale } from "@/content/dictionary";
-import type { Course } from "@/content/courses";
+import { named, type Course } from "@/content/courses";
 
 /**
  * A course's own photographs, under the course in the menu.
@@ -136,7 +136,7 @@ export default function CourseGallery({ course, locale }: { course: Course; loca
                 className="cgal__btn"
                 onClick={() => show(i)}
                 tabIndex={r === 1 ? -1 : undefined}
-                aria-label={`${t.gallery.open} — ${p.caption}`}
+                aria-label={`${t.gallery.open} — ${named(p.caption, locale)}`}
               >
                 <Image
                   src={asset(p.src)}
@@ -149,7 +149,7 @@ export default function CourseGallery({ course, locale }: { course: Course; loca
                 {/* The dish's name alone. Its number orders the pictures, but
                     shown in front of each one it read as a count of the course
                     rather than a label for the plate. */}
-                <span className="cgal__cap">{p.caption}</span>
+                <span className="cgal__cap">{named(p.caption, locale)}</span>
               </button>
             </li>
           )),
@@ -223,7 +223,7 @@ function Expanded({
   }, [at, onMove, onClose]);
 
   return (
-    <div className="cshow" role="dialog" aria-modal="true" aria-label={p.caption}>
+    <div className="cshow" role="dialog" aria-modal="true" aria-label={named(p.caption, locale)}>
       <button className="cshow__scrim" onClick={onClose} tabIndex={-1} aria-hidden="true" />
       <div className="cshow__panel" ref={panel}>
         <div className="cshow__stage">
@@ -239,7 +239,7 @@ function Expanded({
           />
         </div>
         <div className="cshow__bar">
-          <p className="cshow__cap">{p.caption}</p>
+          <p className="cshow__cap">{named(p.caption, locale)}</p>
           <div className="cshow__nav">
             <button className="cshow__ctl" onClick={() => onMove(at - 1)} aria-label={t.gallery.prev}>
               <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">

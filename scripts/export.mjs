@@ -63,10 +63,33 @@ fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
 
 // There is no server to redirect / to /en/, so ship a page that does it.
 const prefix = basePath || '';
+
+/* Which edition a browser gets, from the languages it asks for, in its own
+   order of preference: Thai to /th/; Simplified Chinese (zh-CN, zh-SG,
+   zh-Hans, or plain zh) to /zh/; Traditional Chinese (zh-TW, zh-HK, zh-MO,
+   zh-Hant) to English, since the Chinese edition is in simplified characters
+   and a Taiwan or Hong Kong reader is better served by the English than by a
+   script they read as foreign. English, or nothing recognised, to /en/. The
+   query and #section come along. Written once and inlined into each page
+   that redirects. */
+const pickLocale = `function(){
+    var ask = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || '']);
+    for (var i = 0; i < ask.length; i++) {
+      var t = String(ask[i] || '').toLowerCase().split('_').join('-');
+      if (t === 'th' || t.indexOf('th-') === 0) return 'th';
+      if (t === 'zh' || t.indexOf('zh-') === 0) {
+        if (/(^|-)hans(-|$)/.test(t)) return 'zh';
+        if (/(^|-)(hant|tw|hk|mo)(-|$)/.test(t)) return 'en';
+        return 'zh';
+      }
+      if (t === 'en' || t.indexOf('en-') === 0) return 'en';
+    }
+    return 'en';
+  }`;
 // The root address is the one the handover QR encodes and the one the LINE OA
 // will most likely send, so this redirect page carries the same link preview
 // and the same do-not-list instruction as the pages it forwards to. It is
-// bilingual because it speaks for both. Keep the image in step with OG_IMAGE
+// in all three languages because it speaks for all three. Keep the image in step with OG_IMAGE
 // in src/lib/site.ts.
 const origin = (process.env.NEXT_PUBLIC_SITE_ORIGIN || 'https://mpc0367.github.io').replace(/\/$/, '');
 const preview = `${origin}${prefix}/og/suan-zen.jpg`;
@@ -77,13 +100,13 @@ fs.writeFileSync(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Suan Zen Omakase — Menu · เมนู</title>
-<meta name="description" content="The omakase menu: seven courses and every bite, with prices. · เมนูโอมากาเสะ 7 คอร์ส ครบทุกคำ พร้อมราคา">
+<title>Suan Zen Omakase — Menu · เมนู · 菜单</title>
+<meta name="description" content="The omakase menu: seven courses and every bite, with prices. · เมนูโอมากาเสะ 7 คอร์ส ครบทุกคำ พร้อมราคา · Suan Zen Omakase 套餐菜单：7款套餐、完整菜品与价格。">
 <meta name="robots" content="noindex, nofollow">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Suan Zen Omakase">
-<meta property="og:title" content="Suan Zen Omakase — Menu · เมนู">
-<meta property="og:description" content="The omakase menu: seven courses and every bite, with prices. · เมนูโอมากาเสะ 7 คอร์ส ครบทุกคำ พร้อมราคา">
+<meta property="og:title" content="Suan Zen Omakase — Menu · เมนู · 菜单">
+<meta property="og:description" content="The omakase menu: seven courses and every bite, with prices. · เมนูโอมากาเสะ 7 คอร์ส ครบทุกคำ พร้อมราคา · Suan Zen Omakase 套餐菜单：7款套餐、完整菜品与价格。">
 <meta property="og:url" content="${origin}${prefix}/">
 <meta property="og:image" content="${preview}">
 <meta property="og:image:width" content="1200">
@@ -93,19 +116,17 @@ fs.writeFileSync(
 <link rel="canonical" href="${origin}${prefix}/en/">
 <meta http-equiv="refresh" content="0; url=${prefix}/en/">
 <script>
-  // Send Thai browsers to the Thai site; everyone else to English.
-  var th = (navigator.language || '').toLowerCase().indexOf('th') === 0;
-  location.replace('${prefix}/' + (th ? 'th' : 'en') + '/');
+  location.replace('${prefix}/' + (${pickLocale})() + '/' + location.search + location.hash);
 </script>
 <style>
-  body{margin:0;background:#0b0b08;color:#f0ebe0;
+  body{margin:0;background:#0a0a0a;color:#f0ebe0;
        font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
        display:grid;place-items:center;min-height:100vh}
   a{color:#eeca0e}
 </style>
 </head>
 <body>
-  <p>Suan Zen Omakase — <a href="${prefix}/en/">English</a> · <a href="${prefix}/th/">ไทย</a></p>
+  <p>Suan Zen Omakase — <a href="${prefix}/en/" hreflang="en">English</a> · <a href="${prefix}/th/" hreflang="th" lang="th">ไทย</a> · <a href="${prefix}/zh/" hreflang="zh-CN" lang="zh-CN">简体中文</a></p>
 </body>
 </html>
 `,
@@ -146,8 +167,7 @@ ${preview}
 <link rel="canonical" href="${origin}${to}">
 <meta http-equiv="refresh" content="0; url=${to}">
 <script>
-  var th = (navigator.language || '').toLowerCase().indexOf('th') === 0;
-  location.replace('${prefix}/' + (th ? 'th' : 'en') + '/courses/${slug}/');
+  location.replace('${prefix}/' + (${pickLocale})() + '/courses/${slug}/' + location.search + location.hash);
 </script>
 </head>
 <body><p><a href="${to}">Suan Zen Omakase</a></p></body>

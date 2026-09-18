@@ -35,10 +35,42 @@ available at Suan Zen Omakase", 2024-09-06.
 - Thai names for the dishes. Every dish is English only.
 - Which photograph shows which dish. Pictures of other courses' dishes, of raw
   ingredients with words burned in, and of a guest's name card were removed.
+- The site's background, the olive tree at the door at blue hour, is the
+  restaurant's own photograph with its seal as a watermark, which suggests a
+  hired photographer: confirm it may be used on the site, and ask for the
+  original at full size without the seal (the copy used is 680 × 1020).
 
 **LINE**
 - Does `https://line.me/R/oaMessage/%40suanzenomakase/?…` open the restaurant's
   chat with the message typed in, on the restaurant's own phones, inside LINE's
   built-in browser, for a guest who isn't a friend yet, and for one who has
   blocked the account?
-- Approve the wording of the pre-filled message, in English and Thai.
+- Approve the wording of the pre-filled message, in English, Thai and Chinese.
+
+**Chinese edition** (from the translation and its review, 2026-09-18). The
+Chinese page says only what the English does; these are the places where the
+English itself is unclear, so the Chinese had to choose a reading.
+- Hotaru tempura: is it firefly squid (萤火鱿)? The Chinese keeps "Hotaru".
+- Inaniwa ponzu and Inaniwa kani miso: are these Inaniwa udon? 稻庭 alone will
+  puzzle some Chinese readers. The "Inaniwa Kani Miso" photo caption also sits
+  at the place in Zen Ichi where the menu has kisu tempura.
+- Zen Kids' salmon: served raw? The Chinese says 生三文鱼, from "namazakana",
+  and parents will read it.
+- "Wagyu special" and "Foie gras designed by Suan Zen": what each dish is.
+- Photo captions: "Wagyu Takaki" is read as tataki (和牛炙烧); "Gunkan Maki"
+  sits where Zen Kids' menu has chūtoro sushi. Which is right?
+- King crab is 帝王蟹, the menu's "fine-dine taraba"; confirm the restaurant
+  would not rather say 鳕场蟹.
+- Zen San is the course the restaurant calls "fine"; Chinese readers will take
+  that as fine dining. Is that the meaning?
+- À la carte: only while the izakaya is open, or all day Thursday to Saturday?
+- "Seatings are limited": few seats per seating, or few seatings?
+- The English says the restaurant is on "a soi off Nonthaburi 48"; the address
+  says Soi Nonthaburi 48 itself. The Chinese follows the address.
+- The English and Thai call Zen Ichi to Zen Yon a ladder of bites and time, but
+  Zen Yon (13 bites) is shorter than Zen Ichi (14). The Chinese says only that
+  they differ in bites and length; the English and Thai may need the same fix.
+- "++" is not explained on any page. A Chinese guest may not know it means
+  service charge and VAT; explaining it needs the restaurant's own wording.
+- The Chinese address uses 县 for Mueang Nonthaburi and 区 for Tha Sai, the
+  usual labels; worth a look by a Chinese-speaking guest or member of staff.

@@ -2,7 +2,8 @@ import Image from "next/image";
 import { asset } from "@/lib/asset";
 import { alaCarte, alaSections, alaIsPublished } from "@/content/alacarte";
 import { restaurant } from "@/content/restaurant";
-import { getDict, type Locale } from "@/content/dictionary";
+import { named } from "@/content/courses";
+import { getDict, type Locale, pick } from "@/content/dictionary";
 
 const Arrow = () => (
   <svg width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true">
@@ -17,7 +18,6 @@ const Arrow = () => (
  */
 export default function ALaCarte({ locale }: { locale: Locale }) {
   const t = getDict(locale);
-  const th = locale === "th";
 
   return (
     <section className="section ala" id="alacarte">
@@ -32,7 +32,7 @@ export default function ALaCarte({ locale }: { locale: Locale }) {
           <div className="ala__grid reveal">
             {alaSections.map((sec) => (
               <div className="ala__sec" key={sec.id}>
-                <h3 className="ala__h u-label">{th ? sec.titleTh : sec.titleEn}</h3>
+                <h3 className="ala__h u-label">{pick(sec.title, locale)}</h3>
                 <ul className="ala__items">
                   {sec.items.map((it, i) => (
                     <li className="ala__item" key={i}>
@@ -47,9 +47,9 @@ export default function ALaCarte({ locale }: { locale: Locale }) {
                         />
                       )}
                       <span className="ala__name">
-                        {th ? (it.nameTh ?? it.nameEn) : it.nameEn}
-                        {(it.noteEn || it.noteTh) && (
-                          <span className="ala__note">{th ? it.noteTh : it.noteEn}</span>
+                        {named(it.name, locale)}
+                        {it.note && (
+                          <span className="ala__note">{(it.note && pick(it.note, locale))}</span>
                         )}
                       </span>
                       <span className="ala__price u-numeral">
@@ -66,7 +66,7 @@ export default function ALaCarte({ locale }: { locale: Locale }) {
             <p className="ala__pendingtext">{t.ala.pending}</p>
             <dl className="ala__when">
               <dt className="u-label">{t.ala.served}</dt>
-              <dd>{th ? alaCarte.servedTh : alaCarte.servedEn}</dd>
+              <dd>{pick(alaCarte.served, locale)}</dd>
             </dl>
             <a
               className="btn"

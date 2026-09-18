@@ -8,7 +8,7 @@ engines. It is hosted on GitHub Pages and rebuilds on every push to `main`.
 
 ## How it stays off Google
 
-- **Every page says `noindex, nofollow`**: the menu in both languages, the root
+- **Every page says `noindex, nofollow`**: the menu in all three languages, the root
   redirect page and the 404. Google and Bing drop a page when they see that,
   and never list it.
 - **robots.txt lets crawlers in.** They have to read a page to see its
@@ -24,6 +24,18 @@ engines. It is hosted on GitHub Pages and rebuilds on every push to `main`.
 
 What it does not do: stop someone who has the link from opening it or
 forwarding it. It is a shareable link, not a locked page.
+
+---
+
+## Which language a guest gets
+
+The root address (and the 404, and the language-less course links such as
+`/courses/zen-ni/` that staff send) pick an edition from the browser's own
+language list, in its order of preference: Thai to `/th/`; Simplified Chinese
+(`zh-CN`, `zh-SG`, `zh-Hans`, or plain `zh`) to `/zh/`; Traditional Chinese
+(`zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`) to English, since the Chinese edition is
+in simplified characters; everyone else to `/en/`. The query and `#section`
+are kept. The language selector on every page lets a guest change it.
 
 ---
 

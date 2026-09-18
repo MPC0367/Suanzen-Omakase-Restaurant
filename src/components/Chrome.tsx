@@ -1,18 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { asset } from "@/lib/asset";
 import { Mark, Wordmark } from "./Mark";
 import { restaurant } from "@/content/restaurant";
 import { activeCourses, courseById } from "@/content/courses";
 import { advisorCopy, fill } from "@/content/advisor";
-import { getDict, type Locale } from "@/content/dictionary";
+import { clock, getDict, localeInfo, type Locale, pick } from "@/content/dictionary";
 import { qrPath } from "@/lib/qr";
 import { reserveMessage } from "@/lib/line";
 import { RESERVE_EVENT } from "@/lib/events";
 import { useReveal } from "@/lib/motion";
+import { dropPlace, placeFor, restorePlace } from "@/lib/place";
+import LanguageMenu from "./LanguageMenu";
 
 const Arrow = () => (
   <svg width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true">
@@ -20,9 +22,10 @@ const Arrow = () => (
   </svg>
 );
 
-export default function Chrome({ locale }: { locale: Locale }) {
+/** `path` is the page's address after the language: "/" for the menu,
+    "/courses/zen-san/" for a course. The language selector links to it. */
+export default function Chrome({ locale, path = "/" }: { locale: Locale; path?: string }) {
   const t = getDict(locale);
-  const router = useRouter();
   const pathname = usePathname();
 
   const [scrolled, setScrolled] = useState(false);
@@ -88,16 +91,30 @@ export default function Chrome({ locale }: { locale: Locale }) {
     return () => window.removeEventListener(RESERVE_EVENT, open);
   }, []);
 
-  // ── Language: the aperture closes over the page, the words change, it opens.
-  const other: Locale = locale === "en" ? "th" : "en";
-  const switchLang = useCallback(() => {
-    const rest = pathname.replace(/^\/(en|th)/, "") || "";
-    // The curtain covers the change — it is raised by the route change itself,
-    // so there is nothing to time here beyond keeping the guest's place.
-    const y = window.scrollY;
-    router.push(`/${other}${rest}`);
-    window.setTimeout(() => window.scrollTo(0, y), 40);
-  }, [pathname, other, router]);
+  /* ── Arriving from another language: back to the same place. The curtain
+     is over the page while this happens. Put back once the new words are laid
+     out, and again when the fonts have arrived and changed the line lengths —
+     unless the guest has already scrolled for themselves in between. */
+  useEffect(() => {
+    const p = placeFor(locale);
+    if (!p) return;
+    let landed = -1;
+    const put = () => {
+      if (landed >= 0 && Math.abs(window.scrollY - landed) > 2) return;
+      landed = restorePlace(p);
+    };
+    const frame = requestAnimationFrame(() => {
+      put();
+      dropPlace();
+      // Chosen from the keyboard: the focus comes back to the language button,
+      // so the next Tab carries on from here instead of from the top.
+      if (p.focus) document.querySelector<HTMLElement>(".lang__btn")?.focus({ preventScroll: true });
+    });
+    let alive = true;
+    document.fonts?.ready.then(() => { if (alive) put(); });
+    const late = window.setTimeout(put, 450);
+    return () => { alive = false; cancelAnimationFrame(frame); window.clearTimeout(late); };
+  }, [locale, pathname]);
 
   /* Two stops: the menu, and how to get there. The page is sent as a link in
      Suan Zen's LINE OA to guests who already mean to come — nothing else to find. */
@@ -125,9 +142,7 @@ export default function Chrome({ locale }: { locale: Locale }) {
           </nav>
 
           <div className="hdr__end">
-            <button className="lang" onClick={switchLang} aria-label={t.switchToLabel} lang={other}>
-              {t.switchTo}
-            </button>
+            <LanguageMenu locale={locale} path={path} />
             <button type="button" className="btn hdr__cta" onClick={() => { setResCourse(null); setResOpen(true); }}>
               {t.nav.reserve}
             </button>
@@ -199,7 +214,7 @@ function ReservationDrawer({
   const lineUrl = restaurant.contact.lineUrl.value;
   const qr = useMemo(() => qrPath(lineUrl), [lineUrl]);
   const k = course ? courseById(course) : undefined;
-  const kName = k ? (locale === "th" ? k.nameTh : k.nameEn) : "";
+  const kName = k ? pick(k.name, locale) : "";
   const message = k ? reserveMessage(k, locale) : "";
   const [copied, setCopied] = useState(false);
 
@@ -303,15 +318,15 @@ function ReservationDrawer({
         <dl className="res__facts">
           <div>
             <dt className="u-label">{t.reserve.seatingsNote}</dt>
-            <dd className="u-numeral">{seatings.join("  ·  ")}</dd>
+            <dd className="u-numeral">{seatings.map((s) => clock(s, locale)).join("  ·  ")}</dd>
           </div>
           <div>
             <dt className="u-label">{t.reserve.chooseCourse}</dt>
-            <dd>{k ? kName : activeCourses.map((c) => (locale === "th" ? c.nameTh : c.nameEn)).join(", ")}</dd>
+            <dd>{k ? kName : activeCourses.map((c) => pick(c.name, locale)).join(localeInfo[locale].list)}</dd>
           </div>
           <div>
             <dt className="u-label">{t.reserve.dietaryHeading}</dt>
-            <dd>{restaurant.reservation.dietaryNote[locale]}</dd>
+            <dd>{pick(restaurant.reservation.dietaryNote, locale)}</dd>
           </div>
         </dl>
 

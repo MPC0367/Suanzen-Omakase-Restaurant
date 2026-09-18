@@ -17,21 +17,22 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import type { L10n } from "./dictionary";
+import type { Named } from "./courses";
+
 export type AlaItem = {
-  nameEn: string;
-  nameTh?: string;
+  /** The restaurant's own name; Thai only where it gives one. */
+  name: Named;
   /** Baht, before ++. Leave undefined for market price. */
   price?: number;
-  noteEn?: string;
-  noteTh?: string;
+  note?: L10n;
   /** Path under /public/photos — drives the same hover preview as the courses. */
   photo?: string;
 };
 
 export type AlaSection = {
   id: string;
-  titleEn: string;
-  titleTh: string;
+  title: L10n;
   items: AlaItem[];
 };
 
@@ -40,8 +41,11 @@ export const alaCarte = {
   published: false,
 
   /** When the à la carte is actually served. */
-  servedEn: "Thursday to Saturday, alongside the izakaya bar",
-  servedTh: "พฤหัสบดี ถึง เสาร์ พร้อมกับอิซากายะ",
+  served: {
+    en: "Thursday to Saturday, alongside the izakaya bar",
+    th: "พฤหัสบดี ถึง เสาร์ พร้อมกับอิซากายะ",
+    zh: "周四至周六，居酒屋营业时供应",
+  } satisfies L10n as L10n,
 
   sections: [] as AlaSection[],
 };

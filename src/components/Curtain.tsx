@@ -46,7 +46,7 @@ export default function Curtain() {
   const shownFor = useRef(pathname);
   const ring = useRef<HTMLImageElement>(null);
 
-  // Every later pathname change — a page, or Thai ⇄ English — raises it again.
+  // Every later pathname change — a page, or a change of language — raises it again.
   useEffect(() => {
     if (shownFor.current === pathname) return;
     shownFor.current = pathname;

@@ -272,7 +272,9 @@ const grounds = [];
 for (const id of ["courses", "alacarte", "visit"]) {
   await m.evaluate((s) => document.getElementById(s)?.scrollIntoView({ block: "start" }), id);
   await m.waitForTimeout(700);
-  grounds.push(await m.evaluate((s) => ({ at: s, body: getComputedStyle(document.body).backgroundColor,
+  // The ground is html's since the room photograph went in behind the page;
+  // body is clear so the photograph shows through.
+  grounds.push(await m.evaluate((s) => ({ at: s, body: getComputedStyle(document.documentElement).backgroundColor,
     world: document.documentElement.dataset.world ?? "none" })));
 }
 pass("the page is night from top to bottom, and never crosses into daylight",
@@ -317,7 +319,7 @@ pass("a link straight to #visit opens at Visit, without racing the menu past", M
 await dv.context().close();
 
 // The narrowest phones still in use (320px) get the page without sideways scrolling.
-for (const loc of ["en", "th"]) {
+for (const loc of ["en", "th", "zh"]) {
   const np = await (await b.newContext({ viewport: { width: 320, height: 568 }, hasTouch: true })).newPage();
   np.on("pageerror", (e) => errs.push("320px: " + String(e).slice(0, 140)));
   await np.goto(`${B}/${loc}/`, { waitUntil: "domcontentloaded" }); await ready(np);

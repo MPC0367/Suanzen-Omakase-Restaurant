@@ -96,9 +96,15 @@ try {
     pass("…and All courses comes back to the menu", m.url().replace(B, "").startsWith("/index.html#courses"), m.url().replace(B, ""));
 
     // Thai.
-    await m.locator(".lang").tap(); await m.waitForTimeout(2500);
-    pass("the language switch opens the Thai page", m.url().endsWith("/th.html") &&
+    await m.locator(".lang__btn").tap(); await m.waitForTimeout(300);
+    await m.locator('.lang__opt[hreflang="th"]').tap(); await m.waitForTimeout(2500);
+    // The selector keeps the #section the guest was on (here #courses).
+    pass("the language selector opens the Thai page, at the same section", new URL(m.url()).pathname === "/th.html" && new URL(m.url()).hash === "#courses" &&
       (await m.locator("h1").first().textContent())?.includes("คอร์สไหนเหมาะกับคุณ"), m.url().replace(B, ""));
+    await m.locator(".lang__btn").tap(); await m.waitForTimeout(300);
+    await m.locator('.lang__opt[hreflang="zh-CN"]').tap(); await m.waitForTimeout(2500);
+    pass("…and the Chinese page", new URL(m.url()).pathname === "/zh.html" && new URL(m.url()).hash === "#courses" &&
+      (await m.evaluate(() => document.documentElement.lang)) === "zh-CN", m.url().replace(B, ""));
 
     pass("no file the page asks for is missing", missing.length === 0, [...new Set(missing)].slice(0, 5).join(", "));
     pass("no script errors", errs.length === 0, errs.slice(0, 3).join(" | "));

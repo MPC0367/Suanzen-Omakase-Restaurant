@@ -5,8 +5,9 @@ import CourseCompare from "@/components/CourseCompare";
 import ALaCarte from "@/components/ALaCarte";
 import Footer from "@/components/Footer";
 import MapFrame from "@/components/MapFrame";
+import Address from "@/components/Address";
 import { restaurant } from "@/content/restaurant";
-import { getDict, locales, type Locale } from "@/content/dictionary";
+import { clock, getDict, isLocale, localeInfo, type Locale } from "@/content/dictionary";
 import { notFound } from "next/navigation";
 
 const Arrow = () => (
@@ -24,9 +25,8 @@ const Arrow = () => (
  * and where.
  */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale: raw } = await params;
-  if (!locales.includes(raw as Locale)) notFound();
-  const locale = raw as Locale;
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
 
   return (
     <>
@@ -60,7 +60,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 function Visit({ locale }: { locale: Locale }) {
   const t = getDict(locale);
   const r = restaurant;
-  const a = r.address;
   const g = r.geo.value;
 
   return (
@@ -76,21 +75,21 @@ function Visit({ locale }: { locale: Locale }) {
             <dl className="facts facts--stack">
               <div>
                 <dt className="u-label">{t.visit.addressLabel}</dt>
-                <dd>{locale === "th" ? a.oneLineTh.value : a.oneLineEn.value}</dd>
+                <dd><Address locale={locale} /></dd>
               </div>
               <div>
                 <dt className="u-label">{t.visit.hoursLabel}</dt>
                 <dd>
-                  <span className="u-numeral">{t.visit.everyday} · {r.hours.everyday.value}</span>
+                  <span className="u-numeral">{t.visit.everyday} · {clock(r.hours.everyday.value, locale)}</span>
                   <br />
                   <span className="u-numeral visit__late">
-                    {t.visit.lateNights} · {r.hours.lateNights.value}
+                    {t.visit.lateNights} · {clock(r.hours.lateNights.value, locale)}
                   </span>
                 </dd>
               </div>
               <div>
                 <dt className="u-label">{t.visit.seatingsLabel}</dt>
-                <dd className="u-numeral">{r.seatings.value.join("  ·  ")}</dd>
+                <dd className="u-numeral">{r.seatings.value.map((s) => clock(s, locale)).join("  ·  ")}</dd>
               </div>
               <div>
                 <dt className="u-label">{t.visit.parkingLabel}</dt>
@@ -160,12 +159,13 @@ function Visit({ locale }: { locale: Locale }) {
 /**
  * Google's keyless embed — no API key, no billing account. The restaurant's
  * name with its verified coordinates, so it lands on the actual listing rather
- * than a bare pin, and hl gives Thai street names on the Thai page.
+ * than a bare pin, and hl gives Thai street names on the Thai page and
+ * Simplified Chinese labels (zh-CN) on the Chinese one.
  */
 function mapEmbedUrl(locale: Locale) {
   const { lat, lng } = restaurant.geo.value;
   const q = encodeURIComponent(restaurant.name.en);
-  return `https://maps.google.com/maps?q=${q}&ll=${lat},${lng}&z=16&hl=${locale}&output=embed`;
+  return `https://maps.google.com/maps?q=${q}&ll=${lat},${lng}&z=16&hl=${localeInfo[locale].html}&output=embed`;
 }
 
 /** An abstract river-and-roads plan of the area, with the restaurant lit.
