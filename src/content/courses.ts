@@ -7,6 +7,9 @@
  *  - The restaurant's own Facebook post on Zen Kids (6 July, shown to the
  *    studio on 2026-09-19): its current nine bites, ages 7–11 and 1,290++.
  *    It replaces the 2024 post's Kids list below.
+ *  - The restaurant's own post on Zen Sweet (shown to the studio on
+ *    2026-09-19): three menus, Zen Sweet A, B and C, of five pieces each, in
+ *    the order listed here; 1,890++; booking two days ahead.
  *  - The restaurant's own Facebook post "5 Courses available at Suan Zen
  *    Omakase" (facebook.com/omakase.suanzen, 2024-09-06): the price, item count
  *    and full dish list of Zen Ichi, Ni, San and Yon; Kids for ages 7–11;
@@ -15,8 +18,8 @@
  *    Ni, San, Boss and Yon as adult courses.
  *  - The two earlier Suan Zen builds: the dish lists shown here for Ni, San and
  *    Yon (they differ from the 2024 post in places, and nobody has said which
- *    is current), and everything about Zen Boss and Zen Sweet, which the 2024
- *    post does not mention.
+ *    is current), and everything about Zen Boss, which the 2024 post does not
+ *    mention.
  *
  *  Copy states only what those sources support. Where a description says what
  *  a course is mostly made of, that is counted from its own dish list here.
@@ -507,12 +510,12 @@ export const courses: Course[] = [
     count: 3,
     unit: { en: "menus", th: "เมนู", zh: "款菜单" },
     desc: {
-      en: "A dessert course in three menus — A, B and C — chosen when you book. Matcha mousse, Basque burnt cheesecake, and banoffee and tiramisu shots among them.",
-      th: "คอร์สของหวาน มีสามเมนูให้เลือก คือ A B และ C เลือกตอนจอง ในนั้นมีมัทฉะมูส ชีสเค้กบาสก์ และช็อตบานอฟฟี่กับทีรามิสุ",
-      zh: "甜品套餐，分 A、B、C 三款菜单，预约时选定。其中有抹茶慕斯、巴斯克焦香芝士蛋糕，以及香蕉太妃杯和提拉米苏杯。",
+      en: "A course for dessert lovers, in three menus to choose from — Zen Sweet A, B and C — of five pieces each: matcha mousse, Basque burnt cheesecake, jasmine and raspberry mousse, passion fruit panna cotta, and banoffee and tiramisu shots among them. Book two days ahead.",
+      th: "คอร์สสำหรับสายขนมหวาน มีสามเมนูให้เลือก คือ Zen Sweet A, B และ C เมนูละ 5 ชิ้น เช่น มูสมัทฉะ ชีสเค้กบาสก์ มูสมะลิ มูสราสเบอร์รี พานาคอตต้าเสาวรส และช็อตบานอฟฟี่กับทีรามิสุ กรุณาจองล่วงหน้า 2 วัน",
+      zh: "为甜品爱好者准备的套餐，共三款菜单可选（Zen Sweet A、B、C），每款 5 道甜品。三款菜单中有抹茶慕斯、巴斯克焦香芝士蛋糕、茉莉花慕斯、覆盆子慕斯、百香果意式奶冻，以及香蕉太妃杯和提拉米苏杯。请提前 2 天预约。",
     },
     forWho: { en: "DESSERT COURSE", th: "คอร์สของหวาน", zh: "甜品套餐" },
-    listLabel: { en: "THREE MENUS", th: "สามเมนู", zh: "共 3 款菜单" },
+    listLabel: { en: "THREE MENUS, FIVE PIECES EACH", th: "สามเมนู เมนูละ 5 ชิ้น", zh: "共 3 款菜单，每款 5 道" },
     listIsPartial: false,
     sample: { src: "/photos/33ebaf5cab43.jpg", w: 870, h: 878 },
     photos: [
@@ -521,37 +524,32 @@ export const courses: Course[] = [
       "/photos/28ac22598eee.jpg",
       "/photos/0d393fd3d14f.jpg",
     ],
+    // As the restaurant lists them: five pieces each, in this order.
     menus: [
       {
-        label: { en: "MENU A", th: "เมนู A", zh: "菜单 A" },
+        label: { en: "ZEN SWEET A", th: "Zen Sweet A", zh: "Zen Sweet A" },
         dishes: [
-          {
-            name: { en: "Matcha mousse with crumble", zh: "抹茶慕斯配酥粒" },
-            photo: "/photos/e55b74c7148c.jpg",
-          },
+          { name: { en: "Matcha mousse with crumble", zh: "抹茶慕斯配酥粒" }, photo: "/photos/e55b74c7148c.jpg" },
           { name: { en: "Basque burnt cheesecake", zh: "巴斯克焦香芝士蛋糕" } },
           { name: { en: "Choc banoffee shot", zh: "巧克力香蕉太妃杯" } },
           { name: { en: "Jasmine mousse", zh: "茉莉花慕斯" } },
           { name: { en: "Panna cotta passion fruit", zh: "百香果意式奶冻" } },
-          { name: { en: "Choc tiramisu shot", zh: "巧克力提拉米苏杯" } },
         ],
       },
       {
-        label: { en: "MENU B", th: "เมนู B", zh: "菜单 B" },
+        label: { en: "ZEN SWEET B", th: "Zen Sweet B", zh: "Zen Sweet B" },
         dishes: [
-          {
-            name: { en: "Matcha mousse with crumble", zh: "抹茶慕斯配酥粒" },
-            photo: "/photos/e55b74c7148c.jpg",
-          },
+          { name: { en: "Choc tiramisu shot", zh: "巧克力提拉米苏杯" } },
+          { name: { en: "Matcha mousse with crumble", zh: "抹茶慕斯配酥粒" }, photo: "/photos/e55b74c7148c.jpg" },
           { name: { en: "Basque burnt cheesecake", zh: "巴斯克焦香芝士蛋糕" } },
           { name: { en: "Raspberry mousse", zh: "覆盆子慕斯" } },
           { name: { en: "Matcha banoffee shot", zh: "抹茶香蕉太妃杯" } },
-          { name: { en: "Choc tiramisu shot", zh: "巧克力提拉米苏杯" } },
         ],
       },
       {
-        label: { en: "MENU C", th: "เมนู C", zh: "菜单 C" },
+        label: { en: "ZEN SWEET C", th: "Zen Sweet C", zh: "Zen Sweet C" },
         dishes: [
+          { name: { en: "Choc tiramisu shot", zh: "巧克力提拉米苏杯" } },
           { name: { en: "Matcha tiramisu shot", zh: "抹茶提拉米苏杯" } },
           { name: { en: "Choc banoffee shot", zh: "巧克力香蕉太妃杯" } },
           { name: { en: "Matcha banoffee shot", zh: "抹茶香蕉太妃杯" } },

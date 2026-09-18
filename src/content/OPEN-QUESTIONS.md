@@ -29,8 +29,10 @@ available at Suan Zen Omakase", 2024-09-06.
 - Is the "or" in the Ni, San and Yon desserts the guest's pick?
 - Zen Boss is not in the 2024 post: confirm the course, its twelve dishes, its
   price, the two choices, and the "six endings" of its dessert.
-- Zen Sweet is not in the 2024 post: confirm the course, its price, what is on
-  menus A, B and C, and whether it needs booking ahead.
+- Zen Sweet: the restaurant's post (seen 2026-09-19) gives the three menus,
+  five pieces each, 1,890++, and booking two days ahead, and the site now
+  follows it. Still open: does the guest choose the menu when booking, or at
+  the table?
 - Are the prices still current? (Kids, Ichi, Ni, San, Yon are from 2024; Boss
   and Sweet only from the earlier builds.)
 

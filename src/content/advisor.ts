@@ -219,15 +219,15 @@ export const advice: Advice[] = [
     bestFor: [
       {
         en: "Coming for dessert",
-        th: "คนที่แวะมาทานของหวาน",
+        th: "คนที่ตั้งใจมาทานของหวาน",
         zh: "专为甜品而来的客人",
         source: "earlier-build",
       },
     ],
     who: {
-      en: "Anyone who has come for dessert: three menus, A, B and C, chosen when you book.",
-      th: "สำหรับคนที่แวะมาทานของหวาน มีสามเมนูให้เลือก คือ A B และ C เลือกตอนจอง",
-      zh: "适合为甜品而来的客人：共有 A、B、C 三款菜单，预约时选择。",
+      en: "Anyone coming for dessert: three menus to choose from, Zen Sweet A, B and C, five pieces each. Book two days ahead.",
+      th: "สำหรับคนที่ตั้งใจมาทานของหวาน มีสามเมนูให้เลือก คือ Zen Sweet A, B และ C เมนูละ 5 ชิ้น กรุณาจองล่วงหน้า 2 วัน",
+      zh: "适合为甜品而来的客人。共三款菜单可选（Zen Sweet A、B、C），每款 5 道甜品。请提前 2 天预约。",
     },
   },
 ];
