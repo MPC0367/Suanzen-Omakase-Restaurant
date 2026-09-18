@@ -112,7 +112,7 @@
 .res.is-open { pointer-events: auto; visibility: visible; }
 .res__scrim {
   position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer;
-  background: rgba(4, 4, 3, 0.62); backdrop-filter: blur(3px);
+  background: rgba(4, 4, 4, 0.62); backdrop-filter: blur(3px);
   opacity: 0; transition: opacity var(--t-ui) var(--ease);
 }
 .res.is-open .res__scrim { opacity: 1; }

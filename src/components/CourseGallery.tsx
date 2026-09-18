@@ -146,10 +146,10 @@ export default function CourseGallery({ course, locale }: { course: Course; loca
                   sizes="(min-width: 64rem) 22rem, 60vw"
                   className="cgal__img"
                 />
-                <span className="cgal__cap">
-                  {p.n ? <i className="cgal__n u-numeral">{String(p.n).padStart(2, "0")}</i> : null}
-                  {p.caption}
-                </span>
+                {/* The dish's name alone. Its number orders the pictures, but
+                    shown in front of each one it read as a count of the course
+                    rather than a label for the plate. */}
+                <span className="cgal__cap">{p.caption}</span>
               </button>
             </li>
           )),
@@ -239,10 +239,7 @@ function Expanded({
           />
         </div>
         <div className="cshow__bar">
-          <p className="cshow__cap">
-            {p.n ? <i className="cshow__n u-numeral">{String(p.n).padStart(2, "0")}</i> : null}
-            {p.caption}
-          </p>
+          <p className="cshow__cap">{p.caption}</p>
           <div className="cshow__nav">
             <button className="cshow__ctl" onClick={() => onMove(at - 1)} aria-label={t.gallery.prev}>
               <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">

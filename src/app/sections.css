@@ -93,8 +93,8 @@
 .hero__scrim {
   position: absolute; inset: 0;
   background:
-    linear-gradient(to top, rgba(5,5,4,0.95) 4%, rgba(5,5,4,0.68) 46%, rgba(5,5,4,0.4) 100%),
-    linear-gradient(to right, rgba(5,5,4,0.8) 0%, rgba(5,5,4,0.34) 70%, rgba(5,5,4,0.2) 100%);
+    linear-gradient(to top, rgba(5,5,5,0.95) 4%, rgba(5,5,5,0.68) 46%, rgba(5,5,5,0.4) 100%),
+    linear-gradient(to right, rgba(5,5,5,0.8) 0%, rgba(5,5,5,0.34) 70%, rgba(5,5,5,0.2) 100%);
 }
 .hero__in { position: relative; width: 100%; }
 
@@ -139,8 +139,8 @@
   .hero__h { max-width: 15ch; }
   .hero__scrim {
     background:
-      linear-gradient(to top, rgba(5,5,4,0.9) 0%, rgba(5,5,4,0.52) 52%, rgba(5,5,4,0.34) 100%),
-      linear-gradient(to right, rgba(5,5,4,0.9) 0%, rgba(5,5,4,0.62) 42%, rgba(5,5,4,0.22) 82%);
+      linear-gradient(to top, rgba(5,5,5,0.9) 0%, rgba(5,5,5,0.52) 52%, rgba(5,5,5,0.34) 100%),
+      linear-gradient(to right, rgba(5,5,5,0.9) 0%, rgba(5,5,5,0.62) 42%, rgba(5,5,5,0.22) 82%);
   }
 }
 
@@ -326,7 +326,8 @@
   font-size: 0.78rem; line-height: 1.4; color: var(--fg-quiet);
 }
 :lang(th) .cgal__cap { font-size: 0.86rem; }
-.cgal__n { font-style: normal; color: var(--fg-faint); margin-inline-end: 0.5em; letter-spacing: 0.08em; }
+/* No number in front of a picture: the dish's place in the course orders the
+   rail, but printed on the plate it read as a count rather than a name. */
 @media (min-width: 64rem) { .cgal__img { height: clamp(11rem, 16vw, 15rem); max-width: 34rem; } }
 
 /* ── one picture, large ───────────────────────────────────────────────────
@@ -337,7 +338,7 @@
 @keyframes cshowIn { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .cshow { animation: none; } }
 .cshow__scrim { position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer;
-                background: rgba(4, 4, 3, 0.94); }
+                background: rgba(4, 4, 4, 0.94); }
 /* The panel covers the dark, so a tap meant for "close" would land on the panel
    and do nothing. Taps fall through it, and only the picture and the controls
    take them back — which is what restores tap-the-dark-to-close. */
@@ -359,7 +360,6 @@
 }
 .cshow__cap { margin: 0; font-size: 0.95rem; color: #f0ebe0; }
 :lang(th) .cshow__cap { font-size: 1rem; }
-.cshow__cap .cshow__n { color: #8b8275; margin-inline-end: 0.6em; }
 .cshow__nav { display: flex; align-items: center; gap: 0.3rem; }
 .cshow__n { font-style: normal; font-size: 0.8rem; letter-spacing: 0.1em; color: #a29b8c; padding-inline: 0.4rem; }
 .cshow__ctl {
@@ -402,8 +402,8 @@
 .dark__bg::after {
   content: ""; position: absolute; inset: 0;
   background:
-    linear-gradient(to right, rgba(6,6,4,0.95) 8%, rgba(6,6,4,0.76) 55%, rgba(6,6,4,0.58) 100%),
-    linear-gradient(to top, rgba(6,6,4,0.5), rgba(6,6,4,0.2));
+    linear-gradient(to right, rgba(6,6,6,0.95) 8%, rgba(6,6,6,0.76) 55%, rgba(6,6,6,0.58) 100%),
+    linear-gradient(to top, rgba(6,6,6,0.5), rgba(6,6,6,0.2));
 }
 .dark__in { max-width: 46rem; display: grid; gap: 1.1rem; }
 /* The label, heading and lede sit inside a plain .reveal wrapper here rather
@@ -449,7 +449,7 @@
 .lb { position: fixed; inset: 0; z-index: 95; display: grid;
       grid-template-rows: 1fr auto; animation: lbIn var(--t-ui) var(--ease) both; }
 @keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
-.lb__scrim { position: absolute; inset: 0; background: rgba(4,4,3,0.95); }
+.lb__scrim { position: absolute; inset: 0; background: rgba(4,4,4,0.95); }
 .lb__stage {
   position: relative; display: grid; place-items: center;
   padding: clamp(1rem, 4vh, 3rem) var(--gutter) 0; min-height: 0;

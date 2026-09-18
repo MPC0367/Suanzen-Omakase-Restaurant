@@ -12,10 +12,14 @@
   --amber-deep:   #aa6d15;   /* the deep gold of the rocks                    */
   --lantern:      #ffe6a3;   /* bloom — lighter than anything in the mark     */
 
-  /* Night — the garden after dark. */
-  --ink:          #0b0b08;
-  --ink-deep:     #050504;
-  --charcoal:     #14140e;
+  /* Night — the garden after dark. Neutral, not olive: these were #0b0b08,
+     #050504 and #14140e, where green sat level with red and blue below both.
+     At this depth that reads as a very dark green rather than a black, and a
+     phone shows it plainly. Equal channels leave the amber to carry the only
+     colour on the page. */
+  --ink:          #0a0a0a;
+  --ink-deep:     #050505;
+  --charcoal:     #141414;
   --indigo:       #1b2a3d;
   --indigo-deep:  #0f1926;
 

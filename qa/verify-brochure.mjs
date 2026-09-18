@@ -27,8 +27,10 @@ const openCourse = (p) => p.evaluate(() => {
   return o ? { name: o.querySelector(".course__name")?.textContent.trim(), top: Math.round(o.getBoundingClientRect().top) } : null;
 });
 /* The night palette, straight from globals.css: whatever the page does, the
-   ground stays one of these. */
-const NIGHT = ["rgb(11, 11, 8)", "rgb(20, 20, 14)", "rgb(5, 5, 4)"];
+   ground stays one of these. Neutral, not olive — these were rgb(11,11,8),
+   rgb(20,20,14) and rgb(5,5,4), where green sat level with red and blue below
+   both, which at this depth reads as a very dark green on a phone. */
+const NIGHT = ["rgb(10, 10, 10)", "rgb(20, 20, 20)", "rgb(5, 5, 5)"];
 
 /* ── desktop ─────────────────────────────────────────────────────────────── */
 const d = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
@@ -219,17 +221,27 @@ pass("every dish in the menu is a name and its number, and nothing else",
    named photographs for show a rail of their dishes, each captioned with the
    dish's name; the other two show the single picture they have. One or the
    other, never both, and never a picture borrowed from another course. */
+/* Each course is opened AND brought into view, as tapping it in the bar does
+   for a guest. The pictures are loaded lazily — a browser fetches them when
+   they come near the screen — so a rail judged while parked far down the page
+   would be empty through no fault of the page. */
 const pics = await m.evaluate(async () => {
   const out = [];
   for (const c of document.querySelectorAll(".menu__list .course")) {
     const id = c.id.replace("course-", "");
     document.querySelector(`.menu__jump [data-course="${id}"]`)?.click();
-    await new Promise((r) => setTimeout(r, 450));
-    const rail = [...c.querySelectorAll(".cgal__item:not([aria-hidden]) img")];
-    const single = [...c.querySelectorAll(".course__photo img")];
-    out.push({ id, rail: rail.length, single: single.length,
+    await new Promise((r) => setTimeout(r, 300));
+    c.scrollIntoView({ block: "start" });
+    const rail = () => [...c.querySelectorAll(".cgal__item:not([aria-hidden]) img")];
+    const single = () => [...c.querySelectorAll(".course__photo img")];
+    for (let i = 0; i < 40; i++) {                       // give the pictures a moment to arrive
+      const all = [...rail(), ...single()];
+      if (all.length && all.every((x) => x.complete && x.naturalWidth > 0)) break;
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    out.push({ id, rail: rail().length, single: single().length,
       captioned: [...c.querySelectorAll(".cgal__item:not([aria-hidden]) .cgal__cap")].every((s) => (s.textContent || "").trim().length > 3),
-      loaded: [...rail, ...single].every((i) => i.complete && i.naturalWidth > 0) });
+      loaded: [...rail(), ...single()].every((i) => i.complete && i.naturalWidth > 0) });
   }
   return out;
 });

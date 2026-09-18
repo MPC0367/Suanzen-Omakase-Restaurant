@@ -30,8 +30,8 @@ export default function MapFrame({ src, title }: { src: string; title: string })
   useEffect(() => {
     const frame = ref.current;
     if (!frame) return;
-    const started = Date.now();
-    let timer = 0;
+    let timer = 0, started = 0, seen = false, tried = false;
+
     const look = () => {
       let inside = 0;
       try {
@@ -43,8 +43,31 @@ export default function MapFrame({ src, title }: { src: string; title: string })
       if (Date.now() - started >= GIVE_UP) return setRefused(true);
       timer = window.setTimeout(look, AGAIN);
     };
-    timer = window.setTimeout(look, FIRST_LOOK);
-    return () => window.clearTimeout(timer);
+
+    /* Only once the frame has been reached and has tried to fetch. The map is
+       loaded lazily, so a frame still sitting below the fold holds nothing
+       inside it — which looks exactly like a refused one. Judged on mounting,
+       every guest who takes more than a few seconds to scroll down would find
+       the map already given up on and put away. */
+    const begin = () => {
+      if (!seen || !tried || started) return;
+      started = Date.now();
+      timer = window.setTimeout(look, FIRST_LOOK);
+    };
+    const onLoad = () => { tried = true; begin(); };
+    frame.addEventListener("load", onLoad);
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      seen = true;
+      begin();
+    }, { rootMargin: "200px" });
+    io.observe(frame);
+
+    return () => {
+      window.clearTimeout(timer);
+      frame.removeEventListener("load", onLoad);
+      io.disconnect();
+    };
   }, []);
 
   return (
