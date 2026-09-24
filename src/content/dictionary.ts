@@ -11,7 +11,7 @@
  *  极致, 奢华, 尊享, 臻享, 匠心之作.
  *
  *  The names stay as they are in every language: Suan Zen Omakase, Suan Zen,
- *  and the seven courses. Chinese counts a course's bites in 品.
+ *  and the seven courses. Chinese counts a course's items in 品.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -104,15 +104,15 @@ const en = {
   coursesSection: {
     label: "The Menu",
     heading: "Choose the length of the evening.",
-    body: "Ichi, ni, san, yon — one, two, three, four. The ladder is the number of bites and the time you spend on them. Prices are quoted ++.",
-    pieces: "bites",
+    body: "Ichi, ni, san, yon — one, two, three, four. The ladder is the number of items and the time you spend on them. Prices are quoted ++.",
+    pieces: "items",
     onRequest: "On request",
     onRequestHint: "Current price and length on LINE",
     firstTimers: "Most first visits start here",
     partialNote: "A selection — the full course runs longer",
-    hoverHint: "Point at a bite to see it",
+    hoverHint: "Point at an item to see it",
     jumpLabel: "Jump to a course",
-    tapHint: "Tap a bite to see it",
+    tapHint: "Tap an item to see it",
     alaLabel: "À la carte",
     footnote: "Courses follow the market, so the sequence changes. Ask for the current one when you book.",
   },
@@ -277,7 +277,7 @@ const en = {
   meta: {
     title: "Omakase in Nonthaburi — Menu & Prices | Suan Zen Omakase",
     description:
-      "Suan Zen Omakase in Nonthaburi — the full omakase menu: seven courses, every bite and current prices, in English, Thai and Chinese. Reserve on LINE.",
+      "Suan Zen Omakase in Nonthaburi — the full omakase menu: seven courses, every item and current prices, in English, Thai and Chinese. Reserve on LINE.",
     ogAlt: "Suan Zen Omakase, Nonthaburi",
   },
 };
@@ -316,7 +316,7 @@ const th: Dict = {
     brand: "สวน เซน",
     category: "โอมากาเสะ",
     headline: ["โอมากาเสะ", "ในสวน"],
-    standfirst: "เคาน์เตอร์เล็ก ๆ ในนนทบุรี รอบละไม่กี่ที่นั่ง เสิร์ฟทีละคำ จากมือเชฟตรงหน้าคุณ",
+    standfirst: "เคาน์เตอร์เล็ก ๆ ในนนทบุรี รอบละไม่กี่ที่นั่ง เสิร์ฟทีละรายการ จากมือเชฟตรงหน้าคุณ",
     scroll: "เลื่อนลง",
   },
   proposition: {
@@ -334,7 +334,7 @@ const th: Dict = {
   counter: {
     label: "เคาน์เตอร์",
     heading: "ทุกอย่างเกิดขึ้นตรงหน้าคุณ",
-    body: "ไม่มีครัวหลังบ้าน ปลาถูกแล่ ข้าวถูกปั้น คำนั้นเสร็จแล้ววางลงตรงหน้า จะนั่งดูเงียบ ๆ หรือคุยกับเชฟไปด้วยก็ได้",
+    body: "ไม่มีครัวหลังบ้าน ปลาถูกแล่ ข้าวถูกปั้น รายการนั้นเสร็จแล้ววางลงตรงหน้า จะนั่งดูเงียบ ๆ หรือคุยกับเชฟไปด้วยก็ได้",
     points: [
       { k: "ที่นั่ง", v: "เคาน์เตอร์ แบ่งเป็นรอบ" },
       { k: "ใช้เวลา", v: "ประมาณสองชั่วโมง" },
@@ -344,10 +344,10 @@ const th: Dict = {
   coursesSection: {
     label: "เมนู",
     heading: "เลือกความยาวของค่ำคืน",
-    body: "อิจิ นิ ซัง ยอน — หนึ่ง สอง สาม สี่ ไล่ตามจำนวนคำและเวลาที่ใช้ ราคายังไม่รวม ++",
-    pieces: "คำ",
+    body: "อิจิ นิ ซัง ยอน — หนึ่ง สอง สาม สี่ ไล่ตามจำนวนรายการและเวลาที่ใช้ ราคายังไม่รวม ++",
+    pieces: "รายการ",
     onRequest: "สอบถาม",
-    onRequestHint: "ถามราคาและจำนวนคำล่าสุดทาง LINE",
+    onRequestHint: "ถามราคาและจำนวนรายการล่าสุดทาง LINE",
     firstTimers: "คนมาครั้งแรกส่วนใหญ่เริ่มที่คอร์สนี้",
     partialNote: "เป็นตัวอย่าง — คอร์สจริงยาวกว่านี้",
     hoverHint: "ชี้ที่ชื่อเมนูเพื่อดูรูป",
@@ -503,7 +503,7 @@ const th: Dict = {
   warmth: {
     label: "บรรยากาศ",
     heading: "เรื่องที่เกิดขึ้นที่นี่ ไม่ได้อยู่แค่ในจาน",
-    body: "วันเกิดที่เคาน์เตอร์ ครอบครัวที่จองยาวทั้งแถว เชฟที่โน้มตัวมาเล่าว่าคำนี้คืออะไร นี่คือส่วนที่ลูกค้าถ่ายรูปเก็บไว้ และเป็นเหตุผลที่กลับมาอีก",
+    body: "วันเกิดที่เคาน์เตอร์ ครอบครัวที่จองยาวทั้งแถว เชฟที่โน้มตัวมาเล่าว่ารายการนี้คืออะไร นี่คือส่วนที่ลูกค้าถ่ายรูปเก็บไว้ และเป็นเหตุผลที่กลับมาอีก",
     cta: "ดูบรรยากาศร้าน",
   },
   ala: {
@@ -517,7 +517,7 @@ const th: Dict = {
   meta: {
     title: "โอมากาเสะ นนทบุรี — เมนูและราคา | สวน เซน โอมากาเสะ",
     description:
-      "เมนูโอมากาเสะครบทั้ง 7 คอร์สของ สวน เซน โอมากาเสะ นนทบุรี ทุกคำพร้อมราคาปัจจุบัน อ่านได้ทั้งภาษาไทย อังกฤษ และจีน จองที่นั่งผ่าน LINE ได้เลย",
+      "เมนูโอมากาเสะครบทั้ง 7 คอร์สของ สวน เซน โอมากาเสะ นนทบุรี ทุกรายการพร้อมราคาปัจจุบัน อ่านได้ทั้งภาษาไทย อังกฤษ และจีน จองที่นั่งผ่าน LINE ได้เลย",
     ogAlt: "สวน เซน โอมากาเสะ นนทบุรี",
   },
 };

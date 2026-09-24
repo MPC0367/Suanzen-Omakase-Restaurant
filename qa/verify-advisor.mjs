@@ -60,7 +60,7 @@ for (const s of SLUGS) for (const l of ["en", "th", "zh"]) {
 pass("no course's link preview carries a price, and every one uses the /og/ picture", leaks.length === 0, leaks.join(", "));
 
 const ichi = await (await fetch(`${B}/en/courses/zen-ichi/`)).text();
-pass("Zen Ichi's link preview names the course and its age", /og:title" content="Zen Ichi — 14 bites · Ages 12–14/.test(ichi),
+pass("Zen Ichi's link preview names the course and its age", /og:title" content="Zen Ichi — 14 items · Ages 12–14/.test(ichi),
      (ogOf(ichi).match(/og:title" content="([^"]*)"/) || [])[1] || "no og:title");
 pass("each course page is its own canonical address", /<link rel="canonical" href="[^"]*\/en\/courses\/zen-ichi\/"/.test(ichi));
 
@@ -174,9 +174,9 @@ const page = await m.evaluate(() => ({
   dishes: document.querySelectorAll(".dish").length,
   reserve: document.querySelector(".cdetail .course__acts .btn")?.getAttribute("href") || "",
 }));
-pass("Zen Ichi's own page: its name, its age, all 14 bites, and Reserve",
+pass("Zen Ichi's own page: its name, its age, all 14 items, and Reserve",
      page.h1 === "Zen Ichi" && page.tag === "Ages 12–14" && page.dishes === 14 && page.reserve.includes("oaMessage"),
-     `${page.h1} · ${page.tag} · ${page.dishes} bites`);
+     `${page.h1} · ${page.tag} · ${page.dishes} items`);
 await m.locator(".lang__btn").tap();
 await m.locator('.lang__opt[hreflang="th"]').tap();
 await m.waitForURL(/\/th\/courses\/zen-ichi\//, { timeout: 8000 }).catch(() => {});

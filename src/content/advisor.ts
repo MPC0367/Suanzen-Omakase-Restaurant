@@ -3,7 +3,7 @@
  *  THE COURSE ADVISOR — which Suan Zen course is right for whom, and why
  * ─────────────────────────────────────────────────────────────────────────────
  *  Clarity before poetry: every line here is something a guest can use to
- *  choose — who a course is for, how many bites, what it is mostly made of,
+ *  choose — who a course is for, how many items, what it is mostly made of,
  *  what sets it apart from the others. Nothing ranks the courses by price or
  *  "premium", and nothing claims a course is best value.
  *
@@ -13,7 +13,7 @@
  *
  *  Thai course names inside running text use a no-break space ("เซน ซัง"),
  *  so a line never breaks between the two words of a name. Chinese keeps the
- *  courses' own names, and counts bites in 品.
+ *  courses' own names, and counts items in 品.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -26,7 +26,7 @@ export type Source =
   | "restaurant-2026"
   /** The studio brief of 2026-09-11, from the restaurant. */
   | "studio-brief"
-  /** Counted from the course's own bite list on this site. */
+  /** Counted from the course's own item list on this site. */
   | "menu-count"
   /** The two earlier Suan Zen builds, made with the restaurant. */
   | "earlier-build";
@@ -64,8 +64,8 @@ export const advice: Advice[] = [
       },
     ],
     who: {
-      en: "A Suan Zen course created for younger guests, recommended for ages 7–11. Nine bites, counting the yuzu juice.",
-      th: "คอร์สที่ทางร้านทำไว้สำหรับแขกตัวเล็ก แนะนำสำหรับอายุ 7–11 ปี มี 9 คำ นับรวมน้ำยูซุด้วย",
+      en: "A Suan Zen course created for younger guests, recommended for ages 7–11. Nine items, counting the yuzu juice.",
+      th: "คอร์สที่ทางร้านทำไว้สำหรับแขกตัวเล็ก แนะนำสำหรับอายุ 7–11 ปี มี 9 รายการ นับรวมน้ำยูซุด้วย",
       zh: "Suan Zen 专为小朋友准备的套餐，建议年龄7–11岁。共 9 品（含日本柚子汁）。",
     },
   },
@@ -88,8 +88,8 @@ export const advice: Advice[] = [
       },
     ],
     who: {
-      en: "Recommended for diners aged 12–14, as the step between Zen Kids and the adult courses, and for anyone with a smaller appetite. Fourteen bites, mostly fish and seafood, with one wagyu sushi.",
-      th: "แนะนำสำหรับอายุ 12–14 ปี เป็นก้าวต่อจาก เซน คิดส์ ก่อนถึงคอร์สของผู้ใหญ่ และยังเหมาะกับผู้ที่ทานได้ไม่เยอะ มี 14 คำ ส่วนใหญ่เป็นปลาและอาหารทะเล มีวากิวซูชิหนึ่งคำ",
+      en: "Recommended for diners aged 12–14, as the step between Zen Kids and the adult courses, and for anyone with a smaller appetite. Fourteen items, mostly fish and seafood, with one wagyu sushi.",
+      th: "แนะนำสำหรับอายุ 12–14 ปี เป็นก้าวต่อจาก เซน คิดส์ ก่อนถึงคอร์สของผู้ใหญ่ และยังเหมาะกับผู้ที่ทานได้ไม่เยอะ มี 14 รายการ ส่วนใหญ่เป็นปลาและอาหารทะเล มีวากิวซูชิหนึ่งรายการ",
       zh: "建议12–14岁的客人享用，是 Zen Kids 与成人套餐之间的过渡，也适合食量较小的客人。共 14 品，以鱼类和海鲜为主，另有 1 品和牛寿司。",
     },
   },
@@ -99,26 +99,26 @@ export const advice: Advice[] = [
     tag: { en: "Adults", th: "ผู้ใหญ่", zh: "成人", source: "studio-brief" },
     bestFor: [
       {
-        en: "Fish and seafood, with one wagyu bite",
-        th: "คนที่ชอบปลาและอาหารทะเล (มีวากิวหนึ่งคำ)",
+        en: "Fish and seafood, with one wagyu item",
+        th: "คนที่ชอบปลาและอาหารทะเล (มีวากิวหนึ่งรายการ)",
         zh: "喜欢鱼类与海鲜的客人（另有 1 品和牛）",
         source: "menu-count",
       },
     ],
     who: {
-      en: "Adult diners who enjoy fish and seafood: sixteen bites, one of them wagyu.",
-      th: "สำหรับผู้ใหญ่ที่ชอบปลาและอาหารทะเล มี 16 คำ ในนั้นมีวากิวหนึ่งคำ",
+      en: "Adult diners who enjoy fish and seafood: sixteen items, one of them wagyu.",
+      th: "สำหรับผู้ใหญ่ที่ชอบปลาและอาหารทะเล มี 16 รายการ ในนั้นมีวากิวหนึ่งรายการ",
       zh: "适合喜欢鱼类与海鲜的成人：共 16 品，其中 1 品为和牛。",
     },
     why: {
-      en: "Seafood-led like Zen San, with sixteen bites — one fewer than Zen San. ฿2,890++ (Zen San ฿3,890++).",
-      th: "เน้นปลาและอาหารทะเลเหมือน เซน ซัง มี 16 คำ น้อยกว่า เซน ซัง หนึ่งคำ ราคา ฿2,890++ (เซน ซัง ฿3,890++)",
+      en: "Seafood-led like Zen San, with sixteen items — one fewer than Zen San. ฿2,890++ (Zen San ฿3,890++).",
+      th: "เน้นปลาและอาหารทะเลเหมือน เซน ซัง มี 16 รายการ น้อยกว่า เซน ซัง หนึ่งรายการ ราคา ฿2,890++ (เซน ซัง ฿3,890++)",
       zh: "与 Zen San 一样以鱼类与海鲜为主，共 16 品，比 Zen San 少 1 品。价格 ฿2,890++（Zen San 为 ฿3,890++）。",
     },
     compare: {
       food: {
-        en: "Fish and seafood, one wagyu bite",
-        th: "ปลาและอาหารทะเล วากิวหนึ่งคำ",
+        en: "Fish and seafood, one wagyu item",
+        th: "ปลาและอาหารทะเล วากิวหนึ่งรายการ",
         zh: "鱼类与海鲜，1 品和牛",
       },
       choice: {
@@ -134,32 +134,32 @@ export const advice: Advice[] = [
     tag: { en: "Adults", th: "ผู้ใหญ่", zh: "成人", source: "studio-brief" },
     bestFor: [
       {
-        en: "Fish and seafood, with one wagyu bite",
-        th: "คนที่ชอบปลาและอาหารทะเล (มีวากิวหนึ่งคำ)",
+        en: "Fish and seafood, with one wagyu item",
+        th: "คนที่ชอบปลาและอาหารทะเล (มีวากิวหนึ่งรายการ)",
         zh: "喜欢鱼类与海鲜的客人（另有 1 品和牛）",
         source: "menu-count",
       },
       {
-        en: "The most bites: 17",
-        th: "คนที่อยากได้จำนวนคำมากที่สุด 17 คำ",
+        en: "The most items: 17",
+        th: "คนที่อยากได้จำนวนรายการมากที่สุด 17 รายการ",
         zh: "想要品数最多（17 品）的客人",
         source: "menu-count",
       },
     ],
     who: {
-      en: "Adult diners who want the most bites: seventeen, mostly fish and seafood, one of them wagyu.",
-      th: "สำหรับผู้ใหญ่ที่อยากได้จำนวนคำมากที่สุด มี 17 คำ ส่วนใหญ่เป็นปลาและอาหารทะเล และมีวากิวหนึ่งคำ",
+      en: "Adult diners who want the most items: seventeen, mostly fish and seafood, one of them wagyu.",
+      th: "สำหรับผู้ใหญ่ที่อยากได้จำนวนรายการมากที่สุด มี 17 รายการ ส่วนใหญ่เป็นปลาและอาหารทะเล และมีวากิวหนึ่งรายการ",
       zh: "适合想要品数最多的成人：共 17 品，以鱼类与海鲜为主，其中 1 品为和牛。",
     },
     why: {
-      en: "Seafood-led like Zen Ni, with the most bites of any course: seventeen. The restaurant calls it its “fine” course, where Western and Eastern flavours meet.",
-      th: "เน้นปลาและอาหารทะเลเหมือน เซน นิ แต่มีจำนวนคำมากที่สุด 17 คำ ทางร้านเรียกว่าคอร์ส “ไฟน์” ที่รสตะวันตกและตะวันออกมาบรรจบกัน",
+      en: "Seafood-led like Zen Ni, with the most items of any course: seventeen. The restaurant calls it its “fine” course, where Western and Eastern flavours meet.",
+      th: "เน้นปลาและอาหารทะเลเหมือน เซน นิ แต่มีจำนวนรายการมากที่สุด 17 รายการ ทางร้านเรียกว่าคอร์ส “ไฟน์” ที่รสตะวันตกและตะวันออกมาบรรจบกัน",
       zh: "与 Zen Ni 一样以鱼类与海鲜为主，共 17 品，是所有套餐中品数最多的。餐厅称它为“fine”套餐，东西方风味在这里交汇。",
     },
     compare: {
       food: {
-        en: "Fish and seafood, one wagyu bite",
-        th: "ปลาและอาหารทะเล วากิวหนึ่งคำ",
+        en: "Fish and seafood, one wagyu item",
+        th: "ปลาและอาหารทะเล วากิวหนึ่งรายการ",
         zh: "鱼类与海鲜，1 品和牛",
       },
       choice: {
@@ -175,20 +175,20 @@ export const advice: Advice[] = [
     tag: { en: "Adults", th: "ผู้ใหญ่", zh: "成人", source: "studio-brief" },
     bestFor: [
       {
-        en: "Choosing two bites yourself: Wagyu Sun or grilled hotate, foie gras or king crab",
+        en: "Choosing two items yourself: Wagyu Sun or grilled hotate, foie gras or king crab",
         th: "คนที่อยากเลือกเองสองอย่าง คือวากิวซันหรือโฮตาเตะย่าง และฟัวกราส์หรือปูทาราบะ",
         zh: "想自选两品的客人：Wagyu Sun 或烤帆立贝；鹅肝或帝王蟹",
         source: "earlier-build",
       },
     ],
     who: {
-      en: "Adult diners who'd like fewer bites — twelve — and two choices of their own.",
-      th: "สำหรับผู้ใหญ่ที่อยากได้จำนวนคำน้อยลง มี 12 คำ และมีสองคำที่เลือกเองได้",
+      en: "Adult diners who'd like fewer items — twelve — and two choices of their own.",
+      th: "สำหรับผู้ใหญ่ที่อยากได้จำนวนรายการน้อยลง มี 12 รายการ และมีสองรายการที่เลือกเองได้",
       zh: "适合希望品数少一些（12 品）、又想自选两品的成人。",
     },
     why: {
-      en: "Two of its bites are yours to choose — Wagyu Sun or grilled hotate, foie gras or king crab — and so is dessert. Twelve bites, the fewest of the adult courses.",
-      th: "มี 12 คำ น้อยที่สุดในคอร์สผู้ใหญ่ สองคำในคอร์สนี้เลือกเองได้ คือวากิวซันหรือโฮตาเตะย่าง และฟัวกราส์หรือปูทาราบะ แล้วยังเลือกของหวานได้เอง",
+      en: "Two of its items are yours to choose — Wagyu Sun or grilled hotate, foie gras or king crab — and so is dessert. Twelve items, the fewest of the adult courses.",
+      th: "มี 12 รายการ น้อยที่สุดในคอร์สผู้ใหญ่ สองรายการในคอร์สนี้เลือกเองได้ คือวากิวซันหรือโฮตาเตะย่าง และฟัวกราส์หรือปูทาราบะ แล้วยังเลือกของหวานได้เอง",
       zh: "套餐中有两品由您自选（Wagyu Sun 或烤帆立贝；鹅肝或帝王蟹），甜品也可自选。共 12 品，是成人套餐中品数最少的。",
     },
     compare: {
@@ -197,7 +197,7 @@ export const advice: Advice[] = [
         th: "ปลาและอาหารทะเล เลือกวากิวได้",
         zh: "鱼类与海鲜，和牛可选",
       },
-      choice: { en: "Two bites, and your dessert", th: "เลือกเองได้สองอย่าง และของหวาน", zh: "自选两品及甜品" },
+      choice: { en: "Two items, and your dessert", th: "เลือกเองได้สองอย่าง และของหวาน", zh: "自选两品及甜品" },
     },
   },
   {
@@ -206,17 +206,17 @@ export const advice: Advice[] = [
     tag: { en: "Adults", th: "ผู้ใหญ่", zh: "成人", source: "studio-brief" },
     bestFor: [{ en: "Beef lovers", th: "คนรักเนื้อ", zh: "牛肉爱好者", source: "restaurant-2024" }],
     who: {
-      en: "Adult diners who love beef: thirteen bites, ten of them wagyu. It opens with sake, or a starter instead.",
-      th: "สำหรับผู้ใหญ่ที่รักเนื้อ มี 13 คำ เป็นวากิว 10 คำ เปิดด้วยสาเก หรือเปลี่ยนเป็นจานเรียกน้ำย่อยก็ได้",
+      en: "Adult diners who love beef: thirteen items, ten of them wagyu. It opens with sake, or a starter instead.",
+      th: "สำหรับผู้ใหญ่ที่รักเนื้อ มี 13 รายการ เป็นวากิว 10 รายการ เปิดด้วยสาเก หรือเปลี่ยนเป็นจานเรียกน้ำย่อยก็ได้",
       zh: "适合爱吃牛肉的成人：共 13 品，其中 10 品为和牛。以清酒开场，也可换成前菜。",
     },
     why: {
-      en: "The one adult course that isn't seafood-led: wagyu in ten of its thirteen bites. The restaurant made it for meat lovers.",
-      th: "คอร์สผู้ใหญ่คอร์สเดียวที่ไม่ได้เน้นอาหารทะเล เป็นวากิว 10 จาก 13 คำ ทางร้านทำคอร์สนี้สำหรับคนรักเนื้อโดยเฉพาะ",
+      en: "The one adult course that isn't seafood-led: wagyu in ten of its thirteen items. The restaurant made it for meat lovers.",
+      th: "คอร์สผู้ใหญ่คอร์สเดียวที่ไม่ได้เน้นอาหารทะเล เป็นวากิว 10 จาก 13 รายการ ทางร้านทำคอร์สนี้สำหรับคนรักเนื้อโดยเฉพาะ",
       zh: "这是唯一不以鱼类与海鲜为主的成人套餐：13 品中有 10 品是和牛。餐厅专为爱吃肉的客人准备了这款套餐。",
     },
     compare: {
-      food: { en: "Wagyu in 10 of 13 bites", th: "วากิว 10 จาก 13 คำ", zh: "13 品中 10 品为和牛" },
+      food: { en: "Wagyu in 10 of 13 items", th: "วากิว 10 จาก 13 รายการ", zh: "13 品中 10 品为和牛" },
       choice: { en: "Sake or a starter to open", th: "เปิดด้วยสาเกหรือจานเรียกน้ำย่อย", zh: "以清酒或前菜开场" },
     },
   },
@@ -245,7 +245,7 @@ export const adultIds = advice.filter((a) => a.audience === "adult").map((a) => 
 
 /* ── The course finder ─────────────────────────────────────────────────────
    Two or three taps. Only options the menu itself supports: who is dining,
-   then, for adults, beef or fish and seafood, then how many bites. */
+   then, for adults, beef or fish and seafood, then how many items. */
 
 export type Answer = {
   id: string;
@@ -300,28 +300,28 @@ export const finder: Question[] = [
   },
   {
     id: "length",
-    legend: { en: "How many bites?", th: "อยากได้กี่คำ", zh: "想要几品？" },
+    legend: { en: "How many items?", th: "อยากได้กี่รายการ", zh: "想要几品？" },
     note: {
-      en: "Suan Zen hasn't named one seafood course: Zen Ni, Zen San and Zen Boss are all led by fish and seafood. They differ in the number of bites, and Zen Boss lets you choose two of its bites.",
-      th: "เซน นิ เซน ซัง และ เซน บอส เน้นปลาและอาหารทะเลเหมือนกัน ทางร้านไม่ได้กำหนดว่าคอร์สไหนเป็นคอร์สอาหารทะเล สามคอร์สนี้ต่างกันที่จำนวนคำ และ เซน บอส ให้เลือกเองได้สองอย่างระหว่างมื้อ",
+      en: "Suan Zen hasn't named one seafood course: Zen Ni, Zen San and Zen Boss are all led by fish and seafood. They differ in the number of items, and Zen Boss lets you choose two of its items.",
+      th: "เซน นิ เซน ซัง และ เซน บอส เน้นปลาและอาหารทะเลเหมือนกัน ทางร้านไม่ได้กำหนดว่าคอร์สไหนเป็นคอร์สอาหารทะเล สามคอร์สนี้ต่างกันที่จำนวนรายการ และ เซน บอส ให้เลือกเองได้สองอย่างระหว่างมื้อ",
       zh: "Suan Zen 并没有指定哪一款是海鲜套餐：Zen Ni、Zen San 和 Zen Boss 都以鱼类与海鲜为主。三者的区别在于品数；此外，Zen Boss 还可以自选其中两品。",
     },
     answers: [
       {
         id: "twelve",
-        label: { en: "12, with two choices", th: "12 คำ เลือกเองได้สองอย่าง", zh: "12 品，可自选两品" },
+        label: { en: "12, with two choices", th: "12 รายการ เลือกเองได้สองอย่าง", zh: "12 品，可自选两品" },
         course: "zen-boss",
         also: "zen-ni",
       },
       {
         id: "sixteen",
-        label: { en: "16", th: "16 คำ", zh: "16 品" },
+        label: { en: "16", th: "16 รายการ", zh: "16 品" },
         course: "zen-ni",
         also: "zen-san",
       },
       {
         id: "seventeen",
-        label: { en: "17, the most", th: "17 คำ มากที่สุด", zh: "17 品，最多" },
+        label: { en: "17, the most", th: "17 รายการ มากที่สุด", zh: "17 品，最多" },
         course: "zen-san",
         also: "zen-ni",
       },
@@ -349,7 +349,7 @@ const en = {
     also: "You may also like",
     view: "View {course}",
     compare: "Compare the adult courses",
-    compareNote: "The four adult courses are set side by side below: how many bites, what each is mostly made of, the choices, and the price.",
+    compareNote: "The four adult courses are set side by side below: how many items, what each is mostly made of, the choices, and the price.",
   },
   course: {
     bestFor: "Best for",
@@ -364,9 +364,9 @@ const en = {
   },
   compare: {
     heading: "The four adult courses, side by side",
-    caption: "Adult courses compared by number of bites, what they are mostly made of, choices and price",
+    caption: "Adult courses compared by number of items, what they are mostly made of, choices and price",
     course: "Course",
-    bites: "Bites",
+    items: "Items",
     food: "Mostly",
     choice: "Choices",
     price: "Price",
@@ -389,7 +389,7 @@ const th: typeof en = {
     also: "หรือลองดู",
     view: "ดู {course}",
     compare: "เทียบคอร์สผู้ใหญ่",
-    compareNote: "สี่คอร์สผู้ใหญ่เทียบกันไว้ด้านล่าง ทั้งจำนวนคำ วัตถุดิบหลัก ตัวเลือก และราคา",
+    compareNote: "สี่คอร์สผู้ใหญ่เทียบกันไว้ด้านล่าง ทั้งจำนวนรายการ วัตถุดิบหลัก ตัวเลือก และราคา",
   },
   course: {
     bestFor: "เหมาะสำหรับ",
@@ -404,9 +404,9 @@ const th: typeof en = {
   },
   compare: {
     heading: "เทียบสี่คอร์สผู้ใหญ่",
-    caption: "เทียบคอร์สผู้ใหญ่ตามจำนวนคำ วัตถุดิบหลัก ตัวเลือก และราคา",
+    caption: "เทียบคอร์สผู้ใหญ่ตามจำนวนรายการ วัตถุดิบหลัก ตัวเลือก และราคา",
     course: "คอร์ส",
-    bites: "จำนวนคำ",
+    items: "จำนวนรายการ",
     food: "เน้น",
     choice: "ตัวเลือก",
     price: "ราคา",
@@ -446,7 +446,7 @@ const zh: typeof en = {
     heading: "四款成人套餐对比",
     caption: "按品数、主要内容、可选项和价格比较成人套餐",
     course: "套餐",
-    bites: "品数",
+    items: "品数",
     food: "主要内容",
     choice: "可选项",
     price: "价格",

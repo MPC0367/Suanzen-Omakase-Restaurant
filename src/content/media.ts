@@ -191,7 +191,7 @@ export const photos: Photo[] = [
     source: "archive",
     alt: {
       en: "Gloved chef hand places a flower on four tuna nigiri topped with sea urchin, on a dark plate.",
-      th: "มือเชฟสวมถุงมือใช้แหนบวางดอกไม้บนซูชิทูน่าสี่คำที่โปะหอยเม่น บนจานสีเข้ม",
+      th: "มือเชฟสวมถุงมือใช้แหนบวางดอกไม้บนซูชิทูน่าสี่ชิ้นที่โปะหอยเม่น บนจานสีเข้ม",
       zh: "戴手套的厨师正往深色盘中四块铺有海胆的金枪鱼握寿司上放一朵花",
     },
   },

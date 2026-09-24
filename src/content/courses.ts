@@ -5,10 +5,10 @@
  *  Where this comes from, most authoritative first:
  *
  *  - The restaurant's own Facebook post on Zen Kids (6 July, shown to the
- *    studio on 2026-09-19): its current nine bites, ages 7–11 and 1,290++.
+ *    studio on 2026-09-19): its current nine items, ages 7–11 and 1,290++.
  *    It replaces the 2024 post's Kids list below.
  *  - The restaurant's own Facebook post on Zen Ichi (6 July, shown to the
- *    studio on 2026-09-19): its current fourteen bites, in order, for "older
+ *    studio on 2026-09-19): its current fourteen items, in order, for "older
  *    children or those with smaller appetites", 2,000++. It replaces the 2024
  *    post's Ichi list below. The same day's post opens the new season from
  *    13 July 2026.
@@ -99,14 +99,14 @@ export const courses: Course[] = [
     kanji: "子",
     price: 1290,
     count: 9,
-    unit: { en: "bites", th: "คำ", zh: "品" },
+    unit: { en: "items", th: "รายการ", zh: "品" },
     desc: {
-      en: "Suan Zen's course for younger diners, recommended for ages 7–11. Nine bites: fresh yuzu juice, tamago with foie gras, salmon, madai sushi, gunkan maki, Suan Zen somen, ebi tempura, osuimono soup, and chocolate lava or panna cotta to finish.",
-      th: "คอร์สของสวน เซน สำหรับน้อง ๆ แนะนำสำหรับอายุ 7–11 ปี มีทั้งหมด 9 คำ ตั้งแต่น้ำยูซุคั้นสด ทามาโกะกับฟัวกราส์ แซลมอน ซูชิมาได และกุนกันมากิ ไปจนถึงโซเมนของสวน เซน กุ้งเทมปุระ ซุปโอสุยโมโนะ และปิดท้ายด้วยช็อกโกแลตลาวาหรือพานาคอตต้า",
+      en: "Suan Zen's course for younger diners, recommended for ages 7–11. Nine items: fresh yuzu juice, tamago with foie gras, salmon, madai sushi, gunkan maki, Suan Zen somen, ebi tempura, osuimono soup, and chocolate lava or panna cotta to finish.",
+      th: "คอร์สของสวน เซน สำหรับน้อง ๆ แนะนำสำหรับอายุ 7–11 ปี มีทั้งหมด 9 รายการ ตั้งแต่น้ำยูซุคั้นสด ทามาโกะกับฟัวกราส์ แซลมอน ซูชิมาได และกุนกันมากิ ไปจนถึงโซเมนของสวน เซน กุ้งเทมปุระ ซุปโอสุยโมโนะ และปิดท้ายด้วยช็อกโกแลตลาวาหรือพานาคอตต้า",
       zh: "Suan Zen 为小朋友准备的套餐，建议7–11岁享用。共 9 品：鲜榨日本柚子汁、嫩滑蛋羹配鹅肝、三文鱼、真鲷寿司、军舰寿司、Suan Zen 日式素面、炸虾天妇罗、日式清汤，最后以流心巧克力熔岩蛋糕或意式奶冻收尾。",
     },
     forWho: { en: "FOR YOUNGER DINERS · AGES 7–11", th: "สำหรับน้อง ๆ อายุ 7–11 ปี", zh: "儿童套餐 · 适合7–11岁" },
-    listLabel: { en: "ALL NINE, IN ORDER", th: "ครบทั้ง 9 คำ ตามลำดับเสิร์ฟ", zh: "全部 9 品，依上菜顺序" },
+    listLabel: { en: "ALL NINE, IN ORDER", th: "ครบทั้ง 9 รายการ ตามลำดับเสิร์ฟ", zh: "全部 9 品，依上菜顺序" },
     listIsPartial: false,
     sample: { src: "/photos/4cb2edf859a5.jpg", w: 954, h: 802 },
     gallery: [
@@ -154,14 +154,14 @@ export const courses: Course[] = [
     kanji: "一",
     price: 2000,
     count: 14,
-    unit: { en: "bites", th: "คำ", zh: "品" },
+    unit: { en: "items", th: "รายการ", zh: "品" },
     desc: {
-      en: "Recommended for diners aged 12–14, as the step between Zen Kids and the adult courses, and for anyone with a smaller appetite. Fourteen bites, mostly fish and seafood — madai, salmon, kampachi and chūtoro sushi, hotate yaki, kisu tempura, hotaru ika — with one wagyu sushi, and chocolate lava or panna cotta to finish.",
-      th: "แนะนำสำหรับอายุ 12–14 ปี เป็นก้าวต่อจาก เซน คิดส์ ก่อนถึงคอร์สของผู้ใหญ่ และยังเหมาะกับผู้ที่ทานได้ไม่เยอะ มีทั้งหมด 14 คำ ส่วนใหญ่เป็นปลาและอาหารทะเล เช่น ซูชิมาได แซลมอน คัมปาจิ ชูโทโร่ โฮตาเตะย่าง คิสุเทมปุระ และโฮตารุอิกะ มีวากิวซูชิหนึ่งคำ และปิดท้ายด้วยช็อกโกแลตลาวาหรือพานาคอตต้า",
+      en: "Recommended for diners aged 12–14, as the step between Zen Kids and the adult courses, and for anyone with a smaller appetite. Fourteen items, mostly fish and seafood — madai, salmon, kampachi and chūtoro sushi, hotate yaki, kisu tempura, hotaru ika — with one wagyu sushi, and chocolate lava or panna cotta to finish.",
+      th: "แนะนำสำหรับอายุ 12–14 ปี เป็นก้าวต่อจาก เซน คิดส์ ก่อนถึงคอร์สของผู้ใหญ่ และยังเหมาะกับผู้ที่ทานได้ไม่เยอะ มีทั้งหมด 14 รายการ ส่วนใหญ่เป็นปลาและอาหารทะเล เช่น ซูชิมาได แซลมอน คัมปาจิ ชูโทโร่ โฮตาเตะย่าง คิสุเทมปุระ และโฮตารุอิกะ มีวากิวซูชิหนึ่งรายการ และปิดท้ายด้วยช็อกโกแลตลาวาหรือพานาคอตต้า",
       zh: "建议12–14岁的客人享用，是 Zen Kids 与成人套餐之间的过渡，也适合食量较小的客人。共 14 品，以鱼类和海鲜为主——真鲷、三文鱼、间八与中腹寿司，以及烤帆立贝、沙钻鱼天妇罗和萤火鱿——另有 1 品和牛寿司，最后以流心巧克力熔岩蛋糕或意式奶冻收尾。",
     },
     forWho: { en: "RECOMMENDED FOR AGES 12–14", th: "แนะนำสำหรับอายุ 12–14 ปี", zh: "建议12–14岁享用" },
-    listLabel: { en: "ALL FOURTEEN, IN ORDER", th: "ครบทั้ง 14 คำ ตามลำดับเสิร์ฟ", zh: "全部 14 品，依上菜顺序" },
+    listLabel: { en: "ALL FOURTEEN, IN ORDER", th: "ครบทั้ง 14 รายการ ตามลำดับเสิร์ฟ", zh: "全部 14 品，依上菜顺序" },
     listIsPartial: false,
     sample: { src: "/photos/3d4a8203a842.jpg", w: 1170, h: 1171 },
     gallery: [
@@ -214,10 +214,10 @@ export const courses: Course[] = [
     kanji: "二",
     price: 2890,
     count: 16,
-    unit: { en: "bites", th: "คำ", zh: "品" },
+    unit: { en: "items", th: "รายการ", zh: "品" },
     desc: {
-      en: "The restaurant calls it a course that brings happiness: sixteen bites built on ingredients that are hard to find. Mostly fish and seafood — chūtoro and ōtoro, uni, unagi — with one wagyu bite.",
-      th: "ทางร้านบอกว่าเป็นคอร์สที่ให้ความสุข มี 16 คำจากวัตถุดิบที่หาไม่ง่าย ส่วนใหญ่เป็นปลาและอาหารทะเล เช่น ชูโทโร่ โอโทโร่ อูนิ และอุนางิ มีวากิวหนึ่งคำ",
+      en: "The restaurant calls it a course that brings happiness: sixteen items built on ingredients that are hard to find. Mostly fish and seafood — chūtoro and ōtoro, uni, unagi — with one wagyu item.",
+      th: "ทางร้านบอกว่าเป็นคอร์สที่ให้ความสุข มี 16 รายการจากวัตถุดิบที่หาไม่ง่าย ส่วนใหญ่เป็นปลาและอาหารทะเล เช่น ชูโทโร่ โอโทโร่ อูนิ และอุนางิ มีวากิวหนึ่งรายการ",
       zh: "餐厅说，这是一款能带来幸福感的套餐：共 16 品，选用不易寻得的食材。以鱼类和海鲜为主——中腹与大腹、海胆、鳗鱼——另有 1 品和牛。",
     },
     forWho: {
@@ -225,7 +225,7 @@ export const courses: Course[] = [
       th: "คอร์สผู้ใหญ่ · เน้นปลาและอาหารทะเล",
       zh: "成人套餐 · 以鱼类和海鲜为主",
     },
-    listLabel: { en: "ALL SIXTEEN, IN ORDER", th: "ครบทั้ง 16 คำ ตามลำดับเสิร์ฟ", zh: "全部 16 品，依上菜顺序" },
+    listLabel: { en: "ALL SIXTEEN, IN ORDER", th: "ครบทั้ง 16 รายการ ตามลำดับเสิร์ฟ", zh: "全部 16 品，依上菜顺序" },
     listIsPartial: false,
     sample: { src: "/photos/249c7c8c7528.jpg", w: 870, h: 885 },
     gallery: [
@@ -295,10 +295,10 @@ export const courses: Course[] = [
     kanji: "三",
     price: 3890,
     count: 17,
-    unit: { en: "bites", th: "คำ", zh: "品" },
+    unit: { en: "items", th: "รายการ", zh: "品" },
     desc: {
-      en: "Seventeen bites, the most of any course. The restaurant calls it its “fine” course, where Western and Eastern flavours meet. Mostly fish and seafood — kinmedai, akami, ōtoro, uni, amadai — with one wagyu bite.",
-      th: "17 คำ มากที่สุดในทุกคอร์ส ทางร้านเรียกว่าคอร์ส “ไฟน์” ที่รสชาติตะวันตกและตะวันออกมาบรรจบกัน ส่วนใหญ่เป็นปลาและอาหารทะเล เช่น คินเมได อากามิ โอโทโร่ อูนิ และอามาได มีวากิวหนึ่งคำ",
+      en: "Seventeen items, the most of any course. The restaurant calls it its “fine” course, where Western and Eastern flavours meet. Mostly fish and seafood — kinmedai, akami, ōtoro, uni, amadai — with one wagyu item.",
+      th: "17 รายการ มากที่สุดในทุกคอร์ส ทางร้านเรียกว่าคอร์ส “ไฟน์” ที่รสชาติตะวันตกและตะวันออกมาบรรจบกัน ส่วนใหญ่เป็นปลาและอาหารทะเล เช่น คินเมได อากามิ โอโทโร่ อูนิ และอามาได มีวากิวหนึ่งรายการ",
       zh: "共 17 品，是所有套餐中最多的。餐厅称它为“fine”套餐，东西方风味在此交汇。以鱼类和海鲜为主——金目鲷、赤身、大腹、海胆、甘鲷——另有 1 品和牛。",
     },
     forWho: {
@@ -306,7 +306,7 @@ export const courses: Course[] = [
       th: "คอร์สผู้ใหญ่ · เน้นปลาและอาหารทะเล",
       zh: "成人套餐 · 以鱼类和海鲜为主",
     },
-    listLabel: { en: "ALL SEVENTEEN, IN ORDER", th: "ครบทั้ง 17 คำ ตามลำดับเสิร์ฟ", zh: "全部 17 品，依上菜顺序" },
+    listLabel: { en: "ALL SEVENTEEN, IN ORDER", th: "ครบทั้ง 17 รายการ ตามลำดับเสิร์ฟ", zh: "全部 17 品，依上菜顺序" },
     listIsPartial: false,
     sample: { src: "/photos/4ec2522c1b09.jpg", w: 870, h: 886 },
     gallery: [
@@ -386,18 +386,18 @@ export const courses: Course[] = [
     kanji: "将",
     price: 3890,
     count: 12,
-    unit: { en: "bites", th: "คำ", zh: "品" },
+    unit: { en: "items", th: "รายการ", zh: "品" },
     desc: {
-      en: "Twelve bites: sashimi, sushi from kampachi to ōtoro, botan ebi and an uni handroll. Two bites are yours to choose — Wagyu Sun or grilled hotate, foie gras or king crab — and so is dessert.",
-      th: "มี 12 คำ ทั้งซาชิมิ ซูชิตั้งแต่คัมปาจิถึงโอโทโร่ กุ้งโบตัน และแฮนด์โรลอูนิ ระหว่างมื้อมีสองคำที่เลือกเองได้ คือวากิวซันหรือโฮตาเตะย่าง และฟัวกราส์หรือปูทาราบะ แล้วเลือกของหวานได้เอง",
+      en: "Twelve items: sashimi, sushi from kampachi to ōtoro, botan ebi and an uni handroll. Two items are yours to choose — Wagyu Sun or grilled hotate, foie gras or king crab — and so is dessert.",
+      th: "มี 12 รายการ ทั้งซาชิมิ ซูชิตั้งแต่คัมปาจิถึงโอโทโร่ กุ้งโบตัน และแฮนด์โรลอูนิ ระหว่างมื้อมีสองรายการที่เลือกเองได้ คือวากิวซันหรือโฮตาเตะย่าง และฟัวกราส์หรือปูทาราบะ แล้วเลือกของหวานได้เอง",
       zh: "共 12 品：刺身、从间八到大腹的寿司、牡丹虾，以及海胆手卷。其中两品由您自选——Wagyu Sun 或烤帆立贝；鹅肝或帝王蟹——甜品也可自选。",
     },
     forWho: {
-      en: "ADULT COURSE · TWO BITES TO CHOOSE",
+      en: "ADULT COURSE · TWO ITEMS TO CHOOSE",
       th: "คอร์สผู้ใหญ่ · เลือกเองได้สองอย่าง",
       zh: "成人套餐 · 两品可自选",
     },
-    listLabel: { en: "ALL TWELVE, IN ORDER", th: "ครบทั้ง 12 คำ ตามลำดับเสิร์ฟ", zh: "全部 12 品，依上菜顺序" },
+    listLabel: { en: "ALL TWELVE, IN ORDER", th: "ครบทั้ง 12 รายการ ตามลำดับเสิร์ฟ", zh: "全部 12 品，依上菜顺序" },
     listIsPartial: false,
     sample: { src: "/photos/9b85c5c783c4.jpg", w: 862, h: 876 },
     photos: [
@@ -431,10 +431,10 @@ export const courses: Course[] = [
     kanji: "四",
     price: 4500,
     count: 13,
-    unit: { en: "bites", th: "คำ", zh: "品" },
+    unit: { en: "items", th: "รายการ", zh: "品" },
     desc: {
-      en: "The restaurant's course for meat lovers: Kagoshima and Saga wagyu from Kyushu in ten of its thirteen bites — tataki, sushi, roll, nabe, porridge, yakiniku, katsu, don and more. It opens with sake, or a starter instead.",
-      th: "คอร์สที่ทางร้านทำมาสำหรับคนรักเนื้อ ใช้วากิวคาโกชิมะและซากะจากคิวชูใน 10 จาก 13 คำ ทั้งทาทากิ ซูชิ โรล นาเบะ ข้าวต้ม ยากินิกุ คัตสึ ดง และอีกหลายแบบ เปิดด้วยสาเก หรือเปลี่ยนเป็นจานเรียกน้ำย่อยก็ได้",
+      en: "The restaurant's course for meat lovers: Kagoshima and Saga wagyu from Kyushu in ten of its thirteen items — tataki, sushi, roll, nabe, porridge, yakiniku, katsu, don and more. It opens with sake, or a starter instead.",
+      th: "คอร์สที่ทางร้านทำมาสำหรับคนรักเนื้อ ใช้วากิวคาโกชิมะและซากะจากคิวชูใน 10 จาก 13 รายการ ทั้งทาทากิ ซูชิ โรล นาเบะ ข้าวต้ม ยากินิกุ คัตสึ ดง และอีกหลายแบบ เปิดด้วยสาเก หรือเปลี่ยนเป็นจานเรียกน้ำย่อยก็ได้",
       zh: "餐厅为爱吃肉的客人准备的套餐：13 品中有 10 品选用来自九州的鹿儿岛与佐贺和牛，做成炙烧、寿司、卷物、锅物、粥、烧肉、炸排、盖饭等。以清酒开场，也可换成一道前菜。",
     },
     forWho: {
@@ -442,7 +442,7 @@ export const courses: Course[] = [
       th: "คอร์สผู้ใหญ่ · สำหรับคนรักเนื้อ",
       zh: "成人套餐 · 适合爱吃牛肉的客人",
     },
-    listLabel: { en: "ALL THIRTEEN, IN ORDER", th: "ครบทั้ง 13 คำ ตามลำดับเสิร์ฟ", zh: "全部 13 品，依上菜顺序" },
+    listLabel: { en: "ALL THIRTEEN, IN ORDER", th: "ครบทั้ง 13 รายการ ตามลำดับเสิร์ฟ", zh: "全部 13 品，依上菜顺序" },
     listIsPartial: false,
     sample: { src: "/photos/6b3b52b1c63e.jpg", w: 856, h: 892 },
     gallery: [

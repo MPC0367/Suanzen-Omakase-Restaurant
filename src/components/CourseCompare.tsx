@@ -61,7 +61,7 @@ export default function CourseCompare({ locale }: { locale: Locale }) {
           </thead>
           <tbody>
             <tr>
-              <th scope="row">{c.bites}</th>
+              <th scope="row">{c.items}</th>
               {cols.map(({ id, k }) => (
                 <td key={id} data-course={id} className={cell(id)}>
                   <span className="u-numeral">{k.count}</span>
