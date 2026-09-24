@@ -347,7 +347,7 @@ console.log("review findings, kept fixed");
       pin: parseFloat(getComputedStyle(document.querySelector(".visit__open")).letterSpacing) / parseFloat(getComputedStyle(document.querySelector(".visit__open")).fontSize),
     }));
     pass("the finder's questions and the family names are set in Noto Serif SC", d.legend === "Noto Serif SC" && d.family === "Noto Serif SC", `${d.legend} · ${d.family}`);
-    pass("hours and seatings are written 12:30–21:00, not 12.30", /12:30–21:00/.test(d.visit) && /12:00/.test(d.visit) && !/\d\.\d\d/.test(d.visit), (d.visit.match(/[\d:.–\s·]{8,}/g) || []).join(" | ").slice(0, 90));
+    pass("hours and seatings are written 12:30–21:00, not 12.30", /12:30–21:00/.test(d.visit) && /12:30\s*·/.test(d.visit) && !/\d\.\d\d/.test(d.visit), (d.visit.match(/[\d:.–\s·]{8,}/g) || []).join(" | ").slice(0, 90));
     pass("the studio credit is announced in Chinese", /^网站由 O2 Design Studio/.test(d.credit || ""), d.credit);
     pass("the Google Maps link is set near-level", d.pin <= 0.041, d.pin.toFixed(3) + "em");
     await p.locator(".hdr__cta").click(); await p.waitForTimeout(400);

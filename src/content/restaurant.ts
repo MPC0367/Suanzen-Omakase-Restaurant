@@ -20,7 +20,8 @@
  *    says Tue–Sun (closed Mon). IG bio is the more current owner-controlled
  *    surface, so it is used. FLAGGED for confirmation.
  *  ⚠ CONFLICT — round times: TikTok says 12.00/15.00/17.00/19.00; IG bio opens
- *    12.30. Rounds are shown but marked unverified.
+ *    12.30. The first round now follows the opening time (studio, 2026-09-25);
+ *    the rounds are still shown as unverified.
  *  ✘ NOT USED — third-party aggregator price tiers (2,500/4,500/6,500/9,500).
  *    They contradict the diner-reported ฿2,000++ for Zen Ichi. Excluded.
  * ─────────────────────────────────────────────────────────────────────────────
@@ -116,9 +117,10 @@ export const restaurant = {
 
   /** Omakase is served in fixed seatings, not walk-in. */
   seatings: v(
-    ["12.00", "15.00", "17.00", "19.00"],
+    ["12.30", "15.00", "17.00", "19.00"],
     false,
-    "From the restaurant's TikTok. IG bio opens 12.30 — confirm exact round times.",
+    "From the restaurant's TikTok, which says 12.00; the first round is shown as "
+      + "12.30 to match the opening time (studio, 2026-09-25). Confirm the rounds.",
   ),
 
   izakaya: {

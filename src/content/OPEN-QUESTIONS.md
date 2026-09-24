@@ -98,6 +98,9 @@ English itself is unclear, so the Chinese had to choose a reading.
   that as fine dining. Is that the meaning?
 - À la carte: only while the izakaya is open, or all day Thursday to Saturday?
 - "Seatings are limited": few seats per seating, or few seatings?
+- The seating rounds: the restaurant's TikTok says 12.00, 15.00, 17.00 and
+  19.00, but the doors open at 12.30, so the site shows the first round as
+  12.30 (studio, 2026-09-25). Confirm all four.
 - The English says the restaurant is on "a soi off Nonthaburi 48"; the address
   says Soi Nonthaburi 48 itself. The Chinese follows the address.
 - The English and Thai call Zen Ichi to Zen Yon a ladder of bites and time, but
