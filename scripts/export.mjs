@@ -177,7 +177,12 @@ ${preview}
   }
 }
 
-const size = execSync(`du -sh "${OUT}"`).toString().trim().split(/\s+/)[0];
-const files = execSync(`find "${OUT}" -type f | wc -l`).toString().trim();
-console.log(`\nStatic site in out/  —  ${files} files, ${size}`);
+// fs, not du/find: this also runs on the Windows studio machine.
+const walk = (d) =>
+  fs.readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? walk(path.join(d, e.name)) : [fs.statSync(path.join(d, e.name)).size],
+  );
+const sizes = walk(OUT);
+const mb = (sizes.reduce((a, b) => a + b, 0) / 1048576).toFixed(1);
+console.log(`\nStatic site in out/  —  ${sizes.length} files, ${mb} MB`);
 console.log(basePath ? `Built for a project site at ${basePath}/` : 'Built for a domain root.');
