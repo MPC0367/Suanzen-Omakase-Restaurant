@@ -275,8 +275,9 @@ const en = {
     served: "Served",
   },
   meta: {
-    title: "Suan Zen Omakase — Menu",
-    description: "The omakase menu: seven courses and every bite, with prices. Reserve on LINE.",
+    title: "Omakase in Nonthaburi — Menu & Prices | Suan Zen Omakase",
+    description:
+      "Suan Zen Omakase in Nonthaburi — the full omakase menu: seven courses, every bite and current prices, in English, Thai and Chinese. Reserve on LINE.",
     ogAlt: "Suan Zen Omakase, Nonthaburi",
   },
 };
@@ -514,8 +515,9 @@ const th: Dict = {
     served: "เสิร์ฟ",
   },
   meta: {
-    title: "สวน เซน โอมากาเสะ — เมนู",
-    description: "เมนูโอมากาเสะ 7 คอร์ส ครบทุกคำ พร้อมราคา จองผ่าน LINE",
+    title: "โอมากาเสะ นนทบุรี — เมนูและราคา | สวน เซน โอมากาเสะ",
+    description:
+      "เมนูโอมากาเสะครบทั้ง 7 คอร์สของ สวน เซน โอมากาเสะ นนทบุรี ทุกคำพร้อมราคาปัจจุบัน อ่านได้ทั้งภาษาไทย อังกฤษ และจีน จองที่นั่งผ่าน LINE ได้เลย",
     ogAlt: "สวน เซน โอมากาเสะ นนทบุรี",
   },
 };
@@ -736,8 +738,9 @@ const zh: Dict = {
     served: "供应时间",
   },
   meta: {
-    title: "Suan Zen Omakase — 菜单",
-    description: "Suan Zen Omakase 套餐菜单：7款套餐、完整菜品与价格。可通过 LINE 预约。",
+    title: "暖武里日料 Omakase — 套餐菜单与价格 | Suan Zen Omakase",
+    description:
+      "Suan Zen Omakase 位于暖武里府：7 款 Omakase 套餐菜单，完整菜品与当前价格，提供中、英、泰三语页面。欢迎通过 LINE 预约座位。",
     ogAlt: "Suan Zen Omakase，暖武里府",
   },
 };

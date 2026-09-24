@@ -11,8 +11,9 @@ import { SITE, OG_IMAGE, languageAlternates, ogLocales } from "@/lib/site";
 
 /**
  * One course on its own address — /en/courses/zen-ichi/ — so staff can send a
- * guest straight to it: "here is the course for your thirteen-year-old". Like
- * every page here it is unlisted, and its link preview carries no price.
+ * guest straight to it: "here is the course for your thirteen-year-old".
+ * Listed since 2026-09-24 like the rest of the site; its link preview still
+ * carries no price.
  */
 
 export const dynamicParams = false;
@@ -55,7 +56,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       images: [{ url: OG_IMAGE, width: 1200, height: 800, alt: `${name} — ${brand}` }],
     },
     twitter: { card: "summary_large_image", title: `${title} — ${brand}`, description, images: [OG_IMAGE] },
-    robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+    robots: { index: true, follow: true },
   };
 }
 

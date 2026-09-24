@@ -1,5 +1,23 @@
 # Open questions for Suan Zen
 
+## ✔ OWNER SIGN-OFF — 2026-09-24
+
+The restaurant's owners reviewed the site and gave it an authoritative pass,
+relayed through the studio on 2026-09-24: **the prices are verified and the
+content as shipped — all seven courses, Zen Boss and Zen Sweet included — is
+confirmed.** That closes this file's headline questions on whether the
+Ni/San/Boss/Yon lists and prices are current, and it is what allowed the site
+to be listed on Google the same day (robots flipped to index, sitemap added,
+Restaurant JSON-LD with the printed price range).
+
+Not covered by the pass, still open below: the wording-level questions (ages,
+who picks the "or" desserts, the Chinese readings, LINE deep-link behaviour)
+and the internal daily-vs-Tue–Sun day-coverage flag in `restaurant.ts` — the
+site's hedged display of those was approved as shown, so they stay hedged
+until answered individually.
+
+---
+
 What the menu page cannot state until the restaurant confirms it. Each one is
 kept off the page, or stated only as far as the evidence goes, until then.
 Nothing here ships: the notes used to live in `advisor.ts`, which is bundled

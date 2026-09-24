@@ -1,29 +1,39 @@
 # Getting this online
 
-The menu is a link Suan Zen sends in its LINE OA. It is **unlisted**: anyone
-with the link can open it and pass it on, but it is not offered to search
-engines. It is hosted on GitHub Pages and rebuilds on every push to `main`.
+The menu lives at **https://suanzenomakase.com/** (since 2026-09-24), is sent
+as a link in Suan Zen's LINE OA, and — also since 2026-09-24, at the owner's
+request — is **listed**: offered to Google and other search engines. It is
+hosted on GitHub Pages and rebuilds on every push to `main`.
 
 ---
 
-## How it stays off Google
+## How it is offered to Google
 
-- **Every page says `noindex, nofollow`**: the menu in all three languages, the root
-  redirect page and the 404. Google and Bing drop a page when they see that,
-  and never list it.
-- **robots.txt lets crawlers in.** They have to read a page to see its
-  `noindex`. Never add `Disallow` for the pages; a blocked page can still be
-  listed from links, just without its contents.
-- **The photographs are blocked in robots.txt** (`Disallow: /photos/`), because
-  `noindex` does not reach an image. This only works on a domain root:
-  crawlers read robots.txt at the root of a host and nowhere else, so under
-  `mpc0367.github.io/Suanzen-Omakase-Restaurant/` it is ignored.
-- **The link-preview picture is in `/og/`**, outside that rule, so LINE can
-  still fetch it for the preview.
-- **No sitemap.**
+The site was unlisted (noindex everywhere, `/photos/` blocked, no sitemap)
+until 2026-09-24; the git history holds that posture if it is ever wanted
+back. Now:
 
-What it does not do: stop someone who has the link from opening it or
-forwarding it. It is a shareable link, not a locked page.
+- **Every real page is indexable** — the menu and the course pages in all
+  three languages carry `index, follow`, one absolute self-referencing
+  canonical each, and hreflang for the other two languages.
+- **The redirect pages stay out of the listings on their own**: the root
+  language chooser canonicalises to `/en/`, and the language-less
+  `/courses/…` links staff send still say `noindex` — they exist to forward,
+  not to rank.
+- **`robots.txt` allows everything and names the sitemap.** `/photos/` is
+  open too, so the dishes can appear in Google Images.
+- **`sitemap.xml`** lists every page in every language with its alternates.
+- **Restaurant JSON-LD** on every page carries the verified facts (name,
+  address, phone, geo, socials, the printed price range). Hours are omitted
+  until the daily-vs-Tue–Sun question in `src/content/restaurant.ts` is
+  settled.
+
+After a deploy, Google finds changes on its own; to hurry it, use Search
+Console (see the launch section of the studio's SEO playbook): verify the
+domain, submit `https://suanzenomakase.com/sitemap.xml`, and request indexing
+of `/en/`. The bigger lever for a restaurant is the **Google Business
+Profile**: set its website field to `https://suanzenomakase.com/` so the map
+listing and the site point at each other.
 
 ---
 

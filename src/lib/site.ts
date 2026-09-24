@@ -21,8 +21,9 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 export const SITE = `${ORIGIN}${BASE}`;
 
 /** The image link previews use. A real photograph of the room, not a logo.
- *  It sits in /og/, not /photos/: robots.txt keeps /photos/ out of image
- *  search, and LINE's preview fetcher still has to reach this one. */
+ *  It sits in /og/ from the unlisted days, when robots.txt blocked /photos/
+ *  and LINE's preview fetcher still had to reach this one. /photos/ has been
+ *  open since 2026-09-24; the path stays so old previews keep resolving. */
 export const OG_IMAGE = `${SITE}/og/suan-zen.jpg`;
 
 

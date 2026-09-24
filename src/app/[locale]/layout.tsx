@@ -7,7 +7,8 @@ import "../sections.css";
 import "../pages.css";
 import "../advisor.css";
 import { dict, isLocale, localeInfo, locales, pick } from "@/content/dictionary";
-import { restaurant } from "@/content/restaurant";
+import { restaurant, val } from "@/content/restaurant";
+import { activeCourses, formatBaht } from "@/content/courses";
 import { SITE, OG_IMAGE, languageAlternates, ogLocales } from "@/lib/site";
 import Curtain from "@/components/Curtain";
 import Backdrop from "@/components/Backdrop";
@@ -75,12 +76,13 @@ export async function generateMetadata({
       card: "summary_large_image", title: t.meta.title,
       description: t.meta.description, images: [OG_IMAGE],
     },
-    /* A brochure, not a website: shared by link, never listed. Crawlers are
-       still let in — blocking them in robots.txt would hide this instruction
-       from the very search engines it is addressed to. There are no keywords
-       and no structured data either: both exist only for search engines, and
-       the structured data used to publish every course's price as fact. */
-    robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+    /* Listed since 2026-09-24, at the owner's request: the menu lives on the
+       restaurant's own domain now and is offered to search engines — sitemap
+       in robots.txt, structured data below. The earlier unlisted posture
+       (noindex everywhere, no sitemap) is documented in HOSTING.md history.
+       Prices and the course line-up were confirmed by the restaurant's owners
+       (relayed 2026-09-24), which is what unlocked publishing them as fact. */
+    robots: { index: true, follow: true },
   };
 }
 
@@ -101,12 +103,57 @@ export default async function LocaleLayout({
   if (!isLocale(locale)) notFound();
   const t = dict[locale];
 
+  /* Restaurant schema, from src/content/restaurant.ts — verified fields only.
+     Hours are omitted on purpose: the values are verified but the day coverage
+     (daily vs Tue–Sun) is still flagged there, and schema cannot hedge the way
+     the page does. The price range is the courses' own printed prices, which
+     the owners confirmed on 2026-09-24. */
+  const prices = activeCourses.map((c) => c.price);
+  const a = restaurant.address;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "@id": `${SITE}/#restaurant`,
+    name: restaurant.name.en,
+    alternateName: restaurant.name.th,
+    url: `${SITE}/${locale}/`,
+    inLanguage: localeInfo[locale].html,
+    image: OG_IMAGE,
+    servesCuisine: ["Japanese", "Omakase"],
+    priceRange: `${formatBaht(Math.min(...prices))}–${formatBaht(Math.max(...prices))}++`,
+    telephone: val(restaurant.contact.phoneIntl),
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: `${val(a.street)}, ${val(a.subDistrict)}`,
+      addressLocality: val(a.district),
+      addressRegion: val(a.province),
+      postalCode: val(a.postalCode),
+      addressCountry: val(a.country),
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: val(restaurant.geo).lat,
+      longitude: val(restaurant.geo).lng,
+    },
+    hasMenu: `${SITE}/${locale}/`,
+    acceptsReservations: "True",
+    sameAs: [
+      val(restaurant.social.instagram),
+      val(restaurant.social.facebook),
+      val(restaurant.social.tiktok),
+    ],
+  };
+
   return (
     <html
       lang={localeInfo[locale].html}
       className={`${display.variable} ${displayThai.variable} ${body.variable} ${bodyZh.variable} ${displayZh.variable}`}
     >
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <a className="skip" href="#main">{t.a11y.skip}</a>
         <Backdrop />
         <Curtain />

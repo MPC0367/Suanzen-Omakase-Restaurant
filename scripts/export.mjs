@@ -88,9 +88,10 @@ const pickLocale = `function(){
   }`;
 // The root address is the one the handover QR encodes and the one the LINE OA
 // will most likely send, so this redirect page carries the same link preview
-// and the same do-not-list instruction as the pages it forwards to. It is
-// in all three languages because it speaks for all three. Keep the image in step with OG_IMAGE
-// in src/lib/site.ts.
+// as the pages it forwards to, and a canonical pointing at /en/ so search
+// engines list the English menu, not this chooser. It is in all three
+// languages because it speaks for all three. Keep the image in step with
+// OG_IMAGE in src/lib/site.ts.
 const origin = (process.env.NEXT_PUBLIC_SITE_ORIGIN || 'https://mpc0367.github.io').replace(/\/$/, '');
 const preview = `${origin}${prefix}/og/suan-zen.jpg`;
 fs.writeFileSync(
@@ -102,7 +103,6 @@ fs.writeFileSync(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Suan Zen Omakase — Menu · เมนู · 菜单</title>
 <meta name="description" content="The omakase menu: seven courses and every bite, with prices. · เมนูโอมากาเสะ 7 คอร์ส ครบทุกคำ พร้อมราคา · Suan Zen Omakase 套餐菜单：7款套餐、完整菜品与价格。">
-<meta name="robots" content="noindex, nofollow">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Suan Zen Omakase">
 <meta property="og:title" content="Suan Zen Omakase — Menu · เมนู · 菜单">
