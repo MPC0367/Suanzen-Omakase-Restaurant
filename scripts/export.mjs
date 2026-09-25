@@ -135,7 +135,7 @@ fs.writeFileSync(
 // A 404 that keeps people inside the site rather than on Pages' default page.
 // Next writes its own not-found page to 404.html and 404/index.html, marked
 // only "noindex"; replace both with the redirect page above, so a mistyped
-// address lands on the menu and says noindex, nofollow like every other page.
+// address lands on the menu and, like the root, canonicalises to /en/.
 for (const f of ['404.html', path.join('404', 'index.html')]) {
   if (fs.existsSync(path.join(OUT, path.dirname(f)))) {
     fs.copyFileSync(path.join(OUT, 'index.html'), path.join(OUT, f));
@@ -144,7 +144,8 @@ for (const f of ['404.html', path.join('404', 'index.html')]) {
 
 // Course links without a language — /courses/zen-ichi/ — for staff to send in
 // LINE. Each one forwards to the guest's language and keeps the course; it
-// carries that course's own link preview, and says noindex like every page.
+// carries that course's own link preview, and says noindex: it exists to
+// forward, and the language pages it forwards to are the ones listed.
 const courseDir = path.join(OUT, 'en', 'courses');
 if (fs.existsSync(courseDir)) {
   for (const slug of fs.readdirSync(courseDir)) {

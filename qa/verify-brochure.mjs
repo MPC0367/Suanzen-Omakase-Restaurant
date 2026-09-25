@@ -2,8 +2,8 @@
  * The menu platform's contract. This page is the link Suan Zen sends in its
  * LINE OA instead of photographs of the menu, to guests who already mean to
  * come: the menu is the page, nothing else is in the way, it is easy on a
- * phone, it is dark from top to bottom, and it is not offered to search
- * engines.
+ * phone, it is dark from top to bottom, and — since 2026-09-24 — it is
+ * offered to search engines (HOSTING.md, "How it is offered to Google").
  *
  * The menu list is type. Dish photographs used to open under each name as the
  * guest scrolled; the restaurant is sending better pictures, so one picture
@@ -47,17 +47,21 @@ pass("header: Menu and Visit", nav.join("|") === "Menu|Visit", nav.join(" · "))
 pass("no form anywhere", (await d.locator("form").count()) === 0);
 pass("nothing links to a booking page", (await d.locator('a[href*="/book"]').count()) === 0);
 const robots = await d.$eval('meta[name="robots"]', (m) => m.content).catch(() => "none");
-pass("not offered to search engines", /noindex,\s*nofollow/.test(robots), robots);
+pass("offered to search engines", robots === "index, follow", robots);
 const rootHtml = await (await fetch(B + "/")).text();
-pass("the root link (the one in the QR) previews as Menu and is not listed",
-     /<title>[^<]*Menu/.test(rootHtml) && /noindex,\s*nofollow/.test(rootHtml),
-     (rootHtml.match(/<title>([^<]*)/) || [])[1] || "no title");
-// robots.txt keeps /photos/ out of image search, so a preview picture there
-// may never show in LINE. The root link must use the one in /og/.
+// The root is a language chooser: search engines are sent to /en/ by its canonical.
+const rootCanon = [...rootHtml.matchAll(/<link rel="canonical" href="([^"]*)"/g)].map((m) => m[1]);
+pass("the root link (the one in the QR) previews as Menu and canonicalises to /en/",
+     /<title>[^<]*Menu/.test(rootHtml) && rootCanon.join() === "https://suanzenomakase.com/en/",
+     `${(rootHtml.match(/<title>([^<]*)/) || [])[1] || "no title"} → ${rootCanon.join(" | ") || "no canonical"}`);
+// /og/suan-zen.jpg is the picture made for link previews (1200 × 800, the size
+// the root declares). The root link must use it, like every page.
 const rootImg = (rootHtml.match(/property="og:image" content="([^"]*)"/) || [])[1] || "";
 pass("the root link's preview picture is the /og/ one", /\/og\/suan-zen\.jpg$/.test(rootImg), rootImg || "no og:image");
 const nf = await fetch(B + "/404.html");
-pass("the 404 page is not listed either", nf.ok && /noindex,\s*nofollow/.test(await nf.text()), `HTTP ${nf.status}`);
+// The 404 is a copy of the root chooser, so it too points search engines at /en/.
+pass("the 404 page is the language chooser, canonical to /en/",
+     nf.ok && (await nf.text()).includes('<link rel="canonical" href="https://suanzenomakase.com/en/"'), `HTTP ${nf.status}`);
 await d.screenshot({ path: "qa/shots/platform-desktop.png" });
 await d.locator(".hdr__cta").click(); await d.waitForTimeout(700);
 const line = await d.locator(".res.is-open .res__line").getAttribute("href").catch(() => null);

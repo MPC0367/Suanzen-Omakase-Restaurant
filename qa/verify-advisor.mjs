@@ -1,8 +1,9 @@
 /**
  * The course advisor's contract. Can a guest tell — in a glance, then a few
  * taps — which Suan Zen course is right for each person dining, see why, and
- * reserve it without retyping the course? And does every page stay unlisted,
- * free of anything still waiting on the restaurant?
+ * reserve it without retyping the course? And is every page offered to search
+ * engines under its own address, free of anything still waiting on the
+ * restaurant?
  *
  *   node qa/verify-advisor.mjs [base]      default http://localhost:4325
  *
@@ -18,9 +19,11 @@ const ready = (p) => p.waitForFunction(() => !document.querySelector(".curtain")
 
 const SLUGS = ["zen-kids", "zen-ichi", "zen-ni", "zen-san", "zen-boss", "zen-yon", "zen-sweet"];
 const EN = { "zen-kids": "Zen Kids", "zen-ichi": "Zen Ichi", "zen-ni": "Zen Ni", "zen-san": "Zen San", "zen-boss": "Zen Boss", "zen-yon": "Zen Yon", "zen-sweet": "Zen Sweet" };
+const SITE = "https://suanzenomakase.com";   // what the build writes into canonical, hreflang and the sitemap
+const HREFLANG = { en: "en", th: "th", zh: "zh-CN" };
 const ogOf = (html) => (html.match(/<meta (?:property|name)="(?:og|twitter):[^>]*>/g) || []).join("\n");
 
-/* ── Every page: there, unlisted, nothing internal, no stale LINE ID ─────── */
+/* ── Every page: there, listed, nothing internal, no stale LINE ID ──────── */
 console.log("every page");
 const paths = ["/en/", "/th/", "/zh/", ...SLUGS.flatMap((s) => [`/en/courses/${s}/`, `/th/courses/${s}/`, `/zh/courses/${s}/`])];
 const bad = [];
@@ -28,14 +31,21 @@ for (const p of paths) {
   const r = await fetch(B + p);
   const h = await r.text();
   if (r.status !== 200) bad.push(`${p} HTTP ${r.status}`);
-  if (!/<meta name="robots" content="noindex, nofollow"/.test(h)) bad.push(`${p} not noindex, nofollow`);
+  const robots = [...h.matchAll(/<meta name="robots" content="([^"]*)"/g)].map((m) => m[1]);
+  if (robots.join() !== "index, follow") bad.push(`${p} robots "${robots.join(" | ") || "none"}"`);
+  const canon = [...h.matchAll(/<link rel="canonical" href="([^"]*)"/g)].map((m) => m[1]);
+  if (canon.length !== 1 || canon[0] !== SITE + p) bad.push(`${p} canonical ${canon.join(" | ") || "none"}`);
+  const [, loc, rest] = p.match(/^\/(en|th|zh)(\/.*)$/);
+  for (const l of Object.keys(HREFLANG).filter((l) => l !== loc)) {
+    if (!new RegExp(`<link rel="alternate" hreflang="${HREFLANG[l]}" href="${SITE}/${l}${rest}"`, "i").test(h)) bad.push(`${p} hreflang ${HREFLANG[l]}`);
+  }
   if (h.includes("[VERIFY")) bad.push(`${p} shows a [VERIFY note`);
   // @suan.zen.omakase is the restaurant's real TikTok handle (its footer link);
   // it must just never stand in for the LINE ID, which is @suanzenomakase.
   if (h.replace(/tiktok\.com\/@suan\.zen\.omakase/g, "").includes("@suan.zen.omakase")) bad.push(`${p} shows the old LINE ID`);
   if (/<form[\s>]/.test(h)) bad.push(`${p} has a form`);
 }
-pass(`all ${paths.length} pages load, unlisted, with no form, no [VERIFY note and no stale LINE ID`, bad.length === 0, bad.join("; "));
+pass(`all ${paths.length} pages load, index, follow, one absolute self-canonical and hreflang to the other two languages, with no form, no [VERIFY note and no stale LINE ID`, bad.length === 0, bad.join("; "));
 
 // Nothing internal in the scripts the pages load, either: a note no component
 // renders can still ride along in a JavaScript chunk.
@@ -62,11 +72,26 @@ pass("no course's link preview carries a price, and every one uses the /og/ pict
 const ichi = await (await fetch(`${B}/en/courses/zen-ichi/`)).text();
 pass("Zen Ichi's link preview names the course and its age", /og:title" content="Zen Ichi — 14 items · Ages 12–14/.test(ichi),
      (ogOf(ichi).match(/og:title" content="([^"]*)"/) || [])[1] || "no og:title");
-pass("each course page is its own canonical address", /<link rel="canonical" href="[^"]*\/en\/courses\/zen-ichi\/"/.test(ichi));
+pass("each course page is its own canonical address", ichi.includes(`<link rel="canonical" href="${SITE}/en/courses/zen-ichi/"`));
 
 const stub = await (await fetch(`${B}/courses/zen-ichi/`)).text();
-pass("/courses/zen-ichi/ — the link staff can send — is unlisted and previews as the course",
-     stub.includes('content="noindex, nofollow"') && /og:title" content="Zen Ichi/.test(stub));
+pass("/courses/zen-ichi/ — the link staff can send — stays noindex and previews as the course",
+     /<meta name="robots" content="noindex[^"]*"/.test(stub) && /og:title" content="Zen Ichi/.test(stub));
+
+// robots.txt lets every crawler in, /photos/ included, and names the sitemap;
+// the sitemap lists every page above, in every language, and nothing else.
+const robotsTxt = await (await fetch(B + "/robots.txt")).text();
+pass("robots.txt allows everything, /photos/ included, and names the sitemap",
+     /^User-Agent:\s*\*\s*$/im.test(robotsTxt) && /^Allow:\s*\/\s*$/m.test(robotsTxt) && !/^Disallow:\s*\S/m.test(robotsTxt)
+       && robotsTxt.includes(`Sitemap: ${SITE}/sitemap.xml`),
+     robotsTxt.trim().replace(/\s*\n\s*/g, " · "));
+const sm = await fetch(B + "/sitemap.xml");
+const locs = [...(await sm.text()).matchAll(/<loc>([^<]*)<\/loc>/g)].map((m) => m[1]);
+const want = paths.map((p) => SITE + p);
+const missing = want.filter((u) => !locs.includes(u)), extra = locs.filter((u) => !want.includes(u));
+pass(`sitemap.xml lists all ${paths.length} pages in every language`,
+     sm.ok && missing.length === 0 && extra.length === 0 && locs.length === want.length,
+     sm.ok ? [missing.length && `missing ${missing.join(", ")}`, extra.length && `extra ${extra.join(", ")}`].filter(Boolean).join("; ") || `${locs.length} URLs` : `HTTP ${sm.status}`);
 
 /* ── Phone: the family at a glance, the finder, the courses ──────────────── */
 const m = await (await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })).newPage();

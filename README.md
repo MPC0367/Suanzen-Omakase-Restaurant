@@ -3,8 +3,8 @@
 The link Suan Zen sends in its LINE OA in place of photographs of the menu, for
 guests who already mean to come. In English, Thai and Simplified Chinese
 (`/en/`, `/th/`, `/zh/`), one page: the menu first,
-then à la carte, then how to visit. It is **unlisted** — shared by link, not
-offered to search engines. Next.js 15 App Router, static export, TypeScript,
+then à la carte, then how to visit. It is sent as a link in the LINE OA and,
+since 2026-09-24, **listed** on search engines (see `HOSTING.md`). Next.js 15 App Router, static export, TypeScript,
 hand-written CSS, three runtime dependencies (`next`, `react`, `react-dom`).
 
 ```bash
@@ -14,7 +14,7 @@ npm run export       # static site in out/, for a domain root
 ```
 
 **Getting it online, and onto the restaurant's domain: [HOSTING.md](HOSTING.md).**
-It also explains how the page stays off Google.
+It also explains how the page is offered to Google.
 
 ---
 
@@ -24,7 +24,7 @@ It also explains how the page stays off Google.
 family path (younger diners, teenage diners, adult diners, each with their
 course), a two-to-three-tap finder, and the four adult courses side by side.
 Every course says who it is for and, for the adult courses, what sets it apart.
-Each course also has its own unlisted page, `/en/courses/<slug>/`, for staff to
+Each course also has its own page, `/en/courses/<slug>/`, for staff to
 send, and a Reserve that opens LINE with that course already in the message.
 
 **The menu.** Seven courses in family order, with the restaurant's prices and
@@ -166,7 +166,7 @@ package, served locally, both as built and wrapped the way an artifact wraps it.
 
 ```bash
 npx playwright install chromium       # once
-node qa/verify-brochure.mjs [base]    # the page's contract: menu, phone behaviour, unlisted
+node qa/verify-brochure.mjs [base]    # the page's contract: menu, phone behaviour, listed
 node qa/verify-advisor.mjs [base]     # the course advisor, course pages, LINE messages
 node qa/verify-curtain.mjs [base]     # the opening seal
 node qa/verify-zh.mjs [base]          # the Chinese pages, the language selector, the room behind the page

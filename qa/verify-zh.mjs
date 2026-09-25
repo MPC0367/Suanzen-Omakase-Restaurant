@@ -2,11 +2,11 @@
  * The Simplified Chinese edition, the language selector, and the room behind
  * the page — their contract.
  *
- *   node qa/verify-zh.mjs [base]    default http://localhost:4328/Suanzen-Omakase-Restaurant
+ *   node qa/verify-zh.mjs [base]    default http://localhost:4328
  *
- * Run against the static export built for the project's base path
- * (node scripts/export.mjs --base /Suanzen-Omakase-Restaurant), served so the
- * pages sit under /Suanzen-Omakase-Restaurant/ exactly as on GitHub Pages.
+ * Run against the static export built for the domain root, as it is served at
+ * suanzenomakase.com (NEXT_PUBLIC_SITE_ORIGIN=https://suanzenomakase.com
+ * node scripts/export.mjs). A base path in [base] is still honoured.
  * Screenshots go to qa/shots/zh/.
  */
 import fs from "node:fs";
@@ -15,9 +15,9 @@ import sharp from "sharp";
 import { chromium, webkit } from "playwright";
 import { dict, advisorCopyZh, zhValues } from "./zh-content.mjs";
 
-const B = (process.argv[2] || "http://localhost:4328/Suanzen-Omakase-Restaurant").replace(/\/$/, "");
+const B = (process.argv[2] || "http://localhost:4328").replace(/\/$/, "");
 const BASE_PATH = new URL(B).pathname.replace(/\/$/, "");
-const SITE = "https://mpc0367.github.io" + BASE_PATH;   // what the build writes into canonical and hreflang
+const SITE = "https://suanzenomakase.com" + BASE_PATH;   // what the build writes into canonical and hreflang
 const SHOTS = "qa/shots/zh";
 fs.mkdirSync(SHOTS, { recursive: true });
 
@@ -48,7 +48,7 @@ const lum = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
 const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 
-/* ── 1 · Every Chinese page: there, marked, unlisted, and linked to the others ── */
+/* ── 1 · Every Chinese page: there, marked, listed, and linked to the others ── */
 console.log("pages and metadata");
 {
   const bad = [];
@@ -58,7 +58,7 @@ console.log("pages and metadata");
     const want = `${SITE}${p}`;
     if (r.status !== 200) bad.push(`${p} HTTP ${r.status}`);
     if (!h.includes('<html lang="zh-CN"')) bad.push(`${p} not lang zh-CN`);
-    if (!h.includes('<meta name="robots" content="noindex, nofollow"/>')) bad.push(`${p} not noindex, nofollow`);
+    if (!h.includes('<meta name="robots" content="index, follow"/>')) bad.push(`${p} not index, follow`);
     if (!h.includes(`<link rel="canonical" href="${want}"/>`)) bad.push(`${p} canonical`);
     const rest = p.slice(3);
     for (const [hl, l] of [["en", "en"], ["th", "th"], ["zh-CN", "zh"], ["x-default", "en"]]) {
@@ -69,12 +69,12 @@ console.log("pages and metadata");
     if (/⟦|\bundefined\b|\bNaN\b|\[object Object\]/.test(h.replace(/<script[\s\S]*?<\/script>/g, ""))) bad.push(`${p} shows undefined / NaN / a placeholder`);
     if (IMAGE_HOSTS.test(h)) bad.push(`${p} names an outside image host`);
   }
-  pass(`all ${ZH_PAGES.length} Chinese pages: 200, zh-CN, noindex, canonical, hreflang en/th/zh-CN/x-default, og:locale zh_CN`, bad.length === 0, bad.join("; "));
+  pass(`all ${ZH_PAGES.length} Chinese pages: 200, zh-CN, index, follow, canonical, hreflang en/th/zh-CN/x-default, og:locale zh_CN`, bad.length === 0, bad.join("; "));
 
   const home = await (await fetch(B + "/zh/")).text();
   pass("title, description and preview picture text as specified",
-    home.includes("<title>Suan Zen Omakase — 菜单</title>")
-    && home.includes('<meta name="description" content="Suan Zen Omakase 套餐菜单：7款套餐、完整菜品与价格。可通过 LINE 预约。"/>')
+    home.includes("<title>暖武里日料 Omakase — 套餐菜单与价格 | Suan Zen Omakase</title>")
+    && home.includes('<meta name="description" content="Suan Zen Omakase 位于暖武里府：7 款 Omakase 套餐菜单，完整菜品与当前价格，提供中、英、泰三语页面。欢迎通过 LINE 预约座位。"/>')
     && home.includes('<meta property="og:image:alt" content="Suan Zen Omakase，暖武里府"/>'));
 
   const others = [];
