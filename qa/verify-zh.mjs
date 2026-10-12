@@ -74,7 +74,7 @@ console.log("pages and metadata");
   const home = await (await fetch(B + "/zh/")).text();
   pass("title, description and preview picture text as specified",
     home.includes("<title>暖武里日料 Omakase — 套餐菜单与价格 | Suan Zen Omakase</title>")
-    && home.includes('<meta name="description" content="Suan Zen Omakase 位于暖武里府：7 款 Omakase 套餐菜单，完整菜品与当前价格，提供中、英、泰三语页面。欢迎通过 LINE 预约座位。"/>')
+    && home.includes('<meta name="description" content="暖武里府的日本料理店：在吧台呈上 Omakase，7 款套餐与价格，每日营业，设有停车位。欢迎通过 LINE 预约座位。"/>')
     && home.includes('<meta property="og:image:alt" content="Suan Zen Omakase，暖武里府"/>'));
 
   const others = [];

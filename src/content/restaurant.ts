@@ -16,9 +16,10 @@
  *  ✔ Logo pixels sampled from IG avatar ..... amber #F4C92B / falloff #AB6C14
  *  ✔ Diner reviews (Lemon8 ×2) .............. Zen Ichi 14 courses ฿2,000++,
  *                                             zen garden, counter, live music
- *  ⚠ CONFLICT — hours: IG bio says "Everyday"; the restaurant's TikTok post
- *    says Tue–Sun (closed Mon). IG bio is the more current owner-controlled
- *    surface, so it is used. FLAGGED for confirmation.
+ *  ✔ SETTLED 2026-10-12 — hours: the restaurant's own Google Business Profile
+ *    lists all seven days (Mon–Wed and Sun 12.30–21.00, Thu–Sat 12.30–24.00),
+ *    which agrees with the IG bio. The TikTok post saying Tue–Sun is out of
+ *    date. The hours are in the page and in the schema.
  *  ⚠ CONFLICT — round times: TikTok says 12.00/15.00/17.00/19.00; IG bio opens
  *    12.30. The first round now follows the opening time (studio, 2026-09-25);
  *    the rounds are still shown as unverified.
