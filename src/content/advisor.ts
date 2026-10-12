@@ -332,9 +332,10 @@ export const finder: Question[] = [
 /* ── Copy ────────────────────────────────────────────────────────────────── */
 
 const en = {
-  label: "Find your course",
+  /** The page's own heading — the h1. Quietly set, above the finder. */
+  label: "Omakase in Nonthaburi — seven courses at Suan Zen",
   heading: "Which course is right for you?",
-  intro: "Each Suan Zen course is made for a different diner. Start with who is dining — and for adults, what you enjoy most.",
+  intro: "Suan Zen is a Japanese restaurant on Soi Nonthaburi 48, serving omakase at the counter. Each course is made for a different diner: start with who is dining — and for adults, what you enjoy most.",
   family: {
     label: "A course for each of you",
     younger: "Younger diners",
@@ -377,9 +378,9 @@ const en = {
 };
 
 const th: typeof en = {
-  label: "เลือกคอร์ส",
+  label: "โอมากาเสะ นนทบุรี — เจ็ดคอร์สของ สวน เซน",
   heading: "คอร์สไหนเหมาะกับคุณ",
-  intro: "สวน เซน มีหลายคอร์ส แต่ละคอร์สเหมาะกับแขกต่างกัน เริ่มจากดูว่าใครมาทานบ้าง ถ้าเป็นผู้ใหญ่ ลองดูว่าชอบทานอะไรเป็นพิเศษ",
+  intro: "สวน เซน เป็นร้านอาหารญี่ปุ่นในซอยนนทบุรี 48 เสิร์ฟโอมากาเสะกันที่เคาน์เตอร์ แต่ละคอร์สเหมาะกับแขกต่างกัน เริ่มจากดูว่าใครมาทานบ้าง ถ้าเป็นผู้ใหญ่ ลองดูว่าชอบทานอะไรเป็นพิเศษ",
   family: { label: "มีคอร์สสำหรับทุกคน", younger: "น้อง ๆ", teen: "วัยรุ่น", adult: "ผู้ใหญ่" },
   finder: {
     open: "ช่วยเลือกคอร์ส",
@@ -417,9 +418,9 @@ const th: typeof en = {
 };
 
 const zh: typeof en = {
-  label: "选择适合您的套餐",
+  label: "暖武里的 Omakase — Suan Zen 的七款套餐",
   heading: "哪个套餐更适合您？",
-  intro: "Suan Zen 的每款套餐都适合不同的用餐需求。请先选择用餐者；若为成人，再选择最偏爱的食材。",
+  intro: "Suan Zen 是暖武里 Nonthaburi 48 巷的一家日本料理店，在板前为客人呈上 Omakase。每款套餐都适合不同的用餐需求：请先选择用餐者；若为成人，再选择最偏爱的食材。",
   family: { label: "每位客人都有合适的套餐", younger: "儿童", teen: "青少年", adult: "成人" },
   finder: {
     open: "帮我选择",

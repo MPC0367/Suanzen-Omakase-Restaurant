@@ -7,6 +7,7 @@ import { asset } from "@/lib/asset";
 import CourseGallery from "@/components/CourseGallery";
 import { activeCourses, courseById, formatBaht, allDishes, type Course, type Dish, named } from "@/content/courses";
 import { adviceFor, advisorCopy, fill } from "@/content/advisor";
+import { altFor } from "@/content/media";
 import { getDict, type Locale, pick } from "@/content/dictionary";
 import { reserveLink } from "@/lib/line";
 import { COURSE_EVENT, hasPointer, openReserve } from "@/lib/events";
@@ -231,13 +232,13 @@ function ReserveCourse({ course, locale }: { course: Course; locale: Locale }) {
    One photograph stands for the whole course, on the menu and on the course's
    own page. A course without one shows none: nothing is borrowed from another
    course, and no frame is left standing empty. */
-function CoursePhoto({ course, className }: { course: Course; className: string }) {
+function CoursePhoto({ course, className, locale }: { course: Course; className: string; locale: Locale }) {
   if (!course.sample) return null;
   return (
     <figure className={className}>
       <Image
         src={asset(course.sample.src)}
-        alt=""
+        alt={altFor(course.sample.src, locale)}
         width={course.sample.w}
         height={course.sample.h}
         sizes="(min-width: 64rem) 46rem, 100vw"
@@ -329,7 +330,7 @@ function CourseRow({
               one sample here instead, rather than nothing. */}
           {course.gallery?.length
             ? <CourseGallery course={course} locale={locale} />
-            : <CoursePhoto course={course} className="course__photo" />}
+            : <CoursePhoto course={course} className="course__photo" locale={locale} />}
           {/* The age is on the heading and "Best for" says the rest, so the
               old one-line tagline would only repeat them. */}
           {forWho && !adv && <p className="course__for">{forWho}</p>}
@@ -408,7 +409,7 @@ export function CourseDetail({ id, locale }: { id: string; locale: Locale }) {
           {course.count} {unit} · {formatBaht(course.price)}<i>++</i>
         </p>
       </header>
-      <CoursePhoto course={course} className="cdetail__photo" />
+      <CoursePhoto course={course} className="cdetail__photo" locale={locale} />
       <p className="u-lede cdetail__desc">{pick(course.desc, locale)}</p>
       <AdviceBlock id={id} locale={locale} full />
       <div className="cdetail__list">

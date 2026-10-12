@@ -98,10 +98,12 @@ export const restaurant = {
   },
 
   maps: {
-    directions: v(
-      "https://www.google.com/maps/place/Suan+Zen+Omakase/@13.8732846,100.5057582,17z",
-    ),
+    /** The place itself, by its own ID, so the pin cannot drift: the older
+        link carried a viewport about 280 m west of the restaurant. */
+    directions: v("https://www.google.com/maps?cid=6098208001081693073"),
     placeId: v("0x30e2858dff33491f:0x54a12fde06eb5391"),
+    /** The same place as a decimal CID, for hasMap in the schema. */
+    cid: v("6098208001081693073"),
   },
 
   /** Per the Instagram bio — the restaurant's own, most current surface. */
@@ -110,8 +112,11 @@ export const restaurant = {
     lateNights: v("12.30 – 24.00", true, "Thursday to Saturday"),
     openDaysNote: v(
       "Open daily",
-      false,
-      "IG bio says daily; an older restaurant TikTok says Tue–Sun. Confirm.",
+      true,
+      "Settled 2026-10-12: the restaurant's own Google Business Profile lists "
+        + "all seven days — Mon, Tue, Wed and Sun 12.30–21.00, Thu–Sat 12.30–24.00 — "
+        + "which matches the Instagram bio and these fields. The older TikTok "
+        + "saying Tue–Sun is out of date.",
     ),
   },
 

@@ -16,7 +16,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import type { L10n } from "./dictionary";
+import type { L10n, Locale } from "./dictionary";
 
 export type Photo = {
   file: string;
@@ -1198,6 +1198,16 @@ export const foodShots = photos.filter((p) => p.category === "food" || p.categor
 export const roomShots = photos.filter((p) => p.category === "interior" || p.category === "exterior" || p.category === "signage");
 
 export const byFile = (f: string) => photos.find((p) => p.file === f || p.file.endsWith("/" + f));
+
+/** What to write in a picture's alt attribute: the description held for it
+    here, in this language, or the name the page already shows it under. The
+    descriptions are all inside the 125 characters the studio's standard allows.
+    A picture with neither stays decorative — an empty alt is correct for one,
+    and better than a filename. */
+export const altFor = (file: string, locale: Locale, fallback = ""): string => {
+  const p = byFile(file);
+  return p ? p.alt[locale] : fallback;
+};
 
 /** Photographs that show a given dish, best first. */
 export const shotsForDish = (dish: string) =>

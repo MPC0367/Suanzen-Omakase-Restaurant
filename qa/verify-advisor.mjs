@@ -210,7 +210,10 @@ pass("switching to Thai keeps the guest on the course", /\/th\/courses\/zen-ichi
 /* ── Thai ────────────────────────────────────────────────────────────────── */
 console.log("thai");
 await m.goto(`${B}/th/`, { waitUntil: "domcontentloaded" }); await ready(m);
-pass("Thai: the page asks the question in Thai", (await m.locator("h1").textContent()).trim() === "คอร์สไหนเหมาะกับคุณ");
+pass("Thai: the page's heading names the course and the place, and the question follows it",
+     (await m.locator("h1").textContent()).trim() === "โอมากาเสะ นนทบุรี — เจ็ดคอร์สของ สวน\u00a0เซน"
+     && (await m.locator("h2.advisor__h").textContent()).trim() === "คอร์สไหนเหมาะกับคุณ",
+     (await m.locator("h1").textContent()).trim());
 await m.locator(".finder__open").tap();
 await m.locator(".finder__a", { hasText: "น้อง" }).tap(); await m.waitForTimeout(250);
 pass("Thai: the finder answers a child with เซน คิดส์", (await m.locator(".finder__name").textContent()).trim() === "เซน คิดส์");

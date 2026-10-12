@@ -78,8 +78,8 @@ export default function CourseAdvisor({ locale }: { locale: Locale }) {
   return (
     <div className="advisor">
       <header className="advisor__head">
-        <span className="u-label">{c.label}</span>
-        <h1 className="display advisor__h">{c.heading}</h1>
+        <h1 className="u-label advisor__kicker">{c.label}</h1>
+        <h2 className="display advisor__h">{c.heading}</h2>
         <p className="u-lede advisor__intro">{c.intro}</p>
       </header>
 

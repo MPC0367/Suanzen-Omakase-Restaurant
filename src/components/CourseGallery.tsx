@@ -6,6 +6,7 @@ import Image from "next/image";
 import { asset } from "@/lib/asset";
 import { getDict, type Locale } from "@/content/dictionary";
 import { named, type Course } from "@/content/courses";
+import { altFor } from "@/content/media";
 
 /**
  * A course's own photographs, under the course in the menu.
@@ -140,7 +141,7 @@ export default function CourseGallery({ course, locale }: { course: Course; loca
               >
                 <Image
                   src={asset(p.src)}
-                  alt=""
+                  alt={altFor(p.src, locale, named(p.caption, locale))}
                   width={p.w}
                   height={p.h}
                   sizes="(min-width: 64rem) 22rem, 60vw"
@@ -230,7 +231,7 @@ function Expanded({
           <Image
             key={p.src}
             src={asset(p.src)}
-            alt=""
+            alt={altFor(p.src, locale, named(p.caption, locale))}
             width={p.w}
             height={p.h}
             sizes="(min-width: 64rem) 62rem, 92vw"

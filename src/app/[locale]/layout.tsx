@@ -104,10 +104,11 @@ export default async function LocaleLayout({
   const t = dict[locale];
 
   /* Restaurant schema, from src/content/restaurant.ts — verified fields only.
-     Hours are omitted on purpose: the values are verified but the day coverage
-     (daily vs Tue–Sun) is still flagged there, and schema cannot hedge the way
-     the page does. The price range is the courses' own printed prices, which
-     the owners confirmed on 2026-09-24. */
+     The price range is the courses' own printed prices, which the owners
+     confirmed on 2026-09-24. Hours were withheld here until 2026-10-12, while
+     the open days were in doubt; the restaurant's own Google Business Profile
+     settled it (all seven days), so they are stated now — and they are the
+     same hours the page itself prints. */
   const prices = activeCourses.map((c) => c.price);
   const a = restaurant.address;
   const jsonLd = {
@@ -117,8 +118,7 @@ export default async function LocaleLayout({
     name: restaurant.name.en,
     alternateName: restaurant.name.th,
     url: `${SITE}/${locale}/`,
-    inLanguage: localeInfo[locale].html,
-    image: OG_IMAGE,
+    image: [OG_IMAGE, `${SITE}/photos/4ec2522c1b09.jpg`, `${SITE}/photos/3eb0559a8b3d.jpg`],
     servesCuisine: ["Japanese", "Omakase"],
     priceRange: `${formatBaht(Math.min(...prices))}–${formatBaht(Math.max(...prices))}++`,
     telephone: val(restaurant.contact.phoneIntl),
@@ -136,11 +136,29 @@ export default async function LocaleLayout({
       longitude: val(restaurant.geo).lng,
     },
     hasMenu: `${SITE}/${locale}/`,
-    acceptsReservations: "True",
+    hasMap: `https://www.google.com/maps?cid=${val(restaurant.maps.cid)}`,
+    acceptsReservations: true,
+    /* The hours the page prints, in the form a machine reads. Thursday to
+       Saturday the kitchen runs to midnight. */
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Sunday"],
+        opens: "12:30",
+        closes: "21:00",
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Thursday", "Friday", "Saturday"],
+        opens: "12:30",
+        closes: "00:00",
+      },
+    ],
     sameAs: [
       val(restaurant.social.instagram),
       val(restaurant.social.facebook),
       val(restaurant.social.tiktok),
+      val(restaurant.contact.lineUrl),
     ],
   };
 

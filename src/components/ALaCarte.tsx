@@ -3,6 +3,7 @@ import { asset } from "@/lib/asset";
 import { alaCarte, alaSections, alaIsPublished } from "@/content/alacarte";
 import { restaurant } from "@/content/restaurant";
 import { named } from "@/content/courses";
+import { altFor } from "@/content/media";
 import { getDict, type Locale, pick } from "@/content/dictionary";
 
 const Arrow = () => (
@@ -39,7 +40,7 @@ export default function ALaCarte({ locale }: { locale: Locale }) {
                       {it.photo && (
                         <Image
                           src={asset(it.photo)}
-                          alt=""
+                          alt={altFor(it.photo, locale, named(it.name, locale))}
                           width={160}
                           height={120}
                           className="ala__thumb"
