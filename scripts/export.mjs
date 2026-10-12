@@ -115,6 +115,35 @@ fs.writeFileSync(
 <meta name="twitter:image" content="${preview}">
 <link rel="canonical" href="${origin}${prefix}/en/">
 <meta http-equiv="refresh" content="0; url=${prefix}/en/">
+<script type="application/ld+json">${JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${origin}${prefix}/#website`,
+      url: `${origin}${prefix}/`,
+      name: "Suan Zen Omakase",
+      alternateName: ["\u0e2a\u0e27\u0e19 \u0e40\u0e0b\u0e19 \u0e42\u0e2d\u0e21\u0e32\u0e01\u0e32\u0e40\u0e2a\u0e30", "Suan Zen"],
+      inLanguage: ["en", "th", "zh-CN"],
+      publisher: { "@id": `${origin}/#restaurant` },
+    },
+    {
+      "@type": "Restaurant",
+      "@id": `${origin}/#restaurant`,
+      name: "Suan Zen Omakase",
+      alternateName: "\u0e2a\u0e27\u0e19 \u0e40\u0e0b\u0e19 \u0e42\u0e2d\u0e21\u0e32\u0e01\u0e32\u0e40\u0e2a\u0e30",
+      url: `${origin}${prefix}/en/`,
+      telephone: "+66624585588",
+      hasMap: "https://www.google.com/maps?cid=6098208001081693073",
+      sameAs: [
+        "https://www.instagram.com/suanzenomakase",
+        "https://www.facebook.com/omakase.suanzen",
+        "https://www.tiktok.com/@suan.zen.omakase",
+        "https://lin.ee/ubxSiHp",
+      ],
+    },
+  ],
+})}</script>
 <script>
   location.replace('${prefix}/' + (${pickLocale})() + '/' + location.search + location.hash);
 </script>
