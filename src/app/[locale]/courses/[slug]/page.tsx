@@ -66,8 +66,29 @@ export default async function CoursePage({ params }: Params) {
   const k = activeCourses.find((c) => c.slug === slug);
   if (!k) notFound();
 
+  /* Home → this course, so a search result can show the trail instead of the
+     bare address. Two levels is all there is: the menu page, then the course. */
+  const crumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "@id": `${SITE}/${locale}/courses/${k.slug}/#breadcrumb`,
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: pick(restaurant.name, locale),
+        item: `${SITE}/${locale}/`,
+      },
+      { "@type": "ListItem", position: 2, name: pick(k.name, locale) },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }}
+      />
       <Chrome locale={locale} path={`/courses/${k.slug}/`} />
       <main id="main">
         <section className="section coursepage" id="course">

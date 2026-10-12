@@ -211,7 +211,7 @@ pass("switching to Thai keeps the guest on the course", /\/th\/courses\/zen-ichi
 console.log("thai");
 await m.goto(`${B}/th/`, { waitUntil: "domcontentloaded" }); await ready(m);
 pass("Thai: the page's heading names the course and the place, and the question follows it",
-     (await m.locator("h1").textContent()).trim() === "โอมากาเสะ นนทบุรี — เจ็ดคอร์สของ สวน\u00a0เซน"
+     (await m.locator("h1").textContent()).trim() === "โอมากาเสะ นนทบุรี\u00a0— เจ็ดคอร์สของ สวน\u00a0เซน"
      && (await m.locator("h2.advisor__h").textContent()).trim() === "คอร์สไหนเหมาะกับคุณ",
      (await m.locator("h1").textContent()).trim());
 await m.locator(".finder__open").tap();
